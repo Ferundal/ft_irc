@@ -53,7 +53,7 @@ endif
 
 OBJS_CPP=			${SRCS_CPP:.cpp=.o}
 
-NAME=				webserv
+NAME=				ircserv
 
 CC=					clang++
 RM=					rm -f
