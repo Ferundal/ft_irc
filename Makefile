@@ -94,8 +94,8 @@ obj_dir_make:
 libs_make:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} bonus}
 
-%.o:				%.cpp ${HEADERS}
-					${CC} ${ALL_CFLAGS} ${INC_HEADERS_DIR} -c ${<} -o ${<:%.cpp=%.o}
+${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
+					${CC} ${ALL_CFLAGS} ${INC_HEADERS_DIR} -c ${<} -o ${<:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
 
 ${NAME}:			${OBJS_CPP} ${LIBS}
 					${CC} ${ALL_LDFLAGS} ${OBJS_CPP} ${LIBS_INC} ${LIBS_EXT} -o ${NAME}
