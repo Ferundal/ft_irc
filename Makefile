@@ -46,9 +46,9 @@ LIBS_INC=			${foreach LIBS, ${LIBS}, ${LIBS_INC_F}}
 
 LIBS_HEADERS=		${patsubst %.a, %.h, ${LIBS}}
 
-CLASS_HEADERS=		${addprefix ${SRC_DIR}/ , ${addsuffix .hpp, ${CLASSES}}}
+CLASS_HEADERS=		${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES}}}
 
-CLASS_HEADERS_B=	${addprefix ${SRC_DIR}/ , ${addsuffix .hpp, ${CLASSES_B}}}
+CLASS_HEADERS_B=	${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES_B}}}
 
 HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS}
 
@@ -87,6 +87,7 @@ NORM=				norminette ${NORMO}
 .PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make
 
 all:				libs_make obj_dir_make ${NAME}
+
 
 obj_dir_make:
 					- mkdir obj
