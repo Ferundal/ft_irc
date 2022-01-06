@@ -28,13 +28,13 @@ OBJ_DIR=			obj
 
 #Classes's names should be placed here
 
-CLASSES=			Server
+CLASSES=			Server \
 
 CLASSES_B=
 
-#Independent opp files here
+#Independent .cpp files here
 
-CPP_FILES=			main.cpp
+CPP_FILES=			main.cpp \
 
 CPP_FILES_B=
 
@@ -90,7 +90,7 @@ all:				libs_make obj_dir_make ${NAME}
 
 
 obj_dir_make:
-					- mkdir obj
+					mkdir -p obj
 
 libs_make:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} bonus}
