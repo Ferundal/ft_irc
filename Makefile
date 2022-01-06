@@ -26,7 +26,7 @@ SRC_DIR=			src
 
 OBJ_DIR=			obj
 
-#Classes's names shoud be placed here
+#Classes's names should be placed here
 
 CLASSES=			Server
 
@@ -65,7 +65,7 @@ CLASSES_SRC=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES}}}
 CLASSES_SRC_B=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES_B}}}
 
 SRCS_CPP=			${CLASSES_SRC} \
-					${CPP_FILES}
+					${addprefix ${SRC_DIR}/, ${CPP_FILES}}
 
 ifdef COMPILE_BONUS
 SRCS_CPP:=			${SRCS_CPP} ${CLASSES_SRC_B}
@@ -94,7 +94,8 @@ obj_dir_make:
 libs_make:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} bonus}
 
-${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
+
+${OBJ_DIR}/%.o:		src/%.cpp ${HEADERS}
 					${CC} ${ALL_CFLAGS} ${INC_HEADERS_DIR} -c ${<} -o ${<:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
 
 ${NAME}:			${OBJS_CPP} ${LIBS}
