@@ -14,9 +14,29 @@ SHELL = /bin/sh		#for systems where SHELL variable can be inherited from environ
 
 .SUFFIXES:			#no suffix rules are used
 
+#Path to project libraries *.a files
+
 LIBS=
 
+#External libraries
+
 LIBS_EXT=
+
+SRC_DIR=			src
+
+OBJ_DIR=			obj
+
+#Classes's names shoud be placed here
+
+CLASSES=			Server
+
+CLASSES_B=
+
+#Independent opp files here
+
+CPP_FILES=			main.cpp
+
+CPP_FILES_B=
 
 LIBS_DIR=			${dir ${LIBS}}
 
@@ -26,32 +46,32 @@ LIBS_INC=			${foreach LIBS, ${LIBS}, ${LIBS_INC_F}}
 
 LIBS_HEADERS=		${patsubst %.a, %.h, ${LIBS}}
 
-HEADERS_CPP=		${patsubst %.cpp, %.hpp, ${SRCS_CLASSES}}
+CLASS_HEADERS=		${addprefix ${SRC_DIR}/ , ${addsuffix .hpp, ${CLASSES}}}
 
-HEADERS_CPP_B=
+CLASS_HEADERS_B=	${addprefix ${SRC_DIR}/ , ${addsuffix .hpp, ${CLASSES_B}}}
 
-HEADERS=			${LIBS_HEADERS} ${HEADERS_CPP}
+HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS}
 
 ifdef COMPILE_BONUS
-HEADERS:=			${HEADERS} ${HEADERS_CPP_B}
+HEADERS:=			${HEADERS} ${CLASS_HEADERS_B}
 endif
 
 INC_HEADERS_FORMAT=	-I ${dir ${HEADERS}}
 
 INC_HEADERS_DIR=	${foreach HEADERS, ${HEADERS}, ${INC_HEADERS_FORMAT}}
 
-SRCS_CLASSES=
+CLASSES_SRC=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES}}}
 
-SRCS_CPP=			${SRCS_CLASSES} \
-					main.cpp \
+CLASSES_SRC_B=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES_B}}}
 
-SRCS_CPP_BONUS=
+SRCS_CPP=			${CLASSES_SRC} \
+					${CPP_FILES}
 
 ifdef COMPILE_BONUS
-SRCS_CPP:=			${SRCS_CPP} ${SRCS_CPP_BONUS}
+SRCS_CPP:=			${SRCS_CPP} ${CLASSES_SRC_B}
 endif
 
-OBJS_CPP=			${SRCS_CPP:.cpp=.o}
+OBJS_CPP=			${SRCS_CPP:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
 
 NAME=				ircserv
 
@@ -64,9 +84,12 @@ ALL_LDFLAGS=		${LDFLAGS}
 
 NORM=				norminette ${NORMO}
 
-.PHONY:				all clean fclean re bonus libs_make libs_clean
+.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make
 
-all:				libs_make ${NAME}
+all:				libs_make obj_dir_make ${NAME}
+
+obj_dir_make:
+					- mkdir obj
 
 libs_make:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} bonus}
