@@ -4,30 +4,64 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
 
 int main(int argc, char **argv)
 {
-	char err_code[80];
-	char err_txt[80];
+	char buff[50];
+
 	if (argc != 2)
 	{
 		printf("One input file needed\n");
 		return (1);
 	}
-	FILE *fd_input = fopen(*(argv + 1), "r");
-	if (fd_input == NULL)
+	int fd_input = open(*(argv + 1), O_RDONLY);
+	if (fd_input == -1)
 	{
 		printf("Input file is not correct\n");
 		return (2);
 	}
-	FILE *fd_output = fopen("output.txt", "w+");
-	if (fd_output == NULL)
+	int fd_output = open("output.txt", O_WRONLY | O_CREAT, S_IRWXO );
+	if (fd_output == -1)
 	{
 		printf("Can't create output file\n");
-		return (2);
+		return (3);
 	}
-	while (fscanf(fd_input, " %s %s\n", err_code, err_txt) == 2) {
-		printf("%s %s\n", err_code, err_txt);
-		fprintf(fd_output, "#define %s %s\n", "1", "2");
+	int status = 0;
+	while ((status = read(fd_input, buff, 1)) != 0)
+	{
+		write (fd_output, "#define ", 8);
+		while ((status != 0 && buff[0] == ' '))
+		{
+			status = read(fd_input, buff, 1);
+		}
+		if (status == 0)
+			return (4);
+		char c;
+		int counter = 0;
+		while ((status = read(fd_input, &c, 1)) != 0 && c != ' ')
+		{
+			buff[++counter] = c;
+		}
+		if (status == 0)
+			return (5);
+		buff[counter + 1] = '\0';
+		printf ("%s\n", buff);
+		write (fd_output, buff, counter);
+		while ((status = read(fd_input, buff, 1)) != 0 && buff[0] == ' ')
+	{}
+		if (status == 0)
+			return (6);
+		counter = 0;
+		while ((status = read(fd_input, &c, 1)) != 0 && c != '\n')
+		{
+			buff[++counter] = c;
+		}
+		if (counter == 0 && status == 0)
+			return (7);
+		buff[counter + 1] = '\0';
+		write (fd_output, buff, counter);
+		write (fd_output, "\n", 1);
 	}
 }
