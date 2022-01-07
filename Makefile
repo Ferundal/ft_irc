@@ -18,6 +18,8 @@ SRC_DIR=			src
 
 OBJ_DIR=			obj
 
+IND_HEADERS=		error_answers.hpp
+
 #Classes's names should be placed here
 
 CLASSES=			Server
@@ -52,7 +54,7 @@ CLASS_HEADERS=		${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES}}}
 
 CLASS_HEADERS_B=	${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES_B}}}
 
-HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS}
+HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS} ${addprefix ${SRC_DIR}/, ${IND_HEADERS}}
 
 ifdef COMPILE_BONUS
 HEADERS:=			${HEADERS} ${CLASS_HEADERS_B}
@@ -88,7 +90,7 @@ NORM=				norminette ${NORMO}
 
 .PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make def_utils
 
-all:				libs_make obj_dir_make ${NAME}
+all:				obj_dir_make libs_make ${NAME}
 
 
 obj_dir_make:
