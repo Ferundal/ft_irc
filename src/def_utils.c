@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 		printf("Input file is not correct\n");
 		return (2);
 	}
-	int fd_output = open("output.txt", O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU|S_IRWXG|S_IRWXO);
-	if (fd_output == -1)
+	FILE *fd_output = fopen("output.txt", "w+");
+	if (fd_output == NULL)
 	{
 		printf("Can't create output file\n");
 		return (3);
@@ -62,10 +62,6 @@ int main(int argc, char **argv)
 		if (status == 0)
 			return (5);
 		err_txt[++counter] = '\0';
-		write (fd_output, "#define ", 8);
-		write (fd_output, err_txt, strlen(err_txt));
-		write (fd_output, " ", 1);
-		write (fd_output, err_code,  strlen(err_code));
-		write (fd_output, "\n", 1);
+		fprintf(fd_output, "#define %s %s\n", err_txt, err_code);
 	}
 }
