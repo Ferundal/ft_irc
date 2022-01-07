@@ -14,37 +14,39 @@ SHELL = /bin/sh		#for systems where SHELL variable can be inherited from environ
 
 .SUFFIXES:			#no suffix rules are used
 
-#Path to project libraries *.a files
-
-LIBS=
-
-#External libraries
-
-LIBS_EXT=
-
 SRC_DIR=			src
 
 OBJ_DIR=			obj
 
 #Classes's names should be placed here
 
-CLASSES=			Server \
+CLASSES=			Server
 
 CLASSES_B=
 
 #Independent .cpp files here
 
-CPP_FILES=			main.cpp \
+CPP_FILES=			main.cpp
 
 CPP_FILES_B=
 
-LIBS_DIR=			${dir ${LIBS}}
+#NO LIBS IN THIS PROJECT
 
-LIBS_INC_F=			-L ${dir ${LIBS}} -l${patsubst lib%.a, %, ${notdir ${LIBS}}}
+#Path to project libraries *.a files
 
-LIBS_INC=			${foreach LIBS, ${LIBS}, ${LIBS_INC_F}}
+LIBS=
 
-LIBS_HEADERS=		${patsubst %.a, %.h, ${LIBS}}
+#External libraries
+
+#LIBS_EXT=
+
+#LIBS_DIR=			${dir ${LIBS}}
+
+#LIBS_INC_F=			-L ${dir ${LIBS}} -l${patsubst lib%.a, %, ${notdir ${LIBS}}}
+
+#LIBS_INC=			${foreach LIBS, ${LIBS}, ${LIBS_INC_F}}
+
+#LIBS_HEADERS=		${patsubst %.a, %.h, ${LIBS}}
 
 CLASS_HEADERS=		${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES}}}
 
@@ -84,7 +86,7 @@ ALL_LDFLAGS=		${LDFLAGS}
 
 NORM=				norminette ${NORMO}
 
-.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make
+.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make def_utils
 
 all:				libs_make obj_dir_make ${NAME}
 
@@ -118,6 +120,9 @@ fclean:
 
 norm:		
 					${NORM} ${LIBS_DIR} *.c *.h
+
+def_utils:			src/def_utils.c
+					gcc src/def_utils.c -o def_utils
 
 re:					fclean all
 
