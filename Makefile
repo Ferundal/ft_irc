@@ -65,9 +65,11 @@ endif
 OBJS_CPP=			${SOURCES:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
 
 #Making variable with all directory when placed .hpp
-INC_HEADERS_FORMAT=	-I ${dir ${HEADERS}}
+INC_HEADERS_DIRS=	${sort ${dir ${HEADERS}}}
 
-INC_HEADERS_DIR=	${foreach HEADERS, ${HEADERS}, ${INC_HEADERS_FORMAT}}
+INC_HEADERS_FORMAT=	-I ${HEADER_DIR}
+
+INC_HEADERS_DIR=	${foreach HEADER_DIR, ${INC_HEADERS_DIRS}, ${INC_HEADERS_FORMAT}}
 
 
 
