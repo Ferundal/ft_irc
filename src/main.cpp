@@ -3,8 +3,10 @@
 //
 
 #include "Server.hpp"
+#include "Socket.hpp"
 
 int main() {
+	Socket socket1;
 
 	return (0);
 }

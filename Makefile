@@ -18,64 +18,58 @@ SRC_DIR=			src
 
 OBJ_DIR=			obj
 
+#Independent .hpp file here
+
 IND_HEADERS=		error_answers.hpp
 
-#Classes's names should be placed here
-
-CLASSES=			Server
-
-CLASSES_B=
+IND_HEADERS_BONUS=
 
 #Independent .cpp files here
 
 CPP_FILES=			main.cpp
 
-CPP_FILES_B=
+CPP_FILES_BONUS=
 
-#NO LIBS IN THIS PROJECT
+#Classes's names should be placed here
 
-#Path to project libraries *.a files
+CLASSES=			Server Socket
 
-LIBS=
+CLASSES_BONUS=
 
-#External libraries
-
-#LIBS_EXT=
-
-#LIBS_DIR=			${dir ${LIBS}}
-
-#LIBS_INC_F=			-L ${dir ${LIBS}} -l${patsubst lib%.a, %, ${notdir ${LIBS}}}
-
-#LIBS_INC=			${foreach LIBS, ${LIBS}, ${LIBS_INC_F}}
-
-#LIBS_HEADERS=		${patsubst %.a, %.h, ${LIBS}}
+#Class headers
 
 CLASS_HEADERS=		${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES}}}
 
-CLASS_HEADERS_B=	${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES_B}}}
+CLASS_HEADERS_BONUS=${addprefix ${SRC_DIR}/, ${addsuffix .hpp, ${CLASSES_BONUS}}}
+
+#Class sources
+
+CLASSES_SRC=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES}}}
+
+CLASSES_SRC_BONUS=	${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES_BONUS}}}
+
+#All .hpp and .cpp
 
 HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS} ${addprefix ${SRC_DIR}/, ${IND_HEADERS}}
 
 ifdef COMPILE_BONUS
-HEADERS:=			${HEADERS} ${CLASS_HEADERS_B}
+HEADERS:=			${HEADERS} ${CLASS_HEADERS_BONUS}
 endif
 
+SOURCES=			${CLASSES_SRC} \
+					${addprefix ${SRC_DIR}/, ${CPP_FILES}}
+ifdef COMPILE_BONUS
+SOURCES:=			${SOURCES} ${CLASSES_SRC_BONUS}
+endif
+
+OBJS_CPP=			${SOURCES:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
+
+#Making variable with all directory when placed .hpp
 INC_HEADERS_FORMAT=	-I ${dir ${HEADERS}}
 
 INC_HEADERS_DIR=	${foreach HEADERS, ${HEADERS}, ${INC_HEADERS_FORMAT}}
 
-CLASSES_SRC=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES}}}
 
-CLASSES_SRC_B=		${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES_B}}}
-
-SRCS_CPP=			${CLASSES_SRC} \
-					${addprefix ${SRC_DIR}/, ${CPP_FILES}}
-
-ifdef COMPILE_BONUS
-SRCS_CPP:=			${SRCS_CPP} ${CLASSES_SRC_B}
-endif
-
-OBJS_CPP=			${SRCS_CPP:${SRC_DIR}/%.cpp=${OBJ_DIR}/%.o}
 
 NAME=				ircserv
 
@@ -83,12 +77,12 @@ CC=					clang++
 RM=					rm -f
 LD=					ld
 
-ALL_CFLAGS=			-Wall -Wextra -Werror -std=c++98 ${INC_HEADERDIR} ${CFLAGS}
+ALL_CFLAGS=			-Wall -Wextra -Werror -std=c++98 ${CFLAGS}
 ALL_LDFLAGS=		${LDFLAGS}
 
 NORM=				norminette ${NORMO}
 
-.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make def_utils
+.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make
 
 all:				obj_dir_make libs_make ${NAME}
 
@@ -96,20 +90,15 @@ all:				obj_dir_make libs_make ${NAME}
 obj_dir_make:
 					mkdir -p obj
 
-libs_make:
-					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} bonus}
 
 ${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
 					${CC} ${ALL_CFLAGS} ${INC_HEADERS_DIR} -c ${<} -o ${@}
 
-${NAME}:			${OBJS_CPP} ${LIBS}
-					${CC} ${ALL_LDFLAGS} ${OBJS_CPP} ${LIBS_INC} ${LIBS_EXT} -o ${NAME}
+${NAME}:			${OBJS_CPP}
+					${CC} ${ALL_LDFLAGS} ${OBJS_CPP} -o ${NAME}
 
 bonus:
 					${MAKE} COMPILE_BONUS=1 all
-
-#$(INSTALL_PROGRAM)=	${TEST_NAME} $(DESTDIR)$(bindir)/foo	#where executeable shoud be placed
-#$(INSTALL_DATA)=	${NAME} $(DESTDIR)$(libdir)/libfoo.a		#where libs shoud be placed
 
 clean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} clean}
@@ -119,12 +108,6 @@ fclean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} fclean}
 					${RM} ${OBJS_CPP} ${OBJS_CPP_BONUS}
 					${RM} ${NAME}
-
-norm:		
-					${NORM} ${LIBS_DIR} *.c *.h
-
-def_utils:			src/def_utils.c
-					gcc src/def_utils.c -o def_utils
 
 re:					fclean all
 
