@@ -8,6 +8,7 @@
 Socket::Socket(int domain, int type, int protocol) throw (exception)
 {
 	if ((this->_socket_fd = socket(domain, type, protocol)) == -1) throw exception();
+	binding();
 }
 
 //char const * const Socket::getsockopt() throw (exception)
@@ -18,6 +19,7 @@ Socket::Socket(int domain, int type, int protocol) throw (exception)
 
 void Socket::binding(int family, size_t port, const char* ip)
 {
+	ip = "0.0.0.0";
 	bzero (&this->_socket_addr, sizeof (this->_socket_addr)); // Инициализировать структуру
 	this->_socket_addr.sin_family = family; // Установить семейство адресов
 	this->_socket_addr.sin_port = htons(port); // Установить порт

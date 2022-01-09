@@ -14,7 +14,7 @@
 #include <sys/poll.h>
 #include "exception"
 
-#define PORT	5001
+#define PORT	50001
 #define IP		"192.168.1.25"
 
 using namespace std;

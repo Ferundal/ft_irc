@@ -25,10 +25,9 @@ void Server::listening()
 
 
 	pfd.fd = this->_stream_socket.getsocketfd();
-	pfd.events = POLLIN | POLLHUP | POLLERR;
-
+	pfd.events = POLLIN;
 	poll(&pfd, 1, -1);
-	if (pfd.revents == POLLIN)
+	if ((pfd.revents & POLLIN) == POLLIN)
 	{
 		new_socket_fd = accept(this->_stream_socket.getsocketfd(), &connected_socked, &socket_len);
 		read(new_socket_fd, buf, 10);
