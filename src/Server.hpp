@@ -15,6 +15,8 @@ using namespace std;
 class Server {
 public:
 	Server();
+	void listening();
+
 private:
 	Socket _stream_socket;
 };
