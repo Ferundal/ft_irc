@@ -6,7 +6,12 @@
 #include "Socket.hpp"
 
 int main() {
-	Socket socket1;
-
+	try {
+		Server sv;
+	}
+	catch (exception e)
+	{
+		e.what();
+	}
 	return (0);
 }
