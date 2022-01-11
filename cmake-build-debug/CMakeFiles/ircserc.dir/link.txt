@@ -1,1 +1,0 @@
-/usr/bin/clang++  -g   CMakeFiles/ircserc.dir/src/ClientSocket.cpp.o CMakeFiles/ircserc.dir/src/ConnectSocket.cpp.o CMakeFiles/ircserc.dir/src/Server.cpp.o CMakeFiles/ircserc.dir/src/main.cpp.o  -o ircserc 

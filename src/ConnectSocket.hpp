@@ -2,8 +2,8 @@
 // Created by Radicchio Sarah on 08.01.2022.
 //
 
-#ifndef IRCSERC_SOCKET_HPP
-#define IRCSERC_SOCKET_HPP
+#ifndef IRCSERC_CONNECTSOCKET_HPP
+#define IRCSERC_CONNECTSOCKET_HPP
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -15,25 +15,24 @@
 #include "exception"
 
 #define PORT	50001
-#define IP		"192.168.1.25"
+#define IP		"0.0.0.0"
 
 using namespace std;
 
 
-class Socket
+class ConnectSocket
 {
 public:
-	explicit Socket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
+	explicit ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
 //	char const * const		getsockopt() throw (exception);
-	int getsocketfd();
+	virtual int getfd() const;
 	void binding(int family=AF_INET, size_t port=PORT, const char* ip=IP);
 
-	~Socket();
-
+	~ConnectSocket();
 private:
-	int			_socket_fd;
-	sockaddr_in	_socket_addr;
+	int			_fd;
+	sockaddr_in	_addr;
 };
 
 
-#endif //IRCSERC_SOCKET_HPP
+#endif //IRCSERC_CONNECTSOCKET_HPP

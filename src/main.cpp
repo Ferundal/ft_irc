@@ -3,14 +3,17 @@
 //
 
 #include "Server.hpp"
-#include "Socket.hpp"
+#include "ConnectSocket.hpp"
 
 int main() {
 	try {
 		Server sv;
-		sv.listening();
+		while (true)
+		{
+			sv.listening();
+		}
 	}
-	catch (exception e)
+	catch (const exception& e)
 	{
 		e.what();
 	}
