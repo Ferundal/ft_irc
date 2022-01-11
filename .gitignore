@@ -1,3 +1,5 @@
 ircserv
-obj/*.o
+obj/
 def_utils
+cmake-build-debug/
+CMakeLists.txt

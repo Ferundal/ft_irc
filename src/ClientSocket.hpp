@@ -6,6 +6,7 @@
 #define IRCSERC_CLIENTSOCKET_HPP
 
 #include <netinet/in.h>
+#include <unistd.h>
 
 
 struct ClientSocket
@@ -13,6 +14,8 @@ struct ClientSocket
 	int			_fd;
 	sockaddr_in	_addr;
 	socklen_t	_len;
+
+	~ClientSocket();
 };
 
 

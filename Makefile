@@ -32,7 +32,7 @@ CPP_FILES_BONUS=
 
 #Classes's names should be placed here
 
-CLASSES=			Server Socket
+CLASSES=			ConnectSocket ClientSocket Server
 
 CLASSES_BONUS=
 

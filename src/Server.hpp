@@ -30,5 +30,4 @@ private:
 	char* _msg_buf[1000];
 };
 
-
 #endif //FT_IRC_SERVER_HPP
