@@ -22,7 +22,7 @@ class Parser {
 		Parser  &operator = ( const Parser &other );
 
         // External func's
-        void    stringParser ( std::string str );
+        void    stringParser ( std::string &str );
         int     checkCommand ( std::string command );
 
         // void    testList ();

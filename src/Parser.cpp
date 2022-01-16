@@ -92,14 +92,14 @@ int     Parser::checkCommand ( std::string str ) {
     return 1;
 }
 
-void    Parser::stringParser ( std::string str ) {
+void    Parser::stringParser ( std::string& str ) {
 
     // std::cout << str.find("\n") << std::endl;
 
     if (checkCommand(str) != 0 || str == "\n") {
         std::cout << "ERROR: INVALID COMMAND" << std::endl;
     } else {
-        // std::cout << "RESULT: OK" << std::endl;
+        std::cout << "RESULT: VALID COMMAND" << std::endl;
     }
 }
 

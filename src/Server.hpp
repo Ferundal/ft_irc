@@ -13,27 +13,31 @@
 #include "vector"
 #include "Parser.hpp"
 
+#include "fstream"
+#include "iostream"
+#include "algorithm"
+#include "errno.h"
 
-#define CNNCT_MAX 1050
+#define MAX_CONNECT_CROWD 10
 
 using namespace std;
 
 class Server {
 public:
-	explicit	Server ( int n_connect = 5 ) ;
-	void		listening ();
-	void		communication ();
+	explicit Server(int n_connect=MAX_CONNECT_CROWD);
+	void listening();
+	void communication();
 
 	~Server();
 private:
-	ConnectSocket			_cnct_socket;
-	vector<ClientSocket>	_clnt_sockets;
-	vector<pollfd>			_pfd;
-	char					*_msg_buf[1000];
-	Parser					_parser;
+	bool chekMsgEnding(string& str);
+	vector<ClientSocket>::iterator findSocketIter(int fd);
 
 
-
+	ConnectSocket _cnct_socket;
+	vector<ClientSocket> _clnt_sockets;
+	vector<pollfd> _pfd;
+	Parser _parser;
 };
 
 #endif //FT_IRC_SERVER_HPP
