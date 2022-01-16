@@ -3,6 +3,7 @@
 //
 
 #include "Server.hpp"
+#include "iostream"
 
 int main() {
 	try {
@@ -14,7 +15,7 @@ int main() {
 	}
 	catch (const exception& e)
 	{
-		e.what();
+		std::cout << e.what() << std::endl;
 	}
 	return (0);
 }

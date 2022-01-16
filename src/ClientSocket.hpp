@@ -7,14 +7,20 @@
 
 #include <netinet/in.h>
 #include <unistd.h>
+#include "string"
 
+#define MSG_BUFF 1024
+
+using namespace std;
 
 struct ClientSocket
 {
 	int			_fd;
 	sockaddr_in	_addr;
 	socklen_t	_len;
+	string		_msg_buff;
 
+	ClientSocket();
 	~ClientSocket();
 };
 

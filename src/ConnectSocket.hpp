@@ -23,6 +23,9 @@ using namespace std;
 class ConnectSocket
 {
 public:
+	/*
+	 * protocol=0 - по умолчанию - в соответствии с domain
+	 */
 	explicit ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
 //	char const * const		getsockopt() throw (exception);
 	virtual int getfd() const;
