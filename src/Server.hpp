@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "vector"
+#include "Parser.hpp"
+
 
 #define CNNCT_MAX 1050
 
@@ -18,16 +20,20 @@ using namespace std;
 
 class Server {
 public:
-	explicit Server(int n_connect=5);
-	void listening();
-	void communication();
+	explicit	Server ( int n_connect = 5 ) ;
+	void		listening ();
+	void		communication ();
 
 	~Server();
 private:
-	ConnectSocket _cnct_socket;
-	vector<ClientSocket> _clnt_sockets;
-	vector<pollfd> _pfd;
-	char* _msg_buf[1000];
+	ConnectSocket			_cnct_socket;
+	vector<ClientSocket>	_clnt_sockets;
+	vector<pollfd>			_pfd;
+	char					*_msg_buf[1000];
+	Parser					_parser;
+
+
+
 };
 
 #endif //FT_IRC_SERVER_HPP

@@ -51,13 +51,12 @@ void Server::listening()
 			//Пользователь на сокете ждет ответ
 			int r_len;
 
-			r_len = read(it->fd, _msg_buf, 1000);
-			write(1, _msg_buf, r_len);
-			write(it->fd, "OK", 2);
+			r_len = read( it->fd, _msg_buf, 1000 );
+			this->_parser.stringParser((char *)_msg_buf);
+			write( 1, _msg_buf, r_len );
+			// write( it->fd, "OK", 2 );
 		}
 	}
 }
 
-Server::~Server()
-{
-}
+Server::~Server() {}
