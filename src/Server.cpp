@@ -69,10 +69,10 @@ void Server::listening()
 			}
 			if (sckt._msg_buff.find("\r\n") != string::npos)
 			{
-//				this->_parser.stringParser(sckt._msg_buff);
-//				write(1, "####################\n", 21); //DEBUGGING
-//				write(1, sckt._msg_buff.data(), sckt._msg_buff.size()); //DEBUGGING
-//				sckt._msg_buff.clear(); //DEBUGGING
+				cout << "###########" << endl;
+				this->_parser.stringParser(sckt._msg_buff);
+				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
+				sckt._msg_buff.clear(); //DEBUGGING
 //				write(1, "\nCleaned\n", 9); //DEBUGGING
 //				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
 //				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
