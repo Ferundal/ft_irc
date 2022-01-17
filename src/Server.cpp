@@ -39,62 +39,79 @@ void Server::listening()
 {
 	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
 	if (_pfd[0].revents & POLLIN)
-	{
 		// Новый пользователь
-		_clnt_sockets.push_back(ClientSocket());
-		_clnt_sockets.back()._fd = accept(_cnct_socket.getfd(), (sockaddr*)&_clnt_sockets.back()._addr, &_clnt_sockets.back()._len);
-		_pfd.push_back(pollfd());
-		bzero(&_pfd.back(), sizeof (_pfd.back()));
-		_pfd.back().fd = _clnt_sockets.back()._fd;
-		_pfd.back().events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
-		_pfd[0].revents = 0;
-		if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
-	}
+		addNewClientSocket();
+	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
 	for(vector<pollfd>::iterator it = ++_pfd.begin(); it < _pfd.end(); ++it)
 	{
 		if(it->revents & POLLHUP)
 		{
-			// terminate();
-			this->_clnt_sockets.erase(findSocketIter(it->fd));
-			this->_pfd.erase(it);
+			//Пользователь отсоединился
+			deleteClientSocket(it);
 			return;
 		}
 		else if(it->revents & POLLIN )
 		{
+
 			//Пользователь на сокете ждет ответ
 			int r_len;
+			char r_buf[3] = {0,};
 			ClientSocket& sckt = *findSocketIter(it->fd);
 
-			if ((r_len = recv(it->fd, const_cast<char*>( sckt._msg_buff.data()), 1024, 0)) == 0)
+			while (true)
 			{
-				for(int i = 0; i < 5; ++i) // Пиздец
-				{
-					send(it->fd, (char[1]){0}, 1, MSG_NOSIGNAL);
-					if (errno & EPIPE)
-					{
-						this->_clnt_sockets.erase(findSocketIter(it->fd));
-						this->_pfd.erase(it);
-						errno = 0;
-						return;
-					}
-				}
+				r_len = recv(it->fd, &r_buf, 1, 0);
+				if (r_len == 0)// && checkDisconnect(it))
+					break;
+				sckt._msg_buff.append(r_buf);
+				if (sckt._msg_buff.find("\r\n") != string::npos)
+					break;
+			}
+			if (sckt._msg_buff.find("\r\n") != string::npos)
+			{
+//				this->_parser.stringParser(sckt._msg_buff);
+//				write(1, "####################\n", 21); //DEBUGGING
+//				write(1, sckt._msg_buff.data(), sckt._msg_buff.size()); //DEBUGGING
+//				sckt._msg_buff.clear(); //DEBUGGING
+//				write(1, "\nCleaned\n", 9); //DEBUGGING
+//				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
+//				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
 			}
 			it->revents = 0;
-//			write(1, (char[]){it->fd + 48, '\n'}, 2);
-//			write(1, sckt._msg_buff.c_str(), r_len);
-
-//			if (chekMsgEnding(sckt._msg_buff))
-			this->_parser.stringParser(sckt._msg_buff);
-			send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
 		}
 	}
 }
 
-bool Server::chekMsgEnding(string& str)
+bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
 {
-	if (str.find("\r\n") == str.rfind("\r\n"))
-		return true;
+	for(int i = 0; i < 5; ++i) // Пиздец
+	{
+		send(it->fd, (char[1]){0}, 1, MSG_NOSIGNAL);
+		if (errno & EPIPE)
+		{
+			errno = 0;
+			return true;
+		}
+	}
 	return false;
+}
+
+void	Server::addNewClientSocket()
+{
+	_clnt_sockets.push_back(ClientSocket());
+	_clnt_sockets.back()._fd = accept(_cnct_socket.getfd(), (sockaddr*)&_clnt_sockets.back()._addr, &_clnt_sockets.back()._len);
+	_pfd.push_back(pollfd());
+	bzero(&_pfd.back(), sizeof (_pfd.back()));
+	_pfd.back().fd = _clnt_sockets.back()._fd;
+	_pfd.back().events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
+	_pfd[0].revents = 0;
+
+}
+
+void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
+{
+	this->_clnt_sockets.erase(findSocketIter(it->fd));
+	this->_pfd.erase(it);
 }
 
 vector<ClientSocket>::iterator Server::findSocketIter(int fd)

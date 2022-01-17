@@ -30,7 +30,9 @@ public:
 
 	~Server();
 private:
-	bool chekMsgEnding(string& str);
+	void 	deleteClientSocket(vector<pollfd>::iterator& it);
+	bool	checkDisconnect(vector<pollfd>::iterator& it);
+	void	addNewClientSocket();
 	vector<ClientSocket>::iterator findSocketIter(int fd);
 
 
