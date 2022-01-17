@@ -76,31 +76,89 @@ Parser  &Parser::operator = ( const Parser &other ) {
  */
 
 
-int     Parser::checkCommand ( std::string str ) {
+std::string Parser::returnCommand ( std::string &str ) {
     std::string command;
     int         pos;
 
     pos = str.find(' ');
     if (pos < 0)
-        command = str;
+        return (str);
     else
-        command = str.substr(0, pos);
+        return (str.substr(0, pos));
+}
 
+int         Parser::checkCommand ( std::string &str ) {
+    std::string command;
+
+    command = returnCommand(str);
     for (int i = 0; i < COMMAND_COUNT; ++i)
-        if (this->_commandList[i] == command) 
+        if (this->_commandList[i] == command) {
             return 0;
+        }
     return 1;
 }
 
-void    Parser::stringParser ( std::string& str ) {
+int          Parser::countParam ( std::string &str ) {
+    int     slovo, count = 0;
+    int     i = 0;
+    while (str[i] == ' ' && str[i] != '\0')
+        i++;
+    slovo = 0;
+    while (str[i] != '\0') {
+        if (str[i] != ' ' && slovo == 0) {
+            slovo = 1;
+            count++;
+        } else if (str[i] == ' ')
+            slovo = 0;
+        i++;
+    }
+    std::cout << "COUT: " << count << std::endl;
+    return count;
+}
 
-    // std::cout << str.find("\n") << std::endl;
+// USER archie * 127.0.0.1 :purple
 
-    if (checkCommand(str) != 0 || str == "\n") {
+void         Parser::checkUSERparam ( std::string &str ) {
+    if (countParam(str) != 5) {
+        std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
+    } else {
+        std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
+    }
+
+}
+
+void         Parser::checkNICKparam ( std::string &str ) {
+    if (countParam(str) > 1 && countParam(str) <= 3) {
+        std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
+    } else {
+        std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
+    }
+
+}
+
+
+void        Parser::stringParser ( std::string &str ) {
+
+    if (checkCommand(str) != 0) {
         std::cout << "ERROR: INVALID COMMAND" << std::endl;
+        // std::cout << "" << std::endl;
     } else {
         std::cout << "RESULT: VALID COMMAND" << std::endl;
+        // std::cout << "" << std::endl;
     }
+
+
+
+    if (returnCommand(str) == "USER") {
+        checkUSERparam(str);
+    } else if (returnCommand(str) == "NICK") {
+        checkNICKparam(str);
+    }
+
+
+
 }
+
+
 
 
