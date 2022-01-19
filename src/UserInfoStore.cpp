@@ -10,9 +10,9 @@ UserInfoStore::~UserInfoStore() {}
 
 User &UserInfoStore::CreateNewUser() {
 	_users_store.push_back(User());
-	vector<User>::iterator _curr = --_users_store.end();
-	_curr->_user_store = this;
-	return (*_curr);
+	User& usr = _users_store.back();
+	usr._user_store = this;
+	return (usr);
 }
 
 User *UserInfoStore::FindUserByNick(string _searching_nick) {
