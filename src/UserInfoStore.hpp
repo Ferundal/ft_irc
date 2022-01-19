@@ -15,14 +15,20 @@ class User;
 class Channel;
 
 class UserInfoStore {
-public:
+	friend class User;
+	friend class Channel;
+private:
 	vector<User> _users_store;
 	vector<User *> _connected_users;
 	vector<Channel> _active_channels;
+private:
+
 public:
 	UserInfoStore();
 	~UserInfoStore();
 	User &CreateNewUser(string _nick, int _fd);
+	User *FindUserByNick(string _searching_nick);
+	Channel *FindChannelByName(string _searching_channel_name);
 };
 
 

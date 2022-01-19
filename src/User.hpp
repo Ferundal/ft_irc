@@ -6,6 +6,7 @@
 #define FT_IRC_USER_HPP
 #include <string>
 #include <vector>
+#include <exception>
 #include "Channel.hpp"
 #include "UserInfoStore.hpp"
 
@@ -26,8 +27,11 @@ private:
 private:
 	User(int _new_user_fd);
 public:
-	void SetActive(void);
-	LeaveChannel(string _channal_name);
+	int SetNick(string _new_nick);
+	int SetUserInfo(string _mew_real_name);
+	int SetActive(void)n;
+	int JoinChannel(string _channel_name);
+	int LeaveChannel(string _channel_name);
 };
 
 
