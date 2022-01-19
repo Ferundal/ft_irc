@@ -16,7 +16,7 @@ int User::SetNick(string _new_nick) {
 
 int User::SetUserInfo(string _new_real_name) {
 	this->_real_name = _new_real_name;
-	return (0)
+	return (0);
 }
 
 int User::SetActive() {
