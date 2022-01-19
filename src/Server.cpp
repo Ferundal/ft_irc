@@ -101,7 +101,7 @@ bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
 void	Server::addNewClientSocket()
 {
 	_clnt_sockets.push_back(ClientSocket());
-	_clnt_sockets.back()._usr_ptr = this->_user_bd.CreateNewUser();
+	_clnt_sockets.back()._usr_ptr = &this->_user_bd.CreateNewUser();
 	_clnt_sockets.back()._fd = accept(_cnct_socket.getfd(), (sockaddr*)&_clnt_sockets.back()._addr, &_clnt_sockets.back()._len);
 	_pfd.push_back(pollfd());
 	bzero(&_pfd.back(), sizeof (_pfd.back()));

@@ -20,7 +20,7 @@ struct ClientSocket
 	sockaddr_in	_addr;
 	socklen_t	_len;
 	string		_msg_buff;
-	User&		_usr_ptr;
+	User*		_usr_ptr;
 
 	ClientSocket();
 	~ClientSocket();
