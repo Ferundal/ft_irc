@@ -17,6 +17,7 @@
 #include "iostream"
 #include "algorithm"
 #include "errno.h"
+#include "UserInfoStore.hpp"
 
 #define MAX_CONNECT_CROWD 10
 
@@ -39,6 +40,7 @@ private:
 	ConnectSocket _cnct_socket;
 	vector<ClientSocket> _clnt_sockets;
 	vector<pollfd> _pfd;
+	UserInfoStore _user_bd;
 	Parser _parser;
 };
 

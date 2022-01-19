@@ -54,8 +54,8 @@ void Server::listening()
 		{
 
 			//Пользователь на сокете ждет ответ
-			int r_len;
-			char r_buf[3] = {0,};
+			int		r_len;
+			char	r_buf;
 			ClientSocket& sckt = *findSocketIter(it->fd);
 
 			while (true)
@@ -63,19 +63,20 @@ void Server::listening()
 				r_len = recv(it->fd, &r_buf, 1, 0);
 				if (r_len == 0)// && checkDisconnect(it))
 					break;
-				sckt._msg_buff.append(r_buf);
+				sckt._msg_buff.append(&r_buf);
 				if (sckt._msg_buff.find("\r\n") != string::npos)
 					break;
 			}
 			if (sckt._msg_buff.find("\r\n") != string::npos)
 			{
-				cout << "###########" << endl;
+//				cout << "###########" << endl;
+				sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
 				this->_parser.stringParser(sckt._msg_buff);
-				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
-				sckt._msg_buff.clear(); //DEBUGGING
-//				write(1, "\nCleaned\n", 9); //DEBUGGING
-//				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
-//				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
+//				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
+//				sckt._msg_buff.clear(); //DEBUGGING
+				//				write(1, "\nCleaned\n", 9); //DEBUGGING
+				//				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
+				//				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
 			}
 			it->revents = 0;
 		}
@@ -89,6 +90,7 @@ bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
 		send(it->fd, (char[1]){0}, 1, MSG_NOSIGNAL);
 		if (errno & EPIPE)
 		{
+			deleteClientSocket(it);
 			errno = 0;
 			return true;
 		}
@@ -99,6 +101,7 @@ bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
 void	Server::addNewClientSocket()
 {
 	_clnt_sockets.push_back(ClientSocket());
+	_clnt_sockets.back()._usr_ptr = this->_user_bd.CreateNewUser();
 	_clnt_sockets.back()._fd = accept(_cnct_socket.getfd(), (sockaddr*)&_clnt_sockets.back()._addr, &_clnt_sockets.back()._len);
 	_pfd.push_back(pollfd());
 	bzero(&_pfd.back(), sizeof (_pfd.back()));
