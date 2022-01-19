@@ -29,7 +29,7 @@ private:
 public:
 	int SetNick(string _new_nick);
 	int SetUserInfo(string _mew_real_name);
-	int SetActive(void)n;
+	int SetActive(void);
 	int JoinChannel(string _channel_name);
 	int LeaveChannel(string _channel_name);
 };
