@@ -6,12 +6,14 @@
 
 Channel::Channel() {}
 
+// FIX
+
 Channel::~Channel() {
 	vector<User *>::iterator _begin = _user_store.begin();
 	vector<User *>::iterator _curr = _user_store.end() ;
 	while (_curr != _begin) {
 		--_curr;
-		(*_curr)->LeaveChannel(*this);
+		(*_curr)->LeaveChannel(this->_channel_name);
 	}
 }
 
