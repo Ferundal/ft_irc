@@ -37,10 +37,11 @@ int User::LeaveChannel(string _channel_name) {
 	vector<Channel *>::iterator _end = _membership.end();
 	while (_curr_channel_ptr != _end) {
 		if((*_curr_channel_ptr)->_channel_name == _channel_name) {
-
+			return (0);
 		}
 		++_curr_channel_ptr;
 	}
+	return (1);
 }
 
 
