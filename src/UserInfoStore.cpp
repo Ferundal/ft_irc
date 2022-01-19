@@ -8,8 +8,8 @@ UserInfoStore::UserInfoStore() {}
 
 UserInfoStore::~UserInfoStore() {}
 
-User &UserInfoStore::CreateNewUser(string _nick, int _fd) {
-	_users_store.push_back(User(_fd));
+User &UserInfoStore::CreateNewUser() {
+	_users_store.push_back(User());
 	vector<User>::iterator _curr = --_users_store.end();
 	_curr->_user_store = this;
 	return (*_curr);

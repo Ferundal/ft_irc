@@ -25,7 +25,7 @@ private:
 	UserInfoStore		*_user_store;
 	vector<Channel *>	_membership;
 private:
-	User(int _new_user_fd);
+	User();
 public:
 	int SetNick(string _new_nick);
 	int SetUserInfo(string _mew_real_name);

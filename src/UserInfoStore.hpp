@@ -26,7 +26,7 @@ private:
 public:
 	UserInfoStore();
 	~UserInfoStore();
-	User &CreateNewUser(string _nick, int _fd);
+	User &CreateNewUser();
 	User *FindUserByNick(string _searching_nick);
 	Channel *FindChannelByName(string _searching_channel_name);
 };

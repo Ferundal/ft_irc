@@ -4,7 +4,7 @@
 
 #include "User.hpp"
 
-User::User(int _new_user_fd) : _fd(_new_user_fd) {}
+User::User() {}
 
 int User::SetNick(string _new_nick) {
 	if (_user_store->FindUserByNick(_new_nick) != NULL) {
