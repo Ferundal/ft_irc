@@ -69,13 +69,6 @@ Parser  &Parser::operator = ( const Parser &other ) {
 }
 
 
-/**
- *                       !!! __FOR_VOVA__ !!! 
- *
- * Algorithm doesn't work with (symbol) '\n' on the end of the string 
- */
-
-
 std::string Parser::returnCommand ( std::string &str ) {
     std::string command;
     int         pos;
@@ -87,16 +80,16 @@ std::string Parser::returnCommand ( std::string &str ) {
         return (str.substr(0, pos));
 }
 
-int         Parser::checkCommand ( std::string &str ) {
-    std::string command;
+// int         Parser::checkCommand ( std::string &str ) {
+//     std::string command;
 
-    command = returnCommand(str);
-    for (int i = 0; i < COMMAND_COUNT; ++i)
-        if (this->_commandList[i] == command) {
-            return 0;
-        }
-    return 1;
-}
+//     command = returnCommand(str);
+//     for (int i = 0; i < COMMAND_COUNT; ++i)
+//         if (this->_commandList[i] == command) {
+//             return 0;
+//         }
+//     return 1;
+// }
 
 int          Parser::countParam ( std::string &str ) {
     int     slovo, count = 0;
@@ -116,49 +109,60 @@ int          Parser::countParam ( std::string &str ) {
     return count;
 }
 
-// USER archie * 127.0.0.1 :purple
+std::vector<std::string> Parser::mySplit ( std::string &str ) {
 
-void         Parser::checkUSERparam ( std::string &str ) {
-    if (countParam(str) != 5) {
-        std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
-    } else {
-        std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
+    size_t      i = 0;
+    size_t      countP = countParam(str);
+    std::vector<std::string> commandArr(countP);
+
+    while (i < countP) {
+        commandArr[i] = str.substr(0, str.find(" "));
+        str.erase(0, str.find(" ") + 1);
+        ++i;
     }
 
+    return commandArr;
 }
 
-void         Parser::checkNICKparam ( std::string &str ) {
-    if (countParam(str) > 1 && countParam(str) <= 3) {
-        std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
-    } else {
-        std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
-    }
+
+
+void         Parser::checkUSERparam ( std::string &str ) {
+    // if (countParam(str) != 5) {
+    //     // std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
+    // } else {
+    //     // std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
+    //     return;
+    // }
+
+//----------IMPORTANT--------------
+
+    // if (checkUniqNickName(nickName) != OK) {
+    // }
+
+    // mySplit(str);
+
+
+    // std::vector<std::string> commandArr = mySplit(str);
+    // str = "001    RPL_WELCOME Welcome to the Internet Relay Network  " + commandArr[1] + "!" + commandArr[4] + "@" + commandArr[3];
+    // std::cout << str << std::endl;
+
 
 }
 
 
 void        Parser::stringParser ( std::string &str ) {
 
-    if (checkCommand(str) != 0) {
-        std::cout << "ERROR: INVALID COMMAND" << std::endl;
-        // std::cout << "" << std::endl;
-    } else {
-        std::cout << "RESULT: VALID COMMAND" << std::endl;
-        // std::cout << "" << std::endl;
-    }
-
+    std::cout <<  ">>>"  << str <<  "<<<"  << std::endl;
 
 
     if (returnCommand(str) == "USER") {
         checkUSERparam(str);
-    } else if (returnCommand(str) == "NICK") {
-        checkNICKparam(str);
     }
 
 
 
-}
 
+}
 
 
 

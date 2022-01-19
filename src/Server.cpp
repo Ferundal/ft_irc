@@ -69,9 +69,10 @@ void Server::listening()
 			}
 			if (sckt._msg_buff.find("\r\n") != string::npos)
 			{
-				cout << "###########" << endl;
+				// cout << "###########" << endl;
+				sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
 				this->_parser.stringParser(sckt._msg_buff);
-				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
+				// cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
 				sckt._msg_buff.clear(); //DEBUGGING
 //				write(1, "\nCleaned\n", 9); //DEBUGGING
 //				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
