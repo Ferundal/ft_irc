@@ -14,12 +14,14 @@ int User::SetNick(string _new_nick) {
 	return (0);
 }
 
-int User::SetUserInfo(string _mew_real_name) {
-	this->_real_name = _mew_real_name;
+int User::SetUserInfo(string _new_real_name) {
+	this->_real_name = _new_real_name;
+	return (0)
 }
 
 int User::SetActive() {
 	_user_store->_connected_users.push_back(this);
+	return (0);
 }
 
 int User::JoinChannel(string _channel_name) {
@@ -37,7 +39,7 @@ int User::LeaveChannel(string _channel_name) {
 		if((*_curr_channel_ptr)->_channel_name == _channel_name) {
 
 		}
-		++_curr_channel;
+		++_curr_channel_ptr;
 	}
 }
 
