@@ -19,7 +19,7 @@
 #include "errno.h"
 #include "UserInfoStore.hpp"
 
-#define MAX_CONNECT_CROWD 10
+#define MAX_CONNECT_CROWD 10000
 
 using namespace std;
 

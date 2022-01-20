@@ -8,7 +8,7 @@
 ConnectSocket::ConnectSocket(int domain, int type, int protocol) throw (exception)
 {
 	if ((this->_fd = socket(domain, type, protocol)) == -1) throw exception();
-//	if ((setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, (int[]){1}, sizeof(int))) == -1) throw exception();
+	if ((setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, (int[]){true}, sizeof(int))) == -1) throw exception();
 	binding(); // TODO Возможно стоит поместить в Server
 }
 
