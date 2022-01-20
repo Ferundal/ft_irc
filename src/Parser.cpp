@@ -131,6 +131,8 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     bool                        isActive;
     bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
+    std::string                 answer;
+
 
     paramList = mySplit(str._msg_buff);
 
@@ -143,7 +145,16 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
         if (isSetUserInfo == false) {
             ;// std::cout << "|INFO| [User successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                str._msg_buff = "375     RPL_MOTDSTART";
+                // str._msg_buff = "375     RPL_MOTDSTART";
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                std::cout << "Answer " << answer << std::endl;
+                send(str._fd, answer.data(), answer.size(), 0);
+                str._msg_buff.clear(); 
             }
             else
             {
@@ -165,6 +176,7 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
     bool                        isActive;
     bool                        isSetNickInfo;
     std::vector<std::string>    paramList;
+    std::string                  answer;
 
     paramList = mySplit(str._msg_buff);
 
@@ -177,10 +189,18 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                str._msg_buff = 
-                ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
-				":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
-				":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                std::cout << answer << std::endl;
+                send(str._fd, answer.data(), answer.size(), 0);
+                str._msg_buff.clear(); 
+                // ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
+				// ":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
+				// ":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
                 //"001 RPL_WELCOME Welcome to the Internet Relay Network archi_pes!:purple@127.0.0.1";
             }
             else
@@ -201,6 +221,7 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
 
 void    Parser::stringParser ( ClientSocket &str ) {
 
+    std::cout << str._msg_buff << std::endl;
     //  Checking command in pull
     bool result;
 
@@ -218,9 +239,10 @@ void    Parser::stringParser ( ClientSocket &str ) {
         workWithUSER (str);
     } else if (command == "NICK") {
         workWithNICK (str);   
-    }
+    } 
 
-    // str._msg_buff.clear();
+
+    str._msg_buff.clear();
 }
 
 
