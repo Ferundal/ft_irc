@@ -128,25 +128,76 @@ std::vector<std::string> Parser::mySplit ( std::string &str ) {
 
 void         Parser::workWithUSER ( ClientSocket &str ) {
 //  Checking repeat NICK and USER in DB
-    bool                        isSetActive;
+    bool                        isActive;
     bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
 
     paramList = mySplit(str._msg_buff);
 
 
-    isSetActive = str._usr_ptr->SetActive();
-    std::cout << "|INFO| isSetActive: " << isSetActive << std::endl;
-    if (isSetActive == false) {
+    isActive = str._usr_ptr->IsActive();
+    std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
+    if (isActive == false) {
         isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        std::cout << "|INFO| isSetUserInfo: " << isSetUserInfo << std::endl;
-    } else {
-        std::cout << "|INFO| User is already active." << std::endl;
-    }
-//
+        std::cout << "|INFO| isSetUserInfo: [" << isSetUserInfo << "]" << std::endl;
+        if (isSetUserInfo == false) {
+            std::cout << "|INFO| [User successfuly added]" << std::endl;
+            if (str._usr_ptr->SetActive() == 0) {
+                str._msg_buff = "375     RPL_MOTDSTART";
+            }
+            else
+            {
+                str._msg_buff.clear();
+            }
+            // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
+        }
+        else
+            std::cout << "|INFO| [User is not added]" << std::endl;
 
+    } else {
+        std::cout << "|INFO| [User is already active]" << std::endl;
+    }
 }
 
+
+void        Parser::workWithNICK ( ClientSocket &str ) {
+    //  Checking repeat NICK and USER in DB
+    bool                        isActive;
+    bool                        isSetNickInfo;
+    std::vector<std::string>    paramList;
+
+    paramList = mySplit(str._msg_buff);
+
+
+    isActive = str._usr_ptr->IsActive();
+    std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
+    if (isActive == false) {
+        isSetNickInfo = str._usr_ptr->SetNick(paramList[1]);
+        std::cout << "|INFO| isSetNickInfo: [" << isSetNickInfo << "]" << std::endl;
+        if (isSetNickInfo == false) {
+            std::cout << "|INFO| [Nick successfuly added]" << std::endl;
+            if (str._usr_ptr->SetActive() == 0) {
+                str._msg_buff = 
+                ":127.0.0.1 375 :- 127.0.0.1 Message of the day - \n\r\n"
+                ":127.0.0.1 372 :- HuiHuiHui\n\r\n"
+                ":127.0.0.1 376 :End of /MOTD command\n\r\n";
+                //"001 RPL_WELCOME Welcome to the Internet Relay Network archi_pes!:purple@127.0.0.1";
+            }
+            else
+            {
+                str._msg_buff.clear();
+            }
+            // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
+        }
+        else
+            std::cout << "|INFO| [Nick is not added]" << std::endl;
+
+    } else {
+        std::cout << "|INFO| [Nick is already active]" << std::endl;
+    }
+
+
+}
 
 // void        Parser::stringParser ( ClientSocket &socket ) {
 
@@ -226,20 +277,11 @@ void    Parser::stringParser ( ClientSocket &str ) {
 
     if (command == "USER") {
         workWithUSER (str);
+    } else if (command == "NICK") {
+        workWithNICK (str);   
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    str._msg_buff.clear();
+    // str._msg_buff.clear();
 }
 
 

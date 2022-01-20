@@ -73,9 +73,12 @@ void Server::listening()
 				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
 				sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
 				this->_parser.stringParser(sckt);
-//				sckt._msg_buff.clear(); //DEBUGGING
-				//				write(1, "\nCleaned\n", 9); //DEBUGGING
-				//				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
+				// sckt._msg_buff.clear(); //DEBUGGING
+				if (sckt._msg_buff.size() != 0)
+				{
+					cout  << "Answer: " << sckt._msg_buff << endl;
+					send(it->fd, sckt._msg_buff.data(), sckt._msg_buff.size(), MSG_NOSIGNAL);
+				}
 				//				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
 			}
 			it->revents = 0;

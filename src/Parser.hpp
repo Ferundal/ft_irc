@@ -30,7 +30,7 @@ class Parser {
         bool                        checkCommand ( std::string &str );
         void                        workWithUSER ( ClientSocket &str );
         int                         countParam ( std::string &str );
-        // void                        checkNICKparam ( std::string &str );
+        void                        workWithNICK ( ClientSocket &str );
         std::vector<std::string>    mySplit ( std::string &str );
 
 
