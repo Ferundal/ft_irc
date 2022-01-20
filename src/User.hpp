@@ -20,6 +20,10 @@ class User {
 	friend class UserInfoStore;
 private:
 	int					_fd;
+	bool				_is_active;
+	string				_user_name;
+	string				_host_name;
+	string				_server_name;
 	string				_real_name;
 	string				_nick;
 	UserInfoStore		*_user_store;
@@ -27,11 +31,52 @@ private:
 private:
 	User();
 public:
-	int SetNick(string _new_nick);
-	int SetUserInfo(string _mew_real_name);
+
+	/*
+	 *  Set user nick to database.
+	 *  Return 0 if success.
+	 *  Return 1 if nick is already used
+	 */
+	int SetNick(const string &_new_nick);
+
+	/*
+	 *  Set user information.
+	 *  Return 0 if success.
+	 *  Return 1 if information already set.
+	 */
+	int SetUserInfo(const string &_new_user_name,
+					const string &_new_host_name,
+					const string &_new_server_name,
+					const string &_new_real_name);
+
+	/*
+	 *  Mark user as active.
+	 *  Return 0 if success.
+	 *  Return 1 if User has not enough information to be active.
+	 */
 	int SetActive(void);
-	int JoinChannel(string _channel_name);
-	int LeaveChannel(string _channel_name);
+
+	/*
+	 *  Give information about user registration status.
+	 *  Return true if user is mark as active.
+	 *  Return false if not.
+	 */
+	bool IsActive();
+
+	/*
+	 *  Join channel with _channel_name.
+	 *  If _channel_name Channel do not exist - create new one.
+	 *  Return 0 if success.
+	 *  Return 1 if _channel_name exist and has different password.
+	 */
+	int JoinChannel(const string &_channel_name);
+
+	/*
+	 *  Leave channel with _channel_name.
+	 *  Return 0 if success.
+	 *  Return 1 if User is not a member of _channel_name.
+	 */
+	int LeaveChannel(const string &_channel_name);
 };
 
 
