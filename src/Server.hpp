@@ -26,13 +26,12 @@ using namespace std;
 class Server {
 public:
 	explicit Server(int n_connect=MAX_CONNECT_CROWD);
-	void listening();
-	void communication();
+	void 	grabConnection();
 
 	~Server();
 private:
 	void 	deleteClientSocket(vector<pollfd>::iterator& it);
-	bool	checkDisconnect(vector<pollfd>::iterator& it);
+	void	readCommand(vector<pollfd>::iterator it);
 	void	addNewClientSocket();
 	vector<ClientSocket>::iterator findSocketIter(int fd);
 

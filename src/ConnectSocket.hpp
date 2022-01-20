@@ -15,7 +15,7 @@
 #include "exception"
 
 #define PORT	50001
-#define IP		"0.0.0.0"
+#define IP		"127.0.0.1"
 
 using namespace std;
 

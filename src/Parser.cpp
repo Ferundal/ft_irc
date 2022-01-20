@@ -178,9 +178,9 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
                 str._msg_buff = 
-                ":127.0.0.1 375 archie :- 127.0.0.1 Message of the day - \n\r\n"
-                ":127.0.0.1 372 archie :- HuiHuiHui\n\r\n"
-                ":127.0.0.1 376 archie :End of /MOTD command\n\r\n";
+                ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
+				":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
+				":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
                 //"001 RPL_WELCOME Welcome to the Internet Relay Network archi_pes!:purple@127.0.0.1";
             }
             else
