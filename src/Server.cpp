@@ -55,7 +55,7 @@ void Server::listening()
 
 			//Пользователь на сокете ждет ответ
 			int		r_len;
-			char	r_buf;
+			char	r_buf[2] = {0,};
 			ClientSocket& sckt = *findSocketIter(it->fd);
 
 			while (true)
@@ -63,16 +63,16 @@ void Server::listening()
 				r_len = recv(it->fd, &r_buf, 1, 0);
 				if (r_len == 0)// && checkDisconnect(it))
 					break;
-				sckt._msg_buff.append(&r_buf);
+				sckt._msg_buff.append(r_buf);
 				if (sckt._msg_buff.find("\r\n") != string::npos)
 					break;
 			}
 			if (sckt._msg_buff.find("\r\n") != string::npos)
 			{
 //				cout << "###########" << endl;
-				// sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
+				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
+				sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
 				this->_parser.stringParser(sckt);
-//				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
 //				sckt._msg_buff.clear(); //DEBUGGING
 				//				write(1, "\nCleaned\n", 9); //DEBUGGING
 				//				send(it->fd, sckt._msg_buff.data(), r_len, MSG_NOSIGNAL);
@@ -101,13 +101,16 @@ bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
 void	Server::addNewClientSocket()
 {
 	_clnt_sockets.push_back(ClientSocket());
-	_clnt_sockets.back()._usr_ptr = &this->_user_bd.CreateNewUser();
-	_clnt_sockets.back()._fd = accept(_cnct_socket.getfd(), (sockaddr*)&_clnt_sockets.back()._addr, &_clnt_sockets.back()._len);
+	ClientSocket& clnt_s = _clnt_sockets.back();
+	clnt_s._usr_ptr = &this->_user_bd.CreateNewUser();
+	clnt_s._fd = accept(_cnct_socket.getfd(), (sockaddr*)&clnt_s._addr, &clnt_s._len);
+
 	_pfd.push_back(pollfd());
-	bzero(&_pfd.back(), sizeof (_pfd.back()));
-	_pfd.back().fd = _clnt_sockets.back()._fd;
-	_pfd.back().events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
-	_pfd[0].revents = 0;
+	pollfd& pfd = _pfd.back();
+	bzero(&pfd, sizeof (pfd));
+	pfd.fd = clnt_s._fd;
+	pfd.events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
+	pfd.revents = 0;
 
 }
 
