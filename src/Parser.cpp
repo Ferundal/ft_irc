@@ -131,19 +131,30 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     bool                        isActive;
     bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
+    std::string                 answer;
+
 
     paramList = mySplit(str._msg_buff);
 
 
     isActive = str._usr_ptr->IsActive();
-    std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
+    ;// std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
         isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        std::cout << "|INFO| isSetUserInfo: [" << isSetUserInfo << "]" << std::endl;
+        // ;std::cout << "|INFO| isSetUserInfo: [" << isSetUserInfo << "]" << std::endl;
         if (isSetUserInfo == false) {
-            std::cout << "|INFO| [User successfuly added]" << std::endl;
+            ;// std::cout << "|INFO| [User successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                str._msg_buff = "375     RPL_MOTDSTART";
+                // str._msg_buff = "375     RPL_MOTDSTART";
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                std::cout << "Answer " << answer << std::endl;
+                send(str._fd, answer.data(), answer.size(), 0);
+                str._msg_buff.clear(); 
             }
             else
             {
@@ -152,10 +163,10 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
             // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
         else
-            std::cout << "|INFO| [User is not added]" << std::endl;
+           ;// std::cout << "|INFO| [User is not added]" << std::endl;
 
     } else {
-        std::cout << "|INFO| [User is already active]" << std::endl;
+        ;// std::cout << "|INFO| [User is already active]" << std::endl;
     }
 }
 
@@ -165,22 +176,31 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
     bool                        isActive;
     bool                        isSetNickInfo;
     std::vector<std::string>    paramList;
+    std::string                  answer;
 
     paramList = mySplit(str._msg_buff);
 
 
     isActive = str._usr_ptr->IsActive();
-    std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
+    // std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
         isSetNickInfo = str._usr_ptr->SetNick(paramList[1]);
-        std::cout << "|INFO| isSetNickInfo: [" << isSetNickInfo << "]" << std::endl;
+        // std::cout << "|INFO| isSetNickInfo: [" << isSetNickInfo << "]" << std::endl;
         if (isSetNickInfo == false) {
-            std::cout << "|INFO| [Nick successfuly added]" << std::endl;
+            // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                str._msg_buff = 
-                ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
-				":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
-				":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                std::cout << answer << std::endl;
+                send(str._fd, answer.data(), answer.size(), 0);
+                str._msg_buff.clear(); 
+                // ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
+				// ":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
+				// ":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
                 //"001 RPL_WELCOME Welcome to the Internet Relay Network archi_pes!:purple@127.0.0.1";
             }
             else
@@ -190,98 +210,39 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
             // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
         else
-            std::cout << "|INFO| [Nick is not added]" << std::endl;
+            ;// std::cout << "|INFO| [Nick is not added]" << std::endl;
 
     } else {
-        std::cout << "|INFO| [Nick is already active]" << std::endl;
+        ;// std::cout << "|INFO| [Nick is already active]" << std::endl;
     }
 
 
 }
 
-// void        Parser::stringParser ( ClientSocket &socket ) {
-
-//     std::cout <<  ">>>"  << socket._msg_buff <<  "<<<"  << std::endl;
-//     // socket._msg_buff.clear();
-
-
-//     if (returnCommand(socket._msg_buff) == "USER") {
-//         checkUSERparam(socket._msg_buff);
-//     }
-
-
-
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void    Parser::stringParser ( ClientSocket &str ) {
 
+    std::cout << str._msg_buff << std::endl;
     //  Checking command in pull
     bool result;
 
     result = checkCommand(str._msg_buff);
-    std::cout << "|NOTE| FIND COMMAND RESULT: [" << result << "]" << std::endl;
+    // std::cout << "|NOTE| FIND COMMAND RESULT: [" << result << "]" << std::endl;
 
     //  Getting command for countin. logic
     std::string command;
 
     command = returnCommand(str._msg_buff);
-    std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
+    // std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
 
 
     if (command == "USER") {
         workWithUSER (str);
     } else if (command == "NICK") {
         workWithNICK (str);   
-    }
+    } 
 
-    // str._msg_buff.clear();
+
+    str._msg_buff.clear();
 }
 
 

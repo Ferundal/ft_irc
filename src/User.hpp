@@ -61,7 +61,7 @@ public:
 	 *  Return true if user is mark as active.
 	 *  Return false if not.
 	 */
-	bool IsActive();
+	bool IsActive() const;
 
 	/*
 	 *  Join channel with _channel_name.
@@ -77,6 +77,10 @@ public:
 	 *  Return 1 if User is not a member of _channel_name.
 	 */
 	int LeaveChannel(const string &_channel_name);
+
+	string GetUserFullName(void) const;
+
+	UserInfoStore &ToStore(void);
 };
 
 

@@ -8,6 +8,7 @@
 #include "User.hpp"
 
 #define COMMAND_COUNT 48
+#define SERVER_NAME "127.0.0.1"
 
 class Parser {
     private:
@@ -34,17 +35,7 @@ class Parser {
         std::vector<std::string>    mySplit ( std::string &str );
 
 
-        
-
-
-
-
-
         // void    testList ();
-
-
-
-
 };
 
 

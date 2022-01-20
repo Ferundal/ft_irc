@@ -27,7 +27,7 @@ int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name
 	}
 }
 
-bool User::IsActive() {
+bool User::IsActive() const {
 	return (_is_active);
 }
 
@@ -62,4 +62,11 @@ int User::LeaveChannel(const string &_channel_name) {
 	return (1);
 }
 
+string User::GetUserFullName() const {
+	return (_nick);
+}
+
+UserInfoStore &User::ToStore() {
+	return (*this->_user_store);
+}
 
