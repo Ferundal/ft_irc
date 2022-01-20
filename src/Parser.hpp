@@ -5,6 +5,7 @@
 #include <iostream>
 #include "vector"
 #include "ClientSocket.hpp"
+#include "User.hpp"
 
 #define COMMAND_COUNT 48
 
@@ -26,11 +27,13 @@ class Parser {
         // External func's
         void                        stringParser ( ClientSocket &str );
         std::string                 returnCommand ( std::string &str );
-        int                         checkCommand ( std::string &str );
-        void                        checkUSERparam ( std::string &str );
+        bool                        checkCommand ( std::string &str );
+        void                        workWithUSER ( ClientSocket &str );
         int                         countParam ( std::string &str );
-        void                        checkNICKparam ( std::string &str );
+        // void                        checkNICKparam ( std::string &str );
         std::vector<std::string>    mySplit ( std::string &str );
+
+
         
 
 

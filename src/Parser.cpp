@@ -80,16 +80,16 @@ std::string Parser::returnCommand ( std::string &str ) {
         return (str.substr(0, pos));
 }
 
-// int         Parser::checkCommand ( std::string &str ) {
-//     std::string command;
+bool         Parser::checkCommand ( std::string &str ) {
+    std::string command;
 
-//     command = returnCommand(str);
-//     for (int i = 0; i < COMMAND_COUNT; ++i)
-//         if (this->_commandList[i] == command) {
-//             return 0;
-//         }
-//     return 1;
-// }
+    command = returnCommand(str);
+    for (int i = 0; i < COMMAND_COUNT; ++i)
+        if (this->_commandList[i] == command) {
+            return true;
+        }
+    return false;
+}
 
 int          Parser::countParam ( std::string &str ) {
     int     slovo, count = 0;
@@ -105,7 +105,7 @@ int          Parser::countParam ( std::string &str ) {
             slovo = 0;
         i++;
     }
-    std::cout << "COUT: " << count << std::endl;
+    // std::cout << "COUT: " << count << std::endl;
     return count;
 }
 
@@ -126,47 +126,140 @@ std::vector<std::string> Parser::mySplit ( std::string &str ) {
 
 
 
-void         Parser::checkUSERparam ( std::string &str ) {
-    // if (countParam(str) != 5) {
-    //     // std::cout << "ERROR: INVALID NUM OF PARAM IN USER" << std::endl;
-    // } else {
-    //     // std::cout << "RESULT: USER NUM OF PARAM IS OK" << std::endl;
-    //     return;
-    // }
+void         Parser::workWithUSER ( ClientSocket &str ) {
+//  Checking repeat NICK and USER in DB
+    bool                        isSetActive;
+    bool                        isSetUserInfo;
+    std::vector<std::string>    paramList;
 
-//----------IMPORTANT--------------
-
-    // if (checkUniqNickName(nickName) != OK) {
-    // }
-
-    // mySplit(str);
-    std::cout << "lflflffl" << std::endl;
+    paramList = mySplit(str._msg_buff);
 
 
-    std::vector<std::string> commandArr = mySplit(str);
-    str = "001    RPL_WELCOME Welcome to the Internet Relay Network  " + commandArr[1] + "!" + commandArr[4] + "@" + commandArr[3];
-    std::cout << str << std::endl;
-    str.clear();
-
-
+    isSetActive = str._usr_ptr->SetActive();
+    std::cout << "|INFO| isSetActive: " << isSetActive << std::endl;
+    if (isSetActive == false) {
+        isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
+        std::cout << "|INFO| isSetUserInfo: " << isSetUserInfo << std::endl;
+    } else {
+        std::cout << "|INFO| User is already active." << std::endl;
+    }
+//
 
 }
 
 
-void        Parser::stringParser ( ClientSocket &socket ) {
+// void        Parser::stringParser ( ClientSocket &socket ) {
 
-    std::cout <<  ">>>"  << socket._msg_buff <<  "<<<"  << std::endl;
-    // socket._msg_buff.clear();
+//     std::cout <<  ">>>"  << socket._msg_buff <<  "<<<"  << std::endl;
+//     // socket._msg_buff.clear();
 
 
-    if (returnCommand(socket._msg_buff) == "USER") {
-        checkUSERparam(socket._msg_buff);
+//     if (returnCommand(socket._msg_buff) == "USER") {
+//         checkUSERparam(socket._msg_buff);
+//     }
+
+
+
+
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void    Parser::stringParser ( ClientSocket &str ) {
+
+    //  Checking command in pull
+    bool result;
+
+    result = checkCommand(str._msg_buff);
+    std::cout << "|NOTE| FIND COMMAND RESULT: [" << result << "]" << std::endl;
+
+    //  Getting command for countin. logic
+    std::string command;
+
+    command = returnCommand(str._msg_buff);
+    std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
+
+
+    if (command == "USER") {
+        workWithUSER (str);
     }
 
 
 
 
+
+
+
+
+
+
+
+
+    str._msg_buff.clear();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
