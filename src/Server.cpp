@@ -2,7 +2,6 @@
 // Created by ferun on 05.01.2022.
 //
 
-
 #include "Server.hpp"
 
 Server::Server(int n_connect) try : _cnct_socket()
@@ -30,12 +29,7 @@ catch(exception& e)
 	throw e;
 }
 
-void Server::communication()
-{
-
-}
-
-void Server::listening()
+void Server::grabConnection()
 {
 	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
 	if (_pfd[0].revents & POLLIN)
@@ -52,53 +46,40 @@ void Server::listening()
 		}
 		else if(it->revents & POLLIN )
 		{
-
-			//Пользователь на сокете ждет ответ
-			int		r_len;
-			char	r_buf[2] = {0,};
-			ClientSocket& sckt = *findSocketIter(it->fd);
-
-			while (true)
-			{
-				r_len = recv(it->fd, &r_buf, 1, 0);
-				if (r_len == 0)// && checkDisconnect(it))
-					break;
-				sckt._msg_buff.append(r_buf);
-				if (sckt._msg_buff.find("\r\n") != string::npos)
-					break;
-			}
-			if (sckt._msg_buff.find("\r\n") != string::npos)
-			{
-//				cout << "###########" << endl;
-				cout << sckt._msg_buff.size() << ") " << sckt._msg_buff.data() << endl;
-				sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
-				this->_parser.stringParser(sckt);
-				// sckt._msg_buff.clear(); //DEBUGGING
-				if (sckt._msg_buff.size() != 0)
-				{
-					cout  << "Answer: " << sckt._msg_buff << endl;
-					send(it->fd, sckt._msg_buff.data(), sckt._msg_buff.size(), MSG_NOSIGNAL);
-				}
-				//				write(1, (char[]){it->fd + 48, '\n'}, 2); //DEBUGGING
-			}
-			it->revents = 0;
+			//Пользователь  на сокете ждет ответ
+			readCommand(it);
 		}
 	}
 }
 
-bool	Server::checkDisconnect(vector<pollfd>::iterator& it)
+void	Server::readCommand(vector<pollfd>::iterator it)
 {
-	for(int i = 0; i < 5; ++i) // Пиздец
+	bool	r_frst_flag = false;
+	int		r_len;
+	char	r_buf[2] = {0,};
+	ClientSocket& sckt = *findSocketIter(it->fd);
+
+	while (true)
 	{
-		send(it->fd, (char[1]){0}, 1, MSG_NOSIGNAL);
-		if (errno & EPIPE)
+		r_len = recv(it->fd, &r_buf, 1, 0);
+		if (((r_len == 0) && (r_frst_flag == false)))
 		{
-			deleteClientSocket(it);
-			errno = 0;
-			return true;
+		 	deleteClientSocket(it);
+			return;
+		}else
+		{
+			r_frst_flag = true;
 		}
+		sckt._msg_buff.append(r_buf);
+		if (sckt._msg_buff.find("\r\n") != string::npos)
+			break;
 	}
-	return false;
+	if (sckt._msg_buff.find("\r\n") != string::npos)
+	{
+		sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
+		this->_parser.stringParser(sckt);
+	}
+	it->revents = 0;
 }
 
 void	Server::addNewClientSocket()

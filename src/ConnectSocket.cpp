@@ -12,12 +12,6 @@ ConnectSocket::ConnectSocket(int domain, int type, int protocol) throw (exceptio
 	binding(); // TODO Возможно стоит поместить в Server
 }
 
-//char const * const ConnectSocket::getsockopt() throw (exception)
-//{
-//	if (setsockopt(this->_fd, SOL_SOCKET, SO_DEBUG, this->_option_val, 1000) == -1)
-//		throw exception();
-//}
-
 void ConnectSocket::binding(int family, size_t port, const char* ip)
 {
 	bzero (&this->_addr, sizeof (this->_addr)); // Инициализация памяти нулями

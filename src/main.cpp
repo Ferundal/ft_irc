@@ -11,7 +11,7 @@ int main() {
 		Server sv;
 		while (true)
 		{
-			sv.listening();
+			sv.grabConnection();
 		}
 	}
 	catch (const exception& e)
