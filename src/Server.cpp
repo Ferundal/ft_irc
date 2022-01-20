@@ -111,7 +111,6 @@ void	Server::addNewClientSocket()
 	pfd.fd = clnt_s._fd;
 	pfd.events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
 	pfd.revents = 0;
-
 }
 
 void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
