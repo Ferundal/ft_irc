@@ -142,22 +142,22 @@ void         Parser::checkUSERparam ( std::string &str ) {
     // mySplit(str);
 
 
-    // std::vector<std::string> commandArr = mySplit(str);
-    // str = "001    RPL_WELCOME Welcome to the Internet Relay Network  " + commandArr[1] + "!" + commandArr[4] + "@" + commandArr[3];
-    // std::cout << str << std::endl;
+    std::vector<std::string> commandArr = mySplit(str);
+    str = "001    RPL_WELCOME Welcome to the Internet Relay Network  " + commandArr[1] + "!" + commandArr[4] + "@" + commandArr[3];
+    std::cout << str << std::endl;
 
 
 }
 
 
-void        Parser::stringParser ( std::string &str ) {
+void        Parser::stringParser ( ClientSocket &socket ) {
 
-    std::cout <<  ">>>"  << str <<  "<<<"  << std::endl;
+    std::cout <<  ">>>"  << socket._msg_buff <<  "<<<"  << std::endl;
 
 
-    if (returnCommand(str) == "USER") {
-        checkUSERparam(str);
-    }
+    // if (returnCommand(str) == "USER") {
+    //     checkUSERparam(str);
+    // }
 
 
 

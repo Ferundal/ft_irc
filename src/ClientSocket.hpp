@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include "string"
+#include "User.hpp"
 
 #define MSG_BUFF 1024
 
@@ -19,6 +20,7 @@ struct ClientSocket
 	sockaddr_in	_addr;
 	socklen_t	_len;
 	string		_msg_buff;
+	User*		_usr_ptr;
 
 	ClientSocket();
 	~ClientSocket();

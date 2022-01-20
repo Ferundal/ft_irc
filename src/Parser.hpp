@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "vector"
+#include "ClientSocket.hpp"
 
 #define COMMAND_COUNT 48
 
@@ -23,7 +24,7 @@ class Parser {
 		Parser  &operator = ( const Parser &other );
 
         // External func's
-        void                        stringParser ( std::string &str );
+        void                        stringParser ( ClientSocket &str );
         std::string                 returnCommand ( std::string &str );
         int                         checkCommand ( std::string &str );
         void                        checkUSERparam ( std::string &str );
