@@ -4,9 +4,9 @@
 
 #include "User.hpp"
 
-User::User() {}
+User::User() : _is_active(false) {}
 
-int User::SetNick(string _new_nick) {
+int User::SetNick(const string &_new_nick) {
 	if (_user_store->FindUserByNick(_new_nick) != NULL) {
 		return (1);
 	}
@@ -14,17 +14,34 @@ int User::SetNick(string _new_nick) {
 	return (0);
 }
 
-int User::SetUserInfo(string _new_real_name) {
-	this->_real_name = _new_real_name;
-	return (0);
+int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name,
+					  const string &_new_server_name, const string &_new_real_name) {
+	if (_is_active == false)
+		return (1);
+	else {
+		this->_user_name = _new_user_name;
+		this->_host_name = _new_host_name;
+		this->_server_name = _new_server_name;
+		this->_real_name = _new_real_name;
+		return (0);
+	}
+}
+
+bool User::IsActive() {
+	return (_is_active);
 }
 
 int User::SetActive() {
-	_user_store->_connected_users.push_back(this);
-	return (0);
+	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
+		_user_store->_connected_users.push_back(this);
+		_is_active = true;
+		return (0);
+	}
+	else
+		return (1);
 }
 
-int User::JoinChannel(string _channel_name) {
+int User::JoinChannel(const string &_channel_name) {
 	Channel *_channel_ptr = _user_store->FindChannelByName(_channel_name);
 	if (_channel_ptr == NULL)
 		return (1);
@@ -32,11 +49,12 @@ int User::JoinChannel(string _channel_name) {
 	return (0);
 }
 
-int User::LeaveChannel(string _channel_name) {
+int User::LeaveChannel(const string &_channel_name) {
 	vector<Channel *>::iterator _curr_channel_ptr = _membership.begin();
 	vector<Channel *>::iterator _end = _membership.end();
 	while (_curr_channel_ptr != _end) {
 		if((*_curr_channel_ptr)->_channel_name == _channel_name) {
+			(*_curr_channel_ptr)->DeleteUser(*this);
 			return (0);
 		}
 		++_curr_channel_ptr;
