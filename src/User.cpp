@@ -7,7 +7,7 @@
 User::User() : _is_active(false) {}
 
 int User::SetNick(const string &_new_nick) {
-	if (_user_store->FindUserByNick(_new_nick) != NULL) {
+	if (_user_store->IsNickAvalable(_new_nick) == false) {
 		return (1);
 	}
 	this->_nick = _new_nick;

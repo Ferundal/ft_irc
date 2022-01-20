@@ -26,6 +26,7 @@ private:
 public:
 	UserInfoStore();
 	~UserInfoStore();
+	bool IsNickAvalable(const string _searching_nick) const;
 	User &CreateNewUser();
 	User *FindUserByNick(string _searching_nick);
 	Channel *FindChannelByName(string _searching_channel_name);
