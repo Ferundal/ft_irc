@@ -16,7 +16,7 @@ int User::SetNick(const string &_new_nick) {
 
 int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name,
 					  const string &_new_server_name, const string &_new_real_name) {
-	if (_is_active == false)
+	if (this->_user_name.empty() == false)
 		return (1);
 	else {
 		this->_user_name = _new_user_name;
