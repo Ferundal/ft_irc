@@ -77,6 +77,8 @@ public:
 	 *  Return 1 if User is not a member of _channel_name.
 	 */
 	int LeaveChannel(const string &_channel_name);
+
+	string GetUserFullName(void) const;
 };
 
 

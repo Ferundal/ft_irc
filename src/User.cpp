@@ -62,4 +62,8 @@ int User::LeaveChannel(const string &_channel_name) {
 	return (1);
 }
 
+string User::GetUserFullName() const {
+	return (_nick);
+}
+
 
