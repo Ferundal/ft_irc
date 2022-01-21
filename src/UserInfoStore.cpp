@@ -8,8 +8,8 @@ UserInfoStore::UserInfoStore() {}
 
 UserInfoStore::~UserInfoStore() {}
 
-User &UserInfoStore::CreateNewUser() {
-	_users_store.push_back(User());
+User &UserInfoStore::CreateNewUser(int _new_user_fd) {
+	_users_store.push_back(User(_new_user_fd));
 	User& usr = _users_store.back();
 	usr._user_store = this;
 	return (usr);

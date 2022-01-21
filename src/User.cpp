@@ -4,7 +4,7 @@
 
 #include "User.hpp"
 
-User::User() : _is_active(false) {}
+User::User(int _new_fd) : _fd(_new_fd), _is_active(false) {}
 
 int User::SetNick(const string &_new_nick) {
 	if (_user_store->IsNickAvalable(_new_nick) == false) {
