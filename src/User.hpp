@@ -31,6 +31,15 @@ private:
 private:
 	User(int _new_fd);
 public:
+	/*
+	 *  Return User's nickname!
+	 */
+	const string &GetUserNick() const;
+
+	/*
+	 *  Return User's nickname!
+	 */
+	const int &GetUserFd() const;
 
 	/*
 	 *  Set user nick to database.
@@ -78,9 +87,23 @@ public:
 	 */
 	int LeaveChannel(const string &_channel_name);
 
+	/*
+	 *  Create name of the user for server in server responce format
+	 */
 	string GetUserFullName(void) const;
 
+	/*
+	 * Return UserInfoStore what current user belongs to
+	 */
 	UserInfoStore &ToStore(void);
+
+	/*
+	 * Try to join channel with _channel_name.
+	 * Return 0 if success.
+	 * Return IRC error cod for every problem.
+	 */
+	int JoinChannel(const string &_channel_name, const string &_channel_password);
+
 };
 
 

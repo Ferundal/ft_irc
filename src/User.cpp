@@ -6,6 +6,14 @@
 
 User::User(int _new_fd) : _fd(_new_fd), _is_active(false) {}
 
+const string &User::GetUserNick() const {
+	return (_nick);
+}
+
+int &User::GetUserFd() const {
+	return (_fd);
+}
+
 int User::SetNick(const string &_new_nick) {
 	if (_user_store->IsNickAvalable(_new_nick) == false) {
 		return (1);
@@ -70,3 +78,6 @@ UserInfoStore &User::ToStore() {
 	return (*this->_user_store);
 }
 
+int User::JoinChannel(const string &_channel_name, const string &_channel_password) {
+
+}
