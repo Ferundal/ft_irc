@@ -85,5 +85,5 @@ int User::JoinChannel(const string &_channel_name, const string &_channel_passwo
 }
 
 string User::GetUserFullNameInServerForm() const {
-	return (_nick + "!" + _user_name + "@" + "192.168.1.182");
+	return (_nick + "!" + _user_name + "@" + "127.0.0.1");
 }
