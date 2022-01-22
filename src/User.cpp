@@ -10,7 +10,7 @@ const string &User::GetUserNick() const {
 	return (_nick);
 }
 
-int &User::GetUserFd() const {
+const int &User::GetUserFd() const {
 	return (_fd);
 }
 
@@ -79,5 +79,6 @@ UserInfoStore &User::ToStore() {
 }
 
 int User::JoinChannel(const string &_channel_name, const string &_channel_password) {
-
+	(void)_channel_name;
+	(void)_channel_password;
 }
