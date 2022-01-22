@@ -272,7 +272,35 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
 
 
 void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
-    std::cout << "Let's prog mthf" << str._msg_buff << std::endl;
+    // std::cout << "Let's prog mthf" << str._msg_buff << std::endl;
+    std::vector<std::string>    paramList = mySplit(str._msg_buff) ;    
+    std::string nick = paramList[1];
+    std::string command = paramList[0];
+    std::string message;
+    User        *receiver = str._usr_ptr->ToStore().FindUserByNick(nick);
+
+    if (receiver == NULL) {
+        std::cout << "BD is not working" << std::endl;
+        return;
+    }
+
+
+
+    message = ":" + str._usr_ptr->GetUserNick()  + " " + command + " " + nick + " " + paramList[2] + "\r\n";
+
+
+    
+    std::cout << "Reciever user fd: " << receiver->GetUserFd() << std::endl;
+    std::cout << "Sender user fd: " << str._usr_ptr->GetUserFd() << std::endl;
+    std::cout << "Sender socker fd: " << str._fd << std::endl;
+    
+    std::cout << "Wait result: " << std::endl;
+
+
+    send(receiver->GetUserFd(), "PING", sizeof("PING"), 0);
+
+    // send(receiver->GetUserFd(), message.data(), message.size(), 0);
+
 }
 
 
