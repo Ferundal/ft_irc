@@ -77,7 +77,7 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	}
 	if (sckt._msg_buff.find("\r\n") != string::npos)
 	{
-		sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
+		sckt._msg_buff.erase(sckt._msg_buff.size() - 1, 1);
 		this->_parser.stringParser(sckt);
 	}
 	it->revents = 0;
