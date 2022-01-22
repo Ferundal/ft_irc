@@ -29,7 +29,7 @@ private:
 	UserInfoStore		*_user_store;
 	vector<Channel *>	_membership;
 private:
-	User();
+	User(int _new_fd);
 public:
 
 	/*
