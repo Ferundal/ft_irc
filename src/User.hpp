@@ -92,6 +92,9 @@ public:
 	 */
 	string GetUserFullName(void) const;
 
+
+	string GetUserFullNameInServerForm(void) const;
+
 	/*
 	 * Return UserInfoStore what current user belongs to
 	 */
