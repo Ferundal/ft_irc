@@ -76,7 +76,7 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	}
 	if (sckt._msg_buff.find("\r\n") != string::npos)
 	{
-		sckt._msg_buff.erase(sckt._msg_buff.size() - 2, 2);
+		sckt._msg_buff.erase(sckt._msg_buff.size() - 1, 1);
 		this->_parser.stringParser(sckt);
 	}
 	it->revents = 0;
@@ -84,23 +84,35 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 
 void	Server::addNewClientSocket()
 {
-	_clnt_sockets.push_back(ClientSocket());
-	ClientSocket& clnt_s = _clnt_sockets.back();
-	clnt_s._usr_ptr = &this->_user_bd.CreateNewUser();
-	clnt_s._fd = accept(_cnct_socket.getfd(), (sockaddr*)&clnt_s._addr, &clnt_s._len);
+	ClientSocket new_client;
+	new_client._fd = accept(_cnct_socket.getfd(), (sockaddr*)&new_client._addr, &new_client._len);
+	new_client._usr_ptr = &this->_user_bd.CreateNewUser(new_client._fd);
+	_clnt_sockets.push_back(new_client);
 
-	_pfd.push_back(pollfd());
-	pollfd& pfd = _pfd.back();
-	bzero(&pfd, sizeof (pfd));
-	pfd.fd = clnt_s._fd;
-	pfd.events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
-	pfd.revents = 0;
+	pollfd new_pfd;
+	bzero(&new_pfd, sizeof (new_pfd));
+	new_pfd.fd = new_client._fd;
+	new_pfd.events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
+	new_pfd.revents = 0;
+	_pfd.push_back(new_pfd);
 }
 
 void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
 {
 	this->_clnt_sockets.erase(findSocketIter(it->fd));
+	close(it->fd);
 	this->_pfd.erase(it);
+}
+
+int		Server::findOpenFD()
+{
+	int i = 5;
+	for(vector<ClientSocket>::iterator it = _clnt_sockets.begin(); it < _clnt_sockets.end(); ++it, ++i)
+	{
+		if (it->_fd != i)
+			return i;
+	}
+	return i;
 }
 
 vector<ClientSocket>::iterator Server::findSocketIter(int fd)
@@ -113,4 +125,7 @@ vector<ClientSocket>::iterator Server::findSocketIter(int fd)
 	throw exception();
 }
 
-Server::~Server() {}
+Server::~Server()
+{
+
+}

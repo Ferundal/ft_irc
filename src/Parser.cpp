@@ -91,13 +91,40 @@ bool         Parser::checkCommand ( std::string &str ) {
     return false;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 int          Parser::countParam ( std::string &str ) {
     int     slovo, count = 0;
-    int     i = 0;
-    while (str[i] == ' ' && str[i] != '\0')
+    size_t  i = 0;
+    int     flag = 0;
+    char    symb = '\r';
+
+    while (i < str.length()) {
+        if (str[i] == ':') {
+            flag = 1;
+            symb = ':';
+        }
+        ++i;
+    }
+
+    i = 0;
+
+    while (str[i] == ' ' && str[i] != symb)
         i++;
     slovo = 0;
-    while (str[i] != '\0') {
+
+    while (str[i] != symb) {
         if (str[i] != ' ' && slovo == 0) {
             slovo = 1;
             count++;
@@ -105,19 +132,40 @@ int          Parser::countParam ( std::string &str ) {
             slovo = 0;
         i++;
     }
-    // std::cout << "COUT: " << count << std::endl;
-    return count;
+
+    return count + flag;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 std::vector<std::string> Parser::mySplit ( std::string &str ) {
 
     size_t      i = 0;
+    std::string symb = " ";
     size_t      countP = countParam(str);
     std::vector<std::string> commandArr(countP);
 
+    std::cout << "Count" << countP << std::endl;
+
     while (i < countP) {
-        commandArr[i] = str.substr(0, str.find(" "));
-        str.erase(0, str.find(" ") + 1);
+        if (i == countP - 1)
+            symb = "\r";
+        commandArr[i] = str.substr(0, str.find(symb));
+        std::cout << "commandArr[" << i << "]: " << commandArr[i] << std::endl;
+        str.erase(0, str.find(symb) + 1);
         ++i;
     }
 
@@ -135,6 +183,14 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
 
 
     paramList = mySplit(str._msg_buff);
+
+    // size_t i = 0;
+
+    // while (i < paramList.size()) {
+    //     std::cout << i + 1 << ") " << paramList[i] << std::endl;
+    //     ++i;
+    // }
+
 
 
     isActive = str._usr_ptr->IsActive();
@@ -156,7 +212,6 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
                 send(str._fd, answer.data(), answer.size(), 0);
                 str._msg_buff.clear(); 
             }
-            else
             {
                 str._msg_buff.clear();
             }
@@ -198,10 +253,6 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
                 std::cout << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
                 str._msg_buff.clear(); 
-                // ":127.0.0.1 375 KrekerNick :- 127.0.0.1 Message of the day - \n\r\n"
-				// ":127.0.0.1 372 KrekerNick :- HuiHuiHui\n\r\n"
-				// ":127.0.0.1 376 KrekerNick :End of /MOTD command\n\r\n";
-                //"001 RPL_WELCOME Welcome to the Internet Relay Network archi_pes!:purple@127.0.0.1";
             }
             else
             {
@@ -218,6 +269,12 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
 
 
 }
+
+
+void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
+    std::cout << "Let's prog mthf" << str._msg_buff << std::endl;
+}
+
 
 void    Parser::stringParser ( ClientSocket &str ) {
 
@@ -239,6 +296,8 @@ void    Parser::stringParser ( ClientSocket &str ) {
         workWithUSER (str);
     } else if (command == "NICK") {
         workWithNICK (str);   
+    } else if (command == "PRIVMSG") {
+        workWithPRIVMSG (str);   
     } 
 
 

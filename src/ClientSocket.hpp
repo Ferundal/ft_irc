@@ -5,7 +5,7 @@
 #ifndef IRCSERC_CLIENTSOCKET_HPP
 #define IRCSERC_CLIENTSOCKET_HPP
 
-#include <netinet/in.h>
+#include <netinet/ip.h>
 #include <unistd.h>
 #include "string"
 #include "User.hpp"
