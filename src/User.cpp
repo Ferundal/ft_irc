@@ -81,4 +81,5 @@ UserInfoStore &User::ToStore() {
 int User::JoinChannel(const string &_channel_name, const string &_channel_password) {
 	(void)_channel_name;
 	(void)_channel_password;
+	return(0);
 }
