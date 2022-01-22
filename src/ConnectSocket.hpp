@@ -14,7 +14,6 @@
 #include "exception"
 
 #define PORT	30001
-#define IP		"0.0.0.0"
 
 using namespace std;
 
@@ -25,10 +24,9 @@ public:
 	/*
 	 * protocol=0 - по умолчанию - в соответствии с domain
 	 */
-	explicit ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
-//	char const * const		getsockopt() throw (exception);
-	int getfd() const;
-	void binding(int family=AF_INET, size_t port=PORT, const char* ip=IP);
+	explicit	ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
+	int			getfd() const;
+	void		binding(int family=AF_INET, int port=PORT, in_addr_t ip=INADDR_ANY);
 
 	~ConnectSocket();
 private:
