@@ -16,10 +16,11 @@ void ConnectSocket::binding(int family, size_t port, const char* ip)
 {
 	bzero (&this->_addr, sizeof (this->_addr)); // Инициализация памяти нулями
 	this->_addr.sin_family = family; // Установка семейства адресов
+	this->_addr.sin_addr.s_addr = 0UL;
 	this->_addr.sin_port = htons(port); // Установка порта
 	if (((int)(this->_addr.sin_addr.s_addr = inet_addr(ip))) == -1)  // Установка адреса
 		throw exception();
-	if (bind(this->_fd, (struct sockaddr *)&this->_addr, sizeof (struct sockaddr)) == -1)
+	if (bind(this->_fd, (struct sockaddr*)&this->_addr, sizeof (struct sockaddr)) == -1)
 		throw exception();
 }
 
@@ -30,5 +31,5 @@ int ConnectSocket::getfd() const
 
 ConnectSocket::~ConnectSocket()
 {
-//	close(this->_fd);
+	close(this->_fd);
 }

@@ -12,14 +12,13 @@
 #include <sys/socket.h>
 #include "vector"
 #include "Parser.hpp"
-
-#include "fstream"
-#include "iostream"
-#include "algorithm"
+#include <sys/poll.h>
 #include "errno.h"
+#include <unistd.h>
+#include <fcntl.h>
 #include "UserInfoStore.hpp"
 
-#define MAX_CONNECT_CROWD 10000
+#define MAX_CONNECT_CROWD 128
 
 
 using namespace std;

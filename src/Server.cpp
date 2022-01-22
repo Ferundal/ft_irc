@@ -8,6 +8,7 @@ Server::Server(int n_connect) try : _cnct_socket()
 {
 	listen(_cnct_socket.getfd(), n_connect); //  n_connect - максимальная длина, до которой может расти очередь ожидающих соединений
 	// Внесение данных первого элемента ConnetSocket в pfd
+	fcntl(_cnct_socket.getfd(), F_SETFL, O_NONBLOCK);
 	{
 		_pfd.push_back(pollfd());
 		bzero(&_pfd[0], sizeof (_pfd[0]));
@@ -86,8 +87,8 @@ void	Server::addNewClientSocket()
 {
 	_clnt_sockets.push_back(ClientSocket());
 	ClientSocket& clnt_s = _clnt_sockets.back();
-	clnt_s._usr_ptr = &this->_user_bd.CreateNewUser();
 	clnt_s._fd = accept(_cnct_socket.getfd(), (sockaddr*)&clnt_s._addr, &clnt_s._len);
+	clnt_s._usr_ptr = &this->_user_bd.CreateNewUser(clnt_s._fd);
 
 	_pfd.push_back(pollfd());
 	pollfd& pfd = _pfd.back();

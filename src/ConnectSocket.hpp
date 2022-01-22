@@ -11,10 +11,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
-#include <sys/poll.h>
 #include "exception"
 
-#define PORT	50001
+#define PORT	30001
 #define IP		"0.0.0.0"
 
 using namespace std;
@@ -28,7 +27,7 @@ public:
 	 */
 	explicit ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
 //	char const * const		getsockopt() throw (exception);
-	virtual int getfd() const;
+	int getfd() const;
 	void binding(int family=AF_INET, size_t port=PORT, const char* ip=IP);
 
 	~ConnectSocket();
