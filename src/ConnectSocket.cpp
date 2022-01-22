@@ -8,7 +8,6 @@
 
 ConnectSocket::ConnectSocket(int domain, int type, int protocol) throw (exception) : _fd(-1)
 {
-	cout << "Cteate connection socket" << endl;
 	if ((this->_fd = socket(domain, type, protocol)) == -1) throw exception();
 	if ((setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, (int[]){true}, sizeof(int))) == -1) throw exception();
 	binding(); // TODO Возможно стоит поместить в Server

@@ -46,7 +46,7 @@ void Server::grabConnection()
 		}
 		else if(it->revents & POLLIN )
 		{
-			//Пользователь  на сокете ждет ответ
+			//Пользователь выслал данныe
 			readCommand(it);
 		}
 	}
@@ -102,17 +102,6 @@ void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
 	this->_clnt_sockets.erase(findSocketIter(it->fd));
 	close(it->fd);
 	this->_pfd.erase(it);
-}
-
-int		Server::findOpenFD()
-{
-	int i = 5;
-	for(vector<ClientSocket>::iterator it = _clnt_sockets.begin(); it < _clnt_sockets.end(); ++it, ++i)
-	{
-		if (it->_fd != i)
-			return i;
-	}
-	return i;
 }
 
 vector<ClientSocket>::iterator Server::findSocketIter(int fd)

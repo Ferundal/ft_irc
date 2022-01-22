@@ -68,7 +68,6 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
-
 std::string Parser::returnCommand ( std::string &str ) {
     std::string command;
     int         pos;
@@ -90,18 +89,6 @@ bool         Parser::checkCommand ( std::string &str ) {
         }
     return false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 int          Parser::countParam ( std::string &str ) {
@@ -136,23 +123,7 @@ int          Parser::countParam ( std::string &str ) {
     return count + flag;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 std::vector<std::string> Parser::mySplit ( std::string &str ) {
-
     size_t      i = 0;
     std::string symb = " ";
     size_t      countP = countParam(str);
@@ -168,11 +139,8 @@ std::vector<std::string> Parser::mySplit ( std::string &str ) {
         str.erase(0, str.find(symb) + 1);
         ++i;
     }
-
     return commandArr;
 }
-
-
 
 void         Parser::workWithUSER ( ClientSocket &str ) {
 //  Checking repeat NICK and USER in DB
@@ -191,8 +159,6 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     //     ++i;
     // }
 
-
-
     isActive = str._usr_ptr->IsActive();
     ;// std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
@@ -202,18 +168,14 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
             ;// std::cout << "|INFO| [User successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
                 // str._msg_buff = "375     RPL_MOTDSTART";
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
-                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName()
+                + " :- " + SERVER_NAME + " Message of the day -\n\r\n";
                 answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
-                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                + " :- " + SERVER_NAME + " Middle request\n\r\n";
                 answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
-                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                + " :" + SERVER_NAME + "End of /MOTD command\n\r\n";
                 std::cout << "Answer " << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
-                str._msg_buff.clear(); 
-            }
-            {
-                str._msg_buff.clear();
             }
             // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
@@ -225,6 +187,38 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     }
 }
 
+void test()
+{
+	string msg;
+
+	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 :Hi1\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker@127.0.0.1 :Hi2\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker!NePes :Hi3\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker :Hi4\r\n";
+	send(4,msg.data(),msg.size(),0);
+
+	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 : Hi5\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker@127.0.0.1 : Hi6\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker!NePes : Hi7\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker : Hi8\r\n";
+	send(4,msg.data(),msg.size(),0);
+
+	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 : Hi9\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker@127.0.0.1 : Hi10\n\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker!NePes : Hi11\n\r\n";
+	send(4,msg.data(),msg.size(),0);
+	msg = ":archie PRIVMSG kreker : Hi12\n\r\n";
+	send(4,msg.data(),msg.size(),0);
+
+}
 
 void        Parser::workWithNICK ( ClientSocket &str ) {
     //  Checking repeat NICK and USER in DB
@@ -235,7 +229,6 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
 
     paramList = mySplit(str._msg_buff);
 
-
     isActive = str._usr_ptr->IsActive();
     // std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
@@ -245,18 +238,13 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
                 answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
-                + ":- " + SERVER_NAME + " Message of the day -\n\r\n";
+                + " :- " + SERVER_NAME + " Message of the day -\r\n";
                 answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
-                + ":- " + SERVER_NAME + " Middle request\n\r\n";
+                + " :- " + SERVER_NAME + " Middle request\r\n";
                 answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
-                + ":" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
-                str._msg_buff.clear(); 
-            }
-            else
-            {
-                str._msg_buff.clear();
             }
             // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
@@ -266,10 +254,8 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
     } else {
         ;// std::cout << "|INFO| [Nick is already active]" << std::endl;
     }
-
-
+//    test();
 }
-
 
 void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
     // std::cout << "Let's prog mthf" << str._msg_buff << std::endl;
@@ -284,25 +270,11 @@ void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
         return;
     }
 
-
-
-    message = ":" + str._usr_ptr->GetUserNick()  + " " + command + " " + nick + " " + paramList[2] + "\r\n";
-
-
-    
-    std::cout << "Reciever user fd: " << receiver->GetUserFd() << std::endl;
-    std::cout << "Sender user fd: " << str._usr_ptr->GetUserFd() << std::endl;
-    std::cout << "Sender socker fd: " << str._fd << std::endl;
-    
-    std::cout << "Wait result: " << std::endl;
-
-
-    send(receiver->GetUserFd(), "PING", sizeof("PING"), 0);
-
-    // send(receiver->GetUserFd(), message.data(), message.size(), 0);
+	message	= ":" + str._usr_ptr->GetUserNick() +" PRIVMSG " + receiver->GetUserNick() + " " +  paramList[2] +"\r\n";
+    cout << message << endl;
+	if (send(receiver->GetUserFd(), message.data(), message.size(), 0) <= 0 );
 
 }
-
 
 void    Parser::stringParser ( ClientSocket &str ) {
 
@@ -319,37 +291,13 @@ void    Parser::stringParser ( ClientSocket &str ) {
     command = returnCommand(str._msg_buff);
     // std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
 
-
     if (command == "USER") {
         workWithUSER (str);
     } else if (command == "NICK") {
         workWithNICK (str);   
     } else if (command == "PRIVMSG") {
-        workWithPRIVMSG (str);   
-    } 
-
+        workWithPRIVMSG (str);
+    }
 
     str._msg_buff.clear();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
