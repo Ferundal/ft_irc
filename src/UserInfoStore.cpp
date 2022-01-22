@@ -26,13 +26,26 @@ bool UserInfoStore::IsNickAvalable(string const _searching_nick) const {
 	return (true);
 }
 
+bool UserInfoStore::IsUserActive(string const _searching_nick) const {
+	vector<string>::const_iterator _curr_active_user_name = _connected_users.begin();
+	vector<string>::const_iterator _end = _connected_users.end();
+	while (_curr_active_user_name != _end) {
+		if (*_curr_active_user_name == _searching_nick)
+			return (true);
+		++_curr_active_user_name;
+	}
+	return (false);
+}
+
 User *UserInfoStore::FindUserByNick(string _searching_nick) {
-	vector<User *>::iterator _curr_active_user_ptr = _connected_users.begin();
-	vector<User *>::iterator _end = _connected_users.end();
-	while (_curr_active_user_ptr != _end) {
-		if ((*_curr_active_user_ptr)->_nick == _searching_nick)
-			return (*_curr_active_user_ptr);
-		++_curr_active_user_ptr;
+	if (IsUserActive(_searching_nick) == true) {
+		vector<User>::iterator _curr_user = _users_store.begin();
+		vector<User>::iterator _end = _users_store.end();
+		while (_curr_user != _end) {
+			if (_curr_user->_nick == _searching_nick)
+				return (&*_curr_user);
+			++_curr_user;
+		}
 	}
 	return (NULL);
 }

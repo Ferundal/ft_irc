@@ -41,7 +41,7 @@ bool User::IsActive() const {
 
 int User::SetActive() {
 	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
-		_user_store->_connected_users.push_back(this);
+		_user_store->_connected_users.push_back(this->_nick);
 		_is_active = true;
 		return (0);
 	}

@@ -19,7 +19,7 @@ class UserInfoStore {
 	friend class Channel;
 private:
 	vector<User> _users_store;
-	vector<User *> _connected_users;
+	vector<string> _connected_users;
 	vector<Channel> _active_channels;
 private:
 
@@ -27,7 +27,9 @@ public:
 	UserInfoStore();
 	~UserInfoStore();
 	bool IsNickAvalable(const string _searching_nick) const;
+	bool IsUserActive(const string _searching_nick) const;
 	User &CreateNewUser(int _new_user_fd);
+
 	User *FindUserByNick(string _searching_nick);
 	Channel *FindChannelByName(string _searching_channel_name);
 };
