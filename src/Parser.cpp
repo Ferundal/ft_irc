@@ -168,11 +168,11 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
             ;// std::cout << "|INFO| [User successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
                 // str._msg_buff = "375     RPL_MOTDSTART";
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Message of the day -\n\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Middle request\n\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserNick()
                 + " :" + SERVER_NAME + "End of /MOTD command\n\r\n";
                 std::cout << "Answer " << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
@@ -237,11 +237,11 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Middle request\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserNick()
                 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
