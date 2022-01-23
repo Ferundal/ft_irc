@@ -68,6 +68,12 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
+void	Parser::errSendMsg(int er_code, const char* msg)
+{
+	(void)er_code;
+	(void)msg;
+}
+
 std::string Parser::returnCommand ( std::string &str ) {
     std::string command;
     int         pos;
@@ -157,7 +163,6 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
         isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
             if (str._usr_ptr->SetActive() == 0) {
-                // str._msg_buff = "375     RPL_MOTDSTART";
                 answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName()
                 + " :- " + SERVER_NAME + " Message of the day -\r\n";
                 answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
@@ -191,11 +196,11 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName() 
+                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserNick()
                 + " :- " + SERVER_NAME + " Middle request\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserNick()
                 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
@@ -225,20 +230,19 @@ void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
 
 	message	= ":" + str._usr_ptr->GetUserNick() +" PRIVMSG " + receiver->GetUserNick() + " " +  paramList[2] +"\r\n";
     cout << message << endl;
-	if (send(receiver->GetUserFd(), message.data(), message.size(), 0) <= 0 );
+	if (send(receiver->GetUserFd(), message.data(), message.size(), 0) <= 0 )
+		errSendMsg(0,(const char *)0);
 
 }
 
 void    Parser::stringParser ( ClientSocket &str ) {
 
-    std::cout << str._msg_buff << std::endl;
-    //  Checking command in pull
-    bool result = checkCommand(str._msg_buff);
+    std::cout << str._msg_buff << std::endl; //DEBUG out
 
-    //  Getting command for countin. logic
+    if (checkCommand(str._msg_buff))
+    	errSendMsg(0,(const char *)0);
     std::string command = returnCommand(str._msg_buff);
 
-    // std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
     if (command == "USER") {
         workWithUSER (str);
     } else if (command == "NICK") {

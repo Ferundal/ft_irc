@@ -27,8 +27,9 @@ class Parser {
 
         // External func's
         void                        stringParser ( ClientSocket &str );
-        std::string                 returnCommand ( std::string &str );
+        std::string					returnCommand ( std::string &str );
         bool                        checkCommand ( std::string &str );
+        void 						errSendMsg(int er_code, const char* msg);
 
         void                        workWithUSER ( ClientSocket &str );
         void                        workWithNICK ( ClientSocket &str );
