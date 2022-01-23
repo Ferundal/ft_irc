@@ -152,32 +152,21 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
 
     paramList = mySplit(str._msg_buff);
 
-    // size_t i = 0;
-
-    // while (i < paramList.size()) {
-    //     std::cout << i + 1 << ") " << paramList[i] << std::endl;
-    //     ++i;
-    // }
-
     isActive = str._usr_ptr->IsActive();
-    ;// std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
         isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        // ;std::cout << "|INFO| isSetUserInfo: [" << isSetUserInfo << "]" << std::endl;
         if (isSetUserInfo == false) {
-            ;// std::cout << "|INFO| [User successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
                 // str._msg_buff = "375     RPL_MOTDSTART";
                 answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName()
-                + " :- " + SERVER_NAME + " Message of the day -\n\r\n";
+                + " :- " + SERVER_NAME + " Message of the day -\r\n";
                 answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
-                + " :- " + SERVER_NAME + " Middle request\n\r\n";
+                + " :- " + SERVER_NAME + " Middle request\r\n";
                 answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
-                + " :" + SERVER_NAME + "End of /MOTD command\n\r\n";
+                + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << "Answer " << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
             }
-            // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
         else
            ;// std::cout << "|INFO| [User is not added]" << std::endl;
@@ -185,39 +174,6 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     } else {
         ;// std::cout << "|INFO| [User is already active]" << std::endl;
     }
-}
-
-void test()
-{
-	string msg;
-
-	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 :Hi1\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker@127.0.0.1 :Hi2\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker!NePes :Hi3\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker :Hi4\r\n";
-	send(4,msg.data(),msg.size(),0);
-
-	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 : Hi5\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker@127.0.0.1 : Hi6\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker!NePes : Hi7\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker : Hi8\r\n";
-	send(4,msg.data(),msg.size(),0);
-
-	msg = ":archie PRIVMSG kreker!NePes@127.0.0.1 : Hi9\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker@127.0.0.1 : Hi10\n\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker!NePes : Hi11\n\r\n";
-	send(4,msg.data(),msg.size(),0);
-	msg = ":archie PRIVMSG kreker : Hi12\n\r\n";
-	send(4,msg.data(),msg.size(),0);
-
 }
 
 void        Parser::workWithNICK ( ClientSocket &str ) {
@@ -230,10 +186,8 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
     paramList = mySplit(str._msg_buff);
 
     isActive = str._usr_ptr->IsActive();
-    // std::cout << "|INFO| isActive: [" << isActive << "]" << std::endl;
     if (isActive == false) {
         isSetNickInfo = str._usr_ptr->SetNick(paramList[1]);
-        // std::cout << "|INFO| isSetNickInfo: [" << isSetNickInfo << "]" << std::endl;
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (str._usr_ptr->SetActive() == 0) {
@@ -246,7 +200,6 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
                 std::cout << answer << std::endl;
                 send(str._fd, answer.data(), answer.size(), 0);
             }
-            // std::cout << "Res: " << str._usr_ptr->SetActive() << std::endl;
         }
         else
             ;// std::cout << "|INFO| [Nick is not added]" << std::endl;
@@ -280,17 +233,12 @@ void    Parser::stringParser ( ClientSocket &str ) {
 
     std::cout << str._msg_buff << std::endl;
     //  Checking command in pull
-    bool result;
-
-    result = checkCommand(str._msg_buff);
-    // std::cout << "|NOTE| FIND COMMAND RESULT: [" << result << "]" << std::endl;
+    bool result = checkCommand(str._msg_buff);
 
     //  Getting command for countin. logic
-    std::string command;
+    std::string command = returnCommand(str._msg_buff);
 
-    command = returnCommand(str._msg_buff);
     // std::cout << "|NOTE| COMMAND FIND: [" << command << "]" << std::endl;
-
     if (command == "USER") {
         workWithUSER (str);
     } else if (command == "NICK") {
