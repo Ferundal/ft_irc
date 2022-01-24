@@ -15,6 +15,36 @@ User &UserInfoStore::CreateNewUser(int _new_user_fd) {
 	return (usr);
 }
 
+void UserInfoStore::DeleteUser(User *_user_to_delete) {
+	if (_user_to_delete->_is_active) {
+		{
+			list<User *>::iterator _curr_active_user = _connected_users.begin();
+			list<User *>::iterator _active_user_end = _connected_users.end();
+			while (_curr_active_user != _active_user_end) {
+				if (*_curr_active_user == _user_to_delete) {
+					_connected_users.erase(_curr_active_user);
+					break;
+				}
+				++_curr_active_user;
+			}
+		}
+		vector<Channel *>::iterator _joined_channels_begin = _user_to_delete->_membership.begin();
+		vector<Channel *>::iterator _curr_joined_channel = _user_to_delete->_membership.end();
+		while (_curr_joined_channel != _joined_channels_begin)
+		{
+			--_curr_joined_channel;
+			(*_curr_joined_channel)->DeleteUser(*_user_to_delete);
+		}
+	}
+	list<User>::iterator _curr_user = _users_store.end();
+	list<User>::iterator _users_store_begin = _users_store.begin();
+	while (_curr_user != _users_store_begin) {
+		--_curr_user;
+		if (&*_curr_user == _user_to_delete)
+			_users_store.erase(_curr_user);
+	}
+}
+
 bool UserInfoStore::IsNickAvalable(string const _searching_nick) const {
 	list<User>::const_iterator _curr_user = _users_store.begin();
 	list<User>::const_iterator _end = _users_store.end();
@@ -26,17 +56,6 @@ bool UserInfoStore::IsNickAvalable(string const _searching_nick) const {
 	return (true);
 }
 
-bool UserInfoStore::IsUserActive(string const _searching_nick) const {
-	list<User *>::const_iterator _curr_active_user_name = _connected_users.begin();
-	list<User *>::const_iterator _end = _connected_users.end();
-	while (_curr_active_user_name != _end) {
-		if ((*_curr_active_user_name)->_nick == _searching_nick)
-			return (true);
-		++_curr_active_user_name;
-	}
-	return (false);
-}
-
 User *UserInfoStore::FindUserByNick(string _searching_nick) {
 	list<User *>::iterator _curr_user = _connected_users.begin();
 	list<User *>::iterator _end = _connected_users.end();
@@ -46,6 +65,26 @@ User *UserInfoStore::FindUserByNick(string _searching_nick) {
 		++_curr_user;
 	}
 	return (NULL);
+}
+
+int UserInfoStore::FindReceivers(vector<string> &_searching_receivers, vector<User *> &_result) {
+	vector<string>::iterator _curr_receiver = _searching_receivers.begin();
+	vector<string>::iterator _receivers_end = _searching_receivers.end();
+	while (_curr_receiver != _receivers_end) {
+		if (*(_curr_receiver->begin()) == '#') {
+			Channel *receiver_channel_ptr = FindChannelByName(*_curr_receiver);
+			if (receiver_channel_ptr = NULL) {
+				_searching_receivers.clear();
+				_searching_receivers.push_back(*_curr_receiver);
+				return (ERR_NOSUCHCHANNEL);
+			}
+			else {
+				
+			}
+		}
+		else
+
+	}
 }
 
 Channel *UserInfoStore::FindChannelByName(string _searching_channel_name) {
