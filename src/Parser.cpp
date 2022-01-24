@@ -68,10 +68,12 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
-void	Parser::errSendMsg(int er_code, const char* msg)
+void Parser::errSendMsg(int er_code, User& user, const char *msg)
 {
-	(void)er_code;
-	(void)msg;
+	(void) er_code; // TODO глянуть справку по -Werror, какого хрена
+	std::string message;
+	message = message + ":" + SERVER_NAME + CODE_TO_STRING(er_code) + user.GetUserNick() + " " + msg + "\r\n";
+	send(user.GetUserFd(), message.data(), message.size(), 0);
 }
 
 std::string Parser::returnCommand ( std::string &str ) {
@@ -85,10 +87,7 @@ std::string Parser::returnCommand ( std::string &str ) {
         return (str.substr(0, pos));
 }
 
-bool         Parser::checkCommand ( std::string &str ) {
-    std::string command;
-
-    command = returnCommand(str);
+bool         Parser::checkCommand ( std::string &command ) {
     for (int i = 0; i < COMMAND_COUNT; ++i)
         if (this->_commandList[i] == command) {
             return true;
@@ -135,42 +134,39 @@ std::vector<std::string> Parser::mySplit ( std::string &str ) {
     size_t      countP = countParam(str);
     std::vector<std::string> commandArr(countP);
 
-    std::cout << "Count" << countP << std::endl;
-
+//    std::cout << "Count" << countP << std::endl;
     while (i < countP) {
         if (i == countP - 1)
             symb = "\r";
         commandArr[i] = str.substr(0, str.find(symb));
-        std::cout << "commandArr[" << i << "]: " << commandArr[i] << std::endl;
+//        std::cout << "commandArr[" << i << "]: " << commandArr[i] << std::endl;
         str.erase(0, str.find(symb) + 1);
         ++i;
     }
     return commandArr;
 }
 
-void         Parser::workWithUSER ( ClientSocket &str ) {
+void         Parser::commandUSER (ClientSocket &socket ) {
 //  Checking repeat NICK and USER in DB
-    bool                        isActive;
     bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
     std::string                 answer;
 
 
-    paramList = mySplit(str._msg_buff);
+    paramList = mySplit(socket._msg_buff);
 
-    isActive = str._usr_ptr->IsActive();
-    if (isActive == false) {
-        isSetUserInfo = str._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
+	if (socket._usr_ptr->IsActive() == false) {
+        isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
-            if (str._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserFullName()
-                + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserFullName()
-                + " :- " + SERVER_NAME + " Middle request\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserFullName()
-                + " :" + SERVER_NAME + "End of /MOTD command\r\n";
+            if (socket._usr_ptr->SetActive() == 0) {
+                answer = answer + ":" + SERVER_NAME + " 375 " + socket._usr_ptr->GetUserFullName()
+						 + " :- " + SERVER_NAME + " Message of the day -\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + socket._usr_ptr->GetUserFullName()
+						 + " :- " + SERVER_NAME + " Welcome to the party\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + socket._usr_ptr->GetUserFullName()
+						 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << "Answer " << answer << std::endl;
-                send(str._fd, answer.data(), answer.size(), 0);
+                send(socket._fd, answer.data(), answer.size(), 0);
             }
         }
         else
@@ -181,29 +177,27 @@ void         Parser::workWithUSER ( ClientSocket &str ) {
     }
 }
 
-void        Parser::workWithNICK ( ClientSocket &str ) {
+void        Parser::commandNICK (ClientSocket &socket ) {
     //  Checking repeat NICK and USER in DB
-    bool                        isActive;
     bool                        isSetNickInfo;
     std::vector<std::string>    paramList;
     std::string                  answer;
 
-    paramList = mySplit(str._msg_buff);
+    paramList = mySplit(socket._msg_buff);
 
-    isActive = str._usr_ptr->IsActive();
-    if (isActive == false) {
-        isSetNickInfo = str._usr_ptr->SetNick(paramList[1]);
+	if (socket._usr_ptr->IsActive() == false) {
+        isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
-            if (str._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + str._usr_ptr->GetUserNick()
-                + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + str._usr_ptr->GetUserNick()
-                + " :- " + SERVER_NAME + " Middle request\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + str._usr_ptr->GetUserNick()
-                + " :" + SERVER_NAME + "End of /MOTD command\r\n";
+            if (socket._usr_ptr->SetActive() == 0) {
+                answer = answer + ":" + SERVER_NAME + " 375 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+						 + " :- " + SERVER_NAME + " Message of the day -\r\n";
+                answer = answer + ":" + SERVER_NAME + " 372 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+						 + " :- " + SERVER_NAME + " Middle request\r\n";
+                answer = answer + ":" + SERVER_NAME + " 376 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+						 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << answer << std::endl;
-                send(str._fd, answer.data(), answer.size(), 0);
+                send(socket._fd, answer.data(), answer.size(), 0);
             }
         }
         else
@@ -215,41 +209,103 @@ void        Parser::workWithNICK ( ClientSocket &str ) {
 //    test();
 }
 
-void    Parser::workWithPRIVMSG ( ClientSocket &str ) {
-    // std::cout << "Let's prog mthf" << str._msg_buff << std::endl;
-    std::vector<std::string>    paramList = mySplit(str._msg_buff) ;    
-    std::string nick = paramList[1];
+void    Parser::commandRIVMSG (ClientSocket &socket ) {
+
+    std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string command = paramList[0];
+	int param_count = countParam(socket._msg_buff);
+	if (param_count <= 2)
+    	errSendMsg(ERR_NORECIPIENT,*socket._usr_ptr, (":No recipient given ("+ command+ ")").data());
+
+    // TODO реализовать отправку по всем никнеймам?
+    std::string nick = paramList[1];
     std::string message;
-    User        *receiver = str._usr_ptr->ToStore().FindUserByNick(nick);
+    User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(nick);
 
     if (receiver == NULL) {
-        std::cout << "BD is not working" << std::endl;
-        return;
+    	errSendMsg(ERR_NOSUCHNICK, *socket._usr_ptr, (nick+" :No such nick/channel").data());
+    	return;
     }
 
-	message	= ":" + str._usr_ptr->GetUserNick() +" PRIVMSG " + receiver->GetUserNick() + " " +  paramList[2] +"\r\n";
+	message	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + nick + " " + paramList[2] + "\r\n";
     cout << message << endl;
-	if (send(receiver->GetUserFd(), message.data(), message.size(), 0) <= 0 )
-		errSendMsg(0,(const char *)0);
+	send(receiver->GetUserFd(), message.data(), message.size(), 0);
 
+//	ERR_NORECIPIENT(Ok)             ERR_NOTEXTTOSEND
+//	ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+//	ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
+//	ERR_NOSUCHNICK(Ok)
+//	RPL_AWAY
 }
 
-void    Parser::stringParser ( ClientSocket &str ) {
+void	Parser::commandQUIT(ClientSocket& socket)
+{
+	socket._usr_ptr->ToStore().DeleteUser(socket._usr_ptr);
+	throw exception(); // delete user TODO поменять на нормальный exception
+}
 
-    std::cout << str._msg_buff << std::endl; //DEBUG out
+void	Parser::commandWHOIS(ClientSocket& socket)
+{
+	int param_count = countParam(socket._msg_buff);
+	if(param_count != 2)
+	{
+		errSendMsg(ERR_NONICKNAMEGIVEN, *socket._usr_ptr,":No nickname given");
+		return;
+	}
 
-    if (checkCommand(str._msg_buff))
-    	errSendMsg(0,(const char *)0);
-    std::string command = returnCommand(str._msg_buff);
+	string message;
+	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
+	std::string  nick = paramList[1];
+	User* user; // По кому ищется и отправляется инфа
 
-    if (command == "USER") {
-        workWithUSER (str);
-    } else if (command == "NICK") {
-        workWithNICK (str);   
-    } else if (command == "PRIVMSG") {
-        workWithPRIVMSG (str);
+	if((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL)
+	{
+		errSendMsg(ERR_NOSUCHNICK, *socket._usr_ptr, (nick + " :No such nick/channel").data());
+		return;
+	}
+	else{
+		message = message + ":" + SERVER_NAME + " 311 " + user->GetUserNick() /* TODO доавить UserName и RealName как Миша закончит */; //TODO заменить код ошибки на дефайн
+		send(socket._fd, message.data(), message.size(), 0);
+	}
+
+//	if(socket._usr_ptr->ToStore().GetChanelsByNick != NULL) //TODO Как Миша доделает
+//		send();
+	message = message + ":" + SERVER_NAME + " 318 " + user->GetUserNick() + " :End of /WHOIS list\r\n"; //TODO поменять на дефайн
+	send(socket._fd, message.data(), message.size(), 0);
+//ERR_NONICKNAMEGIVEN(Ok)
+//RPL_WHOISUSER                   RPL_WHOISCHANNELS
+//RPL_WHOISCHANNELS               RPL_WHOISSERVER
+//RPL_AWAY                        RPL_WHOISOPERATOR
+//RPL_WHOISIDLE                   ERR_NOSUCHNICK(Ok)
+//RPL_ENDOFWHOIS
+}
+
+
+// AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
+// AWAY									-- когда пришел
+// ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
+void    Parser::stringParser(ClientSocket &socket) {
+    std::cout << socket._msg_buff << std::endl; //DEBUG out
+    socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
+
+    std::string command = returnCommand(socket._msg_buff);
+
+    if (checkCommand(command))
+    {
+    	errSendMsg(ERR_UNKNOWNCOMMAND, *socket._usr_ptr, (command + " :Unknown command").data());
+    	return;
     }
 
-    str._msg_buff.clear();
+    if (command == "USER") {
+		commandUSER(socket);
+    } else if (command == "NICK") {
+		commandNICK(socket);
+    } else if (command == "PRIVMSG") {
+		commandRIVMSG(socket);
+    } else if (command == "QUIT"){
+    	commandQUIT(socket);
+    } else if (command == "WHOIS")
+    	commandWHOIS(socket);
+
+    socket._msg_buff.clear();
 }

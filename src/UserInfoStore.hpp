@@ -13,6 +13,7 @@
 
 using std::list;
 using std::string;
+using std::vector;
 
 class User;
 class Channel;
