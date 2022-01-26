@@ -261,7 +261,6 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     } else {
         ;// std::cout << "|INFO| [Nick is already active]" << std::endl;
     }
-//    test();
 }
 
 void    Parser::commandRIVMSG (ClientSocket &socket ) {
@@ -350,8 +349,13 @@ void	Parser::commandJOIN(ClientSocket& socket)
 		return;
 	}
 
+	string message;
 
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NOTOPIC) + " " + socket._usr_ptr->GetUserNick()
+			+ paramList[1] + " :No topic is set\r\n";
 
+	
+	send(socket._fd, message.data(), message.size(), 0);
 
 
 //	ERR_NEEDMOREPARAMS(Ok)              ERR_BANNEDFROMCHAN
@@ -359,6 +363,7 @@ void	Parser::commandJOIN(ClientSocket& socket)
 //	ERR_CHANNELISFULL               ERR_BADCHANMASK
 //	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
 //	RPL_TOPIC
+//	RPL_NAMREPLY
 }
 
 
