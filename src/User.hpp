@@ -26,6 +26,9 @@ private:
 	string				_server_name;
 	string				_real_name;
 	string				_nick;
+	bool				_is_;
+	bool				_is_away;
+	string				_away_message;
 	UserInfoStore		*_to_user_store;
 	vector<Channel *>	_membership;
 private:
@@ -81,12 +84,17 @@ public:
 	 */
 	int SetActive(void);
 
+	void SetAway(const string &_new_away_message);
+	void SetNotAway(void);
+
 	/**
 	 *  Give information about user registration status.
 	 *  @Return true if user is mark as active.
 	 *  @Return false if not.
 	 */
 	bool IsActive() const;
+
+	bool IsAway() const;
 
 	/**
 	 *  Check is user info alreay set.
