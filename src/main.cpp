@@ -5,6 +5,7 @@
 #include "iostream"
 
 int check_arg(int argc, char **argv) {
+	(void)argv;
 	if (argc != 3) {
 		std::cout << "Wrong param amount. Expected two: port and password" <<std::endl;
 		return (1);
