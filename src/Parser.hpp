@@ -1,13 +1,14 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include "error_answers.hpp"
 #include <string>
 #include <iostream>
 #include "vector"
 #include "cstdio"
 #include "ClientSocket.hpp"
 #include "User.hpp"
+#include "error_answers.hpp"
+#include "reply_answers.hpp"
 
 #define COMMAND_COUNT 48
 #define SERVER_NAME "127.0.0.1"

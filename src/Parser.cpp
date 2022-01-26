@@ -70,7 +70,7 @@ Parser  &Parser::operator = ( const Parser &other ) {
 
 void Parser::errSendMsg(const char* er_code, User& user, const string& msg)
 {
-	(void) er_code; // TODO глянуть справку по -Werror, какого хрена
+	(void) er_code;
 	std::string message;
 	message = message + ":" + SERVER_NAME + " " + er_code + " " + user.GetUserNick() + " " + msg + "\r\n";
 	write(1, message.data(), message.size()); // DEBUG out
@@ -237,7 +237,7 @@ void    Parser::commandRIVMSG (ClientSocket &socket ) {
 	send(receiver->GetUserFd(), message.data(), message.size(), 0);
 
 //	ERR_NORECIPIENT(Ok)             ERR_NOTEXTTOSEND
-//	ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+//	ERR_CANNOTSENDTOCHAN			ERR_NOTOPLEVEL
 //	ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
 //	ERR_NOSUCHNICK(Ok)
 //	RPL_AWAY
@@ -245,9 +245,9 @@ void    Parser::commandRIVMSG (ClientSocket &socket ) {
 
 void	Parser::commandQUIT(ClientSocket& socket)
 {
-	cout << "QUIT command done" << endl;
+	cout << "QUIT command done" << endl; // DEBUG out
 	socket._usr_ptr->ToStore().DeleteUser(socket._usr_ptr);
-	throw Parser::UserDeleteException(); // delete user TODO поменять на нормальный exception
+	throw Parser::UserDeleteException();
 }
 
 void	Parser::commandWHOIS(ClientSocket& socket)
@@ -270,22 +270,20 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 		return;
 	}
 	else{
-		message = message + ":" + SERVER_NAME + " 311 " + socket._usr_ptr->GetUserNick() + " " +
+		message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_WHOISUSER) + " " + socket._usr_ptr->GetUserNick() + " " +
 				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " +
-				user->GetUserRealName() + "\r\n";//TODO заменить код ошибки на дефайн
+				user->GetUserRealName() + "\r\n";
 	}
 
-//	if(socket._usr_ptr->ToStore().GetChanelsByNick != NULL) //TODO Как Миша доделает
-//		send();
-	message = message + ":" + SERVER_NAME + " 318 " + socket._usr_ptr->GetUserNick() + " " + user->GetUserNick() + " :End of /WHOIS list\r\n"; //TODO поменять на дефайн
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFWHOIS) + " " + socket._usr_ptr->GetUserNick()
+			+ " " + user->GetUserNick() + " :End of /WHOIS list\r\n";
 	cout << message << endl;
 	send(socket._fd, message.data(), message.size(), 0);
-//ERR_NONICKNAMEGIVEN(Ok)
-//RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS
-//RPL_WHOISCHANNELS??            			  RPL_WHOISSERVER
+//ERR_NONICKNAMEGIVEN(Ok)					  RPL_WHOISSERVER
+//RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS??
 //RPL_AWAY(кто отошел)                        RPL_WHOISOPERATOR
-//RPL_WHOISIDLE(Кто простаивает)                   ERR_NOSUCHNICK(Ok)
-//RPL_ENDOFWHOIS
+//RPL_WHOISIDLE(Кто простаивает)              ERR_NOSUCHNICK(Ok)
+//RPL_ENDOFWHOIS(Ok)
 }
 
 
