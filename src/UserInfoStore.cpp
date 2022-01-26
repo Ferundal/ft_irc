@@ -88,7 +88,7 @@ int UserInfoStore::FindReceivers(vector<string> &_searching_receivers, vector<Us
 	while (_curr_receiver != _receivers_end) {
 		if (*(_curr_receiver->begin()) == '#') {
 			Channel *receiver_channel_ptr = FindChannelByName(*_curr_receiver);
-			if (receiver_channel_ptr = NULL) {
+			if (receiver_channel_ptr == NULL) {
 				_searching_receivers.clear();
 				_searching_receivers.push_back(*_curr_receiver);
 				return (ERR_NOSUCHCHANNEL);
