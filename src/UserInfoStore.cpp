@@ -36,6 +36,7 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 			(*_curr_joined_channel)->DeleteUser(_user_to_delete);
 			if ((*_curr_joined_channel)->_user_store.empty()) {
 				DeleteChannel((*_curr_joined_channel)->_channel_name);
+				break;
 			}
 		}
 	}
@@ -43,8 +44,10 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 	list<User>::iterator _users_store_begin = _users_store.begin();
 	while (_curr_user != _users_store_begin) {
 		--_curr_user;
-		if (&*_curr_user == _user_to_delete)
+		if (&*_curr_user == _user_to_delete) {
 			_users_store.erase(_curr_user);
+			break;
+		}
 	}
 }
 
