@@ -159,14 +159,14 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 
     // Check ERR_NEEDMOREPARAMS
     if (paramList.size() != 5) {
-        errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters"));
+        errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters").data());
         return;
     }
 
     // Check ERR_ALREADYREGISTRED
 
     if (socket._usr_ptr->IsUserInfoSet() == true) {
-        errSendMsg(CODE_TO_STRING(ERR_ALREADYREGISTRED), *socket._usr_ptr, (paramList[0] + " :You may not reregister"));
+        errSendMsg(CODE_TO_STRING(ERR_ALREADYREGISTRED), *socket._usr_ptr, (paramList[0] + " :You may not reregister").data());
         return;
     }
 
@@ -349,6 +349,7 @@ void	Parser::commandJOIN(ClientSocket& socket)
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,(command + " :Not enough parameters").data());
 		return;
 	}
+
 
 
 
