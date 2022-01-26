@@ -39,13 +39,14 @@ class Parser {
         void                        stringParser ( ClientSocket &socket);
         std::string					returnCommand ( std::string &str );
         bool                        checkCommand ( std::string &str );
-        void						errSendMsg(const char* er_code, User& user, const string& msg);
+        void						errSendMsg(const char* er_code, User& user, const char* msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
         void                        commandRIVMSG (ClientSocket &socket);
         void                        commandQUIT (ClientSocket &socket);
         void						commandWHOIS(ClientSocket& socket);
+        void 						commandJOIN(ClientSocket& socket);
 
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );

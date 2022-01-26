@@ -68,7 +68,7 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
-void Parser::errSendMsg(const char* er_code, User& user, const string& msg)
+void Parser::errSendMsg(const char* er_code, User& user, const char* msg)
 {
 	(void) er_code;
 	std::string message;
@@ -307,8 +307,7 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 	}
 	else{
 		message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_WHOISUSER) + " " + socket._usr_ptr->GetUserNick() + " " +
-				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " +
-				user->GetUserRealName() + "\r\n";
+				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName() + "\r\n";
 	}
 
 	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFWHOIS) + " " + socket._usr_ptr->GetUserNick()
@@ -322,10 +321,34 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 //RPL_ENDOFWHOIS(Ok)
 }
 
+void	Parser::commandJOIN(ClientSocket& socket)
+{
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string command = paramList[0];
+	int param_count = countParam(socket._msg_buff);
+
+	if(param_count != 2)
+	{
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,(command + " :Not enough parameters").data());
+		return;
+	}
+
+
+
+
+//	ERR_NEEDMOREPARAMS(Ok)              ERR_BANNEDFROMCHAN
+//	ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+//	ERR_CHANNELISFULL               ERR_BADCHANMASK
+//	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+//	RPL_TOPIC
+}
+
 
 // AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
 // AWAY									-- когда пришел
 // ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
+// LIST
+// JOIN
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -349,6 +372,8 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandQUIT(socket);
     } else if (command == "WHOIS") {
     	commandWHOIS(socket);
+    } else if (command == "JOIN"){
+		commandJOIN(socket);
     }
 
     socket._msg_buff.clear();
