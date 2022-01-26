@@ -405,10 +405,6 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
         send(socket._fd, answer.data(), answer.size(), 0);
         socket._usr_ptr->SetAway(paramList[1]);
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 8963c02261e5db3bdfb75f7f2a5b630f1af51427
 }
 
 void    Parser::stringParser(ClientSocket &socket) {

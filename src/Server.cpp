@@ -31,8 +31,6 @@ catch(exception& e)
 
 void Server::grabConnection()
 {
-
-
 	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
 	if (_pfd[0].revents & POLLIN)
 		// Новый пользователь
@@ -73,12 +71,11 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	{
 		r_len = recv(it->fd, &r_buf, 1, 0);
 		if (((r_len == 0) && (r_frst_flag == false)))
-		{
 			throw Parser::UserDeleteException(); //delete exception
-		}else
-		{
+		else if (r_len == 0)
+			break;
+		else
 			r_frst_flag = true;
-		}
 		sckt._msg_buff.append(r_buf);
 		if (sckt._msg_buff.find("\r\n") != string::npos)
 			break;
