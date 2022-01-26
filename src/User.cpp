@@ -61,6 +61,12 @@ bool User::IsActive() const {
 	return (this->_is_active);
 }
 
+bool User::IsUserInfoSet() const {
+	if (_user_name.empty())
+		return false;
+	return true;
+}
+
 int User::LeaveChannel(const string _channel_name) {
 	vector<Channel *>::iterator _curr_membership = this->_membership.begin();
 	vector<Channel *>::iterator _memberships_end = this->_membership.begin();
