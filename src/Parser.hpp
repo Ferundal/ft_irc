@@ -47,6 +47,8 @@ class Parser {
         void                        commandQUIT (ClientSocket &socket);
         void						commandWHOIS(ClientSocket& socket);
         void 						commandJOIN(ClientSocket& socket);
+        void 						commandAWAY(ClientSocket& socket);
+
 
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );
