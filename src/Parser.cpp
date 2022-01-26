@@ -368,12 +368,6 @@ void	Parser::commandJOIN(ClientSocket& socket)
 }
 
 
-// AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
-// AWAY									-- когда пришел
-// ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
-
-
-
 void 						Parser::commandAWAY( ClientSocket& socket ) {
 //      Команда: AWAY
 //   Параметры: [message]
@@ -404,6 +398,27 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
         std::cout << answer << std::endl;
         send(socket._fd, answer.data(), answer.size(), 0);
         socket._usr_ptr->SetAway(paramList[1]);
+    }
+}
+
+
+void 						Parser::commandISON (ClientSocket& socket) {
+	std::vector<std::string>    nicknameList = mySplit(socket._msg_buff);
+    std::string                 command;
+    std::string                 answer;
+
+    command = returnCommand(socket._msg_buff);
+    if (socket._msg_buff.size() - command.size() <= 512) {
+        answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
+        for (int i = 1; i < nicknameList.size(); ++i) {
+            answer += " " + nicknameList[i];
+        }
+        answer += "\r\n";
+        std::cout << answer << std::endl;
+        send(socket._fd, answer.data(), answer.size(), 0);
+    } else {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (nicknameList[0] + " :Not enough parameters").data());
+        return;
     }
 }
 
@@ -438,6 +453,8 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandJOIN(socket);
     } else if (command == "AWAY") {
     	commandAWAY(socket);
+    } else if (command == "ISON") {
+        commandISON(socket);
     }
 
     socket._msg_buff.clear();
