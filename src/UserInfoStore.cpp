@@ -94,7 +94,7 @@ int UserInfoStore::FindReceivers(vector<string> &_searching_receivers, vector<Us
 				return (ERR_NOSUCHCHANNEL);
 			}
 			else {
-				
+				(void)_result;
 			}
 		}
 
