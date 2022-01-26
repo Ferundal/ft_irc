@@ -157,6 +157,18 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 
     paramList = mySplit(socket._msg_buff);
 
+    // Check ERR_NEEDMOREPARAMS
+    if (paramList.size() != 5) {
+        errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters"));
+        return;
+    }
+
+    // if (socket._usr_ptr.is)
+
+
+
+
+
 	if (socket._usr_ptr->IsActive() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
