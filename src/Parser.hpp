@@ -38,7 +38,7 @@ class Parser {
         void                        stringParser ( ClientSocket &socket);
         std::string					returnCommand ( std::string &str );
         bool                        checkCommand ( std::string &str );
-        void						errSendMsg(const char* er_code, User& user, const char *msg);
+        void						errSendMsg(const char* er_code, User& user, const string& msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);

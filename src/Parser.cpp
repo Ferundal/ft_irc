@@ -68,7 +68,7 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
-void Parser::errSendMsg(const char* er_code, User& user, const char *msg)
+void Parser::errSendMsg(const char* er_code, User& user, const string& msg)
 {
 	(void) er_code; // TODO глянуть справку по -Werror, какого хрена
 	std::string message;
@@ -83,7 +83,7 @@ std::string Parser::returnCommand ( std::string &str ) {
 
     pos = str.find(' ');
     if (pos < 0)
-        return (str);
+        return (str.substr(0, str.size() - 1));
     else
         return (str.substr(0, pos));
 }
@@ -270,25 +270,21 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 		return;
 	}
 	else{
-		message = message + ":" + SERVER_NAME + " 311 " + user->GetUserNick() +
-				" " + user->GetUserName() + " " + user->GetUserHost() + " * " +
+		message = message + ":" + SERVER_NAME + " 311 " + socket._usr_ptr->GetUserNick() + " " +
+				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " +
 				user->GetUserRealName() + "\r\n";//TODO заменить код ошибки на дефайн
-		cout << message << endl;
-		send(socket._fd, message.data(), message.size(), 0);
 	}
-//       311     RPL_WHOISUSER
-//                       "<nick> <user> <host> * :<real name>"
 
 //	if(socket._usr_ptr->ToStore().GetChanelsByNick != NULL) //TODO Как Миша доделает
 //		send();
-
-	message = message + ":" + SERVER_NAME + " 318 " + user->GetUserNick() + " :End of /WHOIS list\r\n"; //TODO поменять на дефайн
+	message = message + ":" + SERVER_NAME + " 318 " + socket._usr_ptr->GetUserNick() + " " + user->GetUserNick() + " :End of /WHOIS list\r\n"; //TODO поменять на дефайн
+	cout << message << endl;
 	send(socket._fd, message.data(), message.size(), 0);
 //ERR_NONICKNAMEGIVEN(Ok)
-//RPL_WHOISUSER                   RPL_WHOISCHANNELS
-//RPL_WHOISCHANNELS               RPL_WHOISSERVER
-//RPL_AWAY                        RPL_WHOISOPERATOR
-//RPL_WHOISIDLE                   ERR_NOSUCHNICK(Ok)
+//RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS
+//RPL_WHOISCHANNELS??            			  RPL_WHOISSERVER
+//RPL_AWAY(кто отошел)                        RPL_WHOISOPERATOR
+//RPL_WHOISIDLE(Кто простаивает)                   ERR_NOSUCHNICK(Ok)
 //RPL_ENDOFWHOIS
 }
 
@@ -309,16 +305,17 @@ void    Parser::stringParser(ClientSocket &socket) {
     	return;
     }
 
-    if (command == "USER") {
+    if (command == "USER"){
 		commandUSER(socket);
     } else if (command == "NICK") {
 		commandNICK(socket);
     } else if (command == "PRIVMSG") {
 		commandRIVMSG(socket);
-    } else if (command == "QUIT"){
+    } else if (command == "QUIT") {
     	commandQUIT(socket);
-    } else if (command == "WHOIS")
+    } else if (command == "WHOIS") {
     	commandWHOIS(socket);
+    }
 
     socket._msg_buff.clear();
 }
