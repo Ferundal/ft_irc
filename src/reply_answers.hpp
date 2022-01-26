@@ -5,7 +5,7 @@
 #ifndef IRCSERC_REPLY_ANSWERS_HPP
 #define IRCSERC_REPLY_ANSWERS_HPP
 
-#define    RPL_NONE 300
+#define    	RPL_NONE 300
 #define     RPL_USERHOST 302
 #define     RPL_ISON 303
 #define     RPL_AWAY 301
