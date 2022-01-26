@@ -342,14 +342,22 @@ void	Parser::commandJOIN(ClientSocket& socket)
 
 	string message;
 
-	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NOTOPIC) + " " + socket._usr_ptr->GetUserNick()
-			+ paramList[1] + " :No topic is set\r\n";
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_TOPIC) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :TOPIC\r\n";
 
-	
+//	353     RPL_NAMREPLY
+//	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
+//	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NAMREPLY) + " " //+ socket._usr_ptr->GetUserNick() + " "
+//			+ paramList[1] + " :@archie0 kreker" + "\r\n"; // TODO добавить список ников
+
+//	366     RPL_ENDOFNAMES
+//	"<channel> :End of /NAMES list"
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFNAMES) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :End of /NAMES list\r\n";
+
+	cout << message << endl;
 	send(socket._fd, message.data(), message.size(), 0);
-
-
-//	ERR_NEEDMOREPARAMS(Ok)              ERR_BANNEDFROMCHAN
+//	ERR_NEEDMOREPARAMS(Ok)          ERR_BANNEDFROMCHAN
 //	ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
 //	ERR_CHANNELISFULL               ERR_BADCHANMASK
 //	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
@@ -384,6 +392,8 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandQUIT(socket);
     } else if (command == "WHOIS") {
     	commandWHOIS(socket);
+    } else if (command == "JOIN"){
+		commandJOIN(socket);
     }
 
     socket._msg_buff.clear();
