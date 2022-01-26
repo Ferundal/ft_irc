@@ -145,6 +145,8 @@ std::vector<std::string> Parser::mySplit ( std::string str ) {
         str.erase(0, str.find(symb) + 1);
         ++i;
     }
+    cout << "SplitParamCount: " << countP<< endl;
+
     return commandArr;
 }
 
@@ -369,11 +371,42 @@ void	Parser::commandJOIN(ClientSocket& socket)
 // AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
 // AWAY									-- когда пришел
 // ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
+
+
+
+void 						Parser::commandAWAY( ClientSocket& socket ) {
+//      Команда: AWAY
+//   Параметры: [message]
+
+//   С сообщением AWAY, клиенты могут устанавливать автоматическую строку
+//   ответа на любые PRIVMSG-команды, направленные им (не на канал).
+//   Автоматический ответ посылается сервером к клиенту, пославшего команду
+//   PRIVMSG. Только отвечающий сервер может быть только один, к которому
+//   подсоединен клиент.
+
+//   AWAY используется вместе с одним параметром (установка сообщения AWAY)
+//   или без параметров (снятие сообщения AWAY).
+
+//   Числовые ответы:
+
+//           RPL_UNAWAY                      RPL_NOWAWAY
+
+    std::string                 answer;
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+    answer = "AWAY :" + paramList[1];
+
+}
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
 
     std::string command = returnCommand(socket._msg_buff);
+
+
+    // std::cout << "COmmand: " << command << std::endl; //DEBUG out
+
 
     if (!checkCommand(command))
     {
@@ -394,6 +427,8 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandWHOIS(socket);
     } else if (command == "JOIN"){
 		commandJOIN(socket);
+    } else if (command == "AWAY") {
+    	commandAWAY(socket);
     }
 
     socket._msg_buff.clear();
