@@ -157,15 +157,32 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 
     paramList = mySplit(socket._msg_buff);
 
+    // Check ERR_NEEDMOREPARAMS
+    if (paramList.size() != 5) {
+        errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters"));
+        return;
+    }
+
+    // Check ERR_ALREADYREGISTRED
+
+    if (socket._usr_ptr->IsUserInfoSet() == true) {
+        errSendMsg(CODE_TO_STRING(ERR_ALREADYREGISTRED), *socket._usr_ptr, (paramList[0] + " :You may not reregister"));
+        return;
+    }
+
+
+
+
+
 	if (socket._usr_ptr->IsActive() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
             if (socket._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + socket._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_MOTDSTART) + " " + socket._usr_ptr->GetUserFullName()
 						 + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + socket._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_MOTD) + " " + socket._usr_ptr->GetUserFullName()
 						 + " :- " + SERVER_NAME + " Welcome to the party\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + socket._usr_ptr->GetUserFullName()
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFMOTD) + " " + socket._usr_ptr->GetUserFullName()
 						 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << "Answer " << answer << std::endl;
                 send(socket._fd, answer.data(), answer.size(), 0);
@@ -228,11 +245,11 @@ void        Parser::commandNICK (ClientSocket &socket ) {
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
             if (socket._usr_ptr->SetActive() == 0) {
-                answer = answer + ":" + SERVER_NAME + " 375 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_MOTDSTART) + " " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
 						 + " :- " + SERVER_NAME + " Message of the day -\r\n";
-                answer = answer + ":" + SERVER_NAME + " 372 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_MOTD) + " " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
 						 + " :- " + SERVER_NAME + " Middle request\r\n";
-                answer = answer + ":" + SERVER_NAME + " 376 " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFMOTD) + " " + socket._usr_ptr->GetUserNick() //TODO поменять на дефайн
 						 + " :" + SERVER_NAME + "End of /MOTD command\r\n";
                 std::cout << answer << std::endl;
                 send(socket._fd, answer.data(), answer.size(), 0);

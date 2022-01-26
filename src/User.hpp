@@ -89,6 +89,13 @@ public:
 	bool IsActive() const;
 
 	/**
+	 *  Check is user info alreay set.
+	 *  @Return true if user info is already set.
+	 *  @Return false if not.
+	 */
+	bool IsUserInfoSet() const;
+
+	/**
 	 *  Leave channel with _channel_name.
 	 *  @Return 0 if success.
 	 *  @Return 1 if User is not a member of _channel_name.
