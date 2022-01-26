@@ -6,6 +6,7 @@
 
 Channel::Channel(User *_owner_ptr, const string &_new_channel_name, const string&_new_channel_password) :
 						_channel_name(_new_channel_name),
+						_password(_new_channel_password),
 						_private_channel_flag(false),
 						_secret_channel_flag(false),
 						_invite_only_channel_flag(false),
