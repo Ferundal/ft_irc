@@ -4,7 +4,7 @@
 
 #include "User.hpp"
 
-User::User(int _new_fd) : _fd(_new_fd), _is_active(false) {}
+User::User(int _new_fd) : _fd(_new_fd), _is_active(false), _is_away(false) {}
 
 const string &User::GetUserNick() const {
 	return (this->_nick);
@@ -57,8 +57,21 @@ int User::SetActive() {
 		return (1);
 }
 
+void User::SetAway(const string &_new_away_message) {
+	this->_is_away = true;
+	this->_away_message = _new_away_message;
+}
+
+void User::SetNotAway() {
+	this->_is_away = false;
+}
+
 bool User::IsActive() const {
 	return (this->_is_active);
+}
+
+bool User::IsAway() const {
+	return (this->_is_away);
 }
 
 bool User::IsUserInfoSet() const {
