@@ -31,24 +31,34 @@ catch(exception& e)
 
 void Server::grabConnection()
 {
+
+
 	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
 	if (_pfd[0].revents & POLLIN)
 		// Новый пользователь
 		addNewClientSocket();
 	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
-	for(vector<pollfd>::iterator it = ++_pfd.begin(); it < _pfd.end(); ++it)
+	vector<pollfd>::iterator it = ++_pfd.begin();
+	while(it < _pfd.end())
 	{
 		if(it->revents & POLLHUP)
 		{
 			//Пользователь отсоединился
 			deleteClientSocket(it);
-			return;
 		}
 		else if(it->revents & POLLIN )
 		{
 			//Пользователь выслал данныe
-			readCommand(it);
-		}
+			try {
+				readCommand(it);
+				++it;
+			}
+			catch (UserDeleteException& e) // User delete
+			{
+				deleteClientSocket(it);
+			}
+		} else
+			++it;
 	}
 }
 
@@ -64,8 +74,7 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 		r_len = recv(it->fd, &r_buf, 1, 0);
 		if (((r_len == 0) && (r_frst_flag == false)))
 		{
-		 	deleteClientSocket(it);
-			return;
+			throw UserDeleteException(); //delete exception
 		}else
 		{
 			r_frst_flag = true;
@@ -76,7 +85,6 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	}
 	if (sckt._msg_buff.find("\r\n") != string::npos)
 	{
-		sckt._msg_buff.erase(sckt._msg_buff.size() - 1, 1);
 		this->_parser.stringParser(sckt);
 	}
 	it->revents = 0;
@@ -99,7 +107,10 @@ void	Server::addNewClientSocket()
 
 void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
 {
-	this->_clnt_sockets.erase(findSocketIter(it->fd));
+	vector<ClientSocket>::iterator scket_it = findSocketIter(it->fd);
+
+	scket_it->_usr_ptr->ToStore().DeleteUser(scket_it->_usr_ptr);
+	this->_clnt_sockets.erase(scket_it);
 	close(it->fd);
 	this->_pfd.erase(it);
 }
@@ -111,10 +122,8 @@ vector<ClientSocket>::iterator Server::findSocketIter(int fd)
 		if(it->_fd == fd)
 			return (it);
 	}
-	throw exception();
+	throw UserDeleteException();
 }
 
 Server::~Server()
-{
-
-}
+{}

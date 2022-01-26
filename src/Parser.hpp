@@ -4,11 +4,15 @@
 #include <string>
 #include <iostream>
 #include "vector"
+#include "cstdio"
 #include "ClientSocket.hpp"
 #include "User.hpp"
 
 #define COMMAND_COUNT 48
 #define SERVER_NAME "127.0.0.1"
+#define CODE_TO_STRING(X) #X
+
+class UserDeleteException;
 
 class Parser {
     private:
@@ -26,23 +30,21 @@ class Parser {
 		Parser  &operator = ( const Parser &other );
 
         // External func's
-        void                        stringParser ( ClientSocket &str );
+        void                        stringParser ( ClientSocket &socket);
         std::string					returnCommand ( std::string &str );
         bool                        checkCommand ( std::string &str );
-        void 						errSendMsg(int er_code, const char* msg);
+        void errSendMsg(int er_code, User& user, const char *msg);
 
-        void                        workWithUSER ( ClientSocket &str );
-        void                        workWithNICK ( ClientSocket &str );
-        void                        workWithPRIVMSG ( ClientSocket &str );
-
-
+        void                        commandUSER (ClientSocket &socket);
+        void                        commandNICK (ClientSocket &socket);
+        void                        commandRIVMSG (ClientSocket &socket);
+        void                        commandQUIT (ClientSocket &socket);
+        void						commandWHOIS(ClientSocket& socket);
 
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );
 
         std::vector<std::string>    mySplit ( std::string &str );
-
-
         // void    testList ();
 };
 

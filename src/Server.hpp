@@ -20,8 +20,12 @@
 
 #define MAX_CONNECT_CROWD 128
 
-
 using namespace std;
+
+class UserDeleteException : public std::exception
+{
+	const char * what() const throw(){return NULL;};
+};
 
 class Server {
 public:
@@ -33,7 +37,6 @@ private:
 	void 	deleteClientSocket(vector<pollfd>::iterator& it);
 	void	readCommand(vector<pollfd>::iterator it);
 	void	addNewClientSocket();
-	int		findOpenFD();
 	vector<ClientSocket>::iterator findSocketIter(int fd);
 
 
