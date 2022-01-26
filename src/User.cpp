@@ -14,6 +14,18 @@ const int &User::GetUserFd() const {
 	return (this->_fd);
 }
 
+const string &User::GetUserName() const {
+	return(this->_user_name);
+}
+
+const string &User::GetUserHost() const {
+	return (this->_host_name);
+}
+
+const string &User::GetUserRealName() const {
+	return (this->_real_name);
+}
+
 int User::SetNick(const string &_new_nick) {
 	if (_to_user_store->IsNickAvalable(_new_nick) == false) {
 		return (1);

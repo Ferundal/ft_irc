@@ -43,6 +43,21 @@ public:
 	const int &GetUserFd() const;
 
 	/**
+	 *  Return User's connection username.
+	 */
+	const string &GetUserName() const;
+
+	/**
+	 *  Return User's connection host.
+	 */
+	const string &GetUserHost() const;
+
+	/**
+	 *  Return User's connection realname.
+	 */
+	const string &GetUserRealName() const;
+
+	/**
 	 *  Set user nick to database.
 	 *  @Return 0 if success.
 	 *  @Return 1 if nick is already used
