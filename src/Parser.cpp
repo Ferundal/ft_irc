@@ -371,6 +371,26 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
 }
 
 
+void 						Parser::commandISON (ClientSocket& socket) {
+	std::vector<std::string>    nicknameList = mySplit(socket._msg_buff);
+    std::string                 command;
+    std::string                 answer;
+
+    command = returnCommand(socket._msg_buff);
+    if (socket._msg_buff.size() - command.size() <= 512) {
+        answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
+        for (int i = 1; i < nicknameList.size(); ++i) {
+            answer += " " + nicknameList[i];
+        }
+        answer += "\r\n";
+        std::cout << answer << std::endl;
+        send(socket._fd, answer.data(), answer.size(), 0);
+    } else {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (nicknameList[0] + " :Not enough parameters").data());
+        return;
+    }
+}
+
 
 
 
@@ -407,6 +427,8 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandWHOIS(socket);
     } else if (command == "AWAY") {
     	commandAWAY(socket);
+    } else if (command == "ISON") {
+        commandISON(socket);
     }
 
     socket._msg_buff.clear();
