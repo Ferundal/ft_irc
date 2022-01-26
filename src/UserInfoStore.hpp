@@ -13,6 +13,7 @@
 
 using std::list;
 using std::string;
+using std::vector;
 
 class User;
 class Channel;
@@ -30,6 +31,7 @@ public:
 	bool	IsNickAvalable(const string _searching_nick) const;
 	User	&CreateNewUser(int _new_user_fd);
 	void	DeleteUser(User *_user_to_delete);
+	void	DeleteChannel(string &_delete_channel_name);
 	User	*FindUserByNick(string _searching_nick);
 
 	/**
@@ -37,10 +39,11 @@ public:
 	 * @Return 0 if every nickname is found in UserInfoStore.
 	 * Pointers to Users cam be found in _result vector.
 	 * @Return ERR_NOSUCHNICK if any nickname has no matches in UserInfoStore.
-	 * All other nicknames\removed from _searching_nick.
+	 * All other nicknames/removed from _searching_nick.
 	 */
 	int		FindReceivers(vector<string> &_searching_receivers, vector<User *> &_result);
 	Channel	*FindChannelByName(string _searching_channel_name);
+	int		CreateNewChannel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);
 	void	PrintUserInfoStore();
 };
 

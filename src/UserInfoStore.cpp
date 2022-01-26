@@ -11,7 +11,7 @@ UserInfoStore::~UserInfoStore() {}
 User &UserInfoStore::CreateNewUser(int _new_user_fd) {
 	_users_store.push_back(User(_new_user_fd));
 	User& usr = _users_store.back();
-	usr._user_store = this;
+	usr._to_user_store = this;
 	return (usr);
 }
 
@@ -33,7 +33,10 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 		while (_curr_joined_channel != _joined_channels_begin)
 		{
 			--_curr_joined_channel;
-			(*_curr_joined_channel)->DeleteUser(*_user_to_delete);
+			(*_curr_joined_channel)->DeleteUser(_user_to_delete);
+			if ((*_curr_joined_channel)->_user_store.empty()) {
+				DeleteChannel((*_curr_joined_channel)->_channel_name);
+			}
 		}
 	}
 	list<User>::iterator _curr_user = _users_store.end();
@@ -42,6 +45,18 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 		--_curr_user;
 		if (&*_curr_user == _user_to_delete)
 			_users_store.erase(_curr_user);
+	}
+}
+
+void UserInfoStore::DeleteChannel(string &_delete_channel_name) {
+	list<Channel>::iterator _curr_channel = _active_channels.begin();
+	list<Channel>::iterator _active_channels_end = _active_channels.end();
+	while (_curr_channel !=  _active_channels_end) {
+		if (_curr_channel->_channel_name == _delete_channel_name) {
+			_active_channels.erase(_curr_channel);
+			return;
+		}
+		++_curr_channel;
 	}
 }
 
@@ -82,9 +97,9 @@ int UserInfoStore::FindReceivers(vector<string> &_searching_receivers, vector<Us
 				
 			}
 		}
-		else
 
 	}
+	return (0);
 }
 
 Channel *UserInfoStore::FindChannelByName(string _searching_channel_name) {
@@ -96,6 +111,12 @@ Channel *UserInfoStore::FindChannelByName(string _searching_channel_name) {
 		++_curr_channel;
 	}
 	return (NULL);
+}
+
+int UserInfoStore::CreateNewChannel(User *_owner_ptr, const string &_new_channel_name,
+									const string &_new_channel_password) {
+	_active_channels.push_back(Channel(_owner_ptr, _new_channel_name, _new_channel_password));
+	return (0);
 }
 
 void UserInfoStore::PrintUserInfoStore() {
