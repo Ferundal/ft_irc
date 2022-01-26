@@ -23,11 +23,13 @@
 using namespace std;
 
 class UserDeleteException : public std::exception
-{
-	const char * what() const throw(){return NULL;};
-};
+		{
+	const char * what() const throw();
+		};
 
 class Server {
+public:
+
 public:
 	explicit Server(int n_connect=MAX_CONNECT_CROWD);
 	void 	grabConnection();

@@ -1,6 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include "error_answers.hpp"
 #include <string>
 #include <iostream>
 #include "vector"
@@ -10,15 +11,19 @@
 
 #define COMMAND_COUNT 48
 #define SERVER_NAME "127.0.0.1"
-#define CODE_TO_STRING(X) #X
-
-class UserDeleteException;
+#define TO_STRING_100(X) #X
+#define CODE_TO_STRING(X) TO_STRING_100(X)
 
 class Parser {
     private:
         std::string _commandList[COMMAND_COUNT];
 
     public:
+	class UserDeleteException : public std::exception
+		{
+			const char * what() const throw(){return NULL;};
+		};
+	public:
         // Con / De - structor
         Parser  ();
         ~Parser ();
@@ -33,7 +38,7 @@ class Parser {
         void                        stringParser ( ClientSocket &socket);
         std::string					returnCommand ( std::string &str );
         bool                        checkCommand ( std::string &str );
-        void errSendMsg(int er_code, User& user, const char *msg);
+        void						errSendMsg(const char* er_code, User& user, const char *msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
@@ -44,7 +49,7 @@ class Parser {
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );
 
-        std::vector<std::string>    mySplit ( std::string &str );
+        std::vector<std::string>    mySplit ( std::string str );
         // void    testList ();
 };
 

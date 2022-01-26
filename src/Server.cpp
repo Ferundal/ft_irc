@@ -53,7 +53,7 @@ void Server::grabConnection()
 				readCommand(it);
 				++it;
 			}
-			catch (UserDeleteException& e) // User delete
+			catch (Parser::UserDeleteException& e) // User delete
 			{
 				deleteClientSocket(it);
 			}
@@ -74,7 +74,7 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 		r_len = recv(it->fd, &r_buf, 1, 0);
 		if (((r_len == 0) && (r_frst_flag == false)))
 		{
-			throw UserDeleteException(); //delete exception
+			throw Parser::UserDeleteException(); //delete exception
 		}else
 		{
 			r_frst_flag = true;
@@ -122,7 +122,7 @@ vector<ClientSocket>::iterator Server::findSocketIter(int fd)
 		if(it->_fd == fd)
 			return (it);
 	}
-	throw UserDeleteException();
+	throw Parser::UserDeleteException();
 }
 
 Server::~Server()

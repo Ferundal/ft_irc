@@ -68,11 +68,12 @@ Parser  &Parser::operator = ( const Parser &other ) {
     return *this;
 }
 
-void Parser::errSendMsg(int er_code, User& user, const char *msg)
+void Parser::errSendMsg(const char* er_code, User& user, const char *msg)
 {
 	(void) er_code; // TODO глянуть справку по -Werror, какого хрена
 	std::string message;
-	message = message + ":" + SERVER_NAME + CODE_TO_STRING(er_code) + user.GetUserNick() + " " + msg + "\r\n";
+	message = message + ":" + SERVER_NAME + " " + er_code + " " + user.GetUserNick() + " " + msg + "\r\n";
+	write(1, message.data(), message.size()); // DEBUG out
 	send(user.GetUserFd(), message.data(), message.size(), 0);
 }
 
@@ -128,10 +129,11 @@ int          Parser::countParam ( std::string &str ) {
     return count + flag;
 }
 
-std::vector<std::string> Parser::mySplit ( std::string &str ) {
+std::vector<std::string> Parser::mySplit ( std::string str ) {
     size_t      i = 0;
     std::string symb = " ";
     size_t      countP = countParam(str);
+    cout << "SplitParamCount: " << countP<< endl;
     std::vector<std::string> commandArr(countP);
 
 //    std::cout << "Count" << countP << std::endl;
@@ -214,8 +216,11 @@ void    Parser::commandRIVMSG (ClientSocket &socket ) {
     std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string command = paramList[0];
 	int param_count = countParam(socket._msg_buff);
-	if (param_count <= 2)
-    	errSendMsg(ERR_NORECIPIENT,*socket._usr_ptr, (":No recipient given ("+ command+ ")").data());
+	if (param_count < 3)
+	{
+		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr, (":No recipient given ("+ command+ ")").data());
+		return;
+	}
 
     // TODO реализовать отправку по всем никнеймам?
     std::string nick = paramList[1];
@@ -223,7 +228,7 @@ void    Parser::commandRIVMSG (ClientSocket &socket ) {
     User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(nick);
 
     if (receiver == NULL) {
-    	errSendMsg(ERR_NOSUCHNICK, *socket._usr_ptr, (nick+" :No such nick/channel").data());
+    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr, (nick+" :No such nick/channel").data());
     	return;
     }
 
@@ -240,8 +245,9 @@ void    Parser::commandRIVMSG (ClientSocket &socket ) {
 
 void	Parser::commandQUIT(ClientSocket& socket)
 {
+	cout << "QUIT command done" << endl;
 	socket._usr_ptr->ToStore().DeleteUser(socket._usr_ptr);
-	throw exception(); // delete user TODO поменять на нормальный exception
+	throw Parser::UserDeleteException(); // delete user TODO поменять на нормальный exception
 }
 
 void	Parser::commandWHOIS(ClientSocket& socket)
@@ -249,7 +255,7 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 	int param_count = countParam(socket._msg_buff);
 	if(param_count != 2)
 	{
-		errSendMsg(ERR_NONICKNAMEGIVEN, *socket._usr_ptr,":No nickname given");
+		errSendMsg(CODE_TO_STRING(ERR_NONICKNAMEGIVEN), *socket._usr_ptr,":No nickname given");
 		return;
 	}
 
@@ -260,16 +266,22 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 
 	if((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL)
 	{
-		errSendMsg(ERR_NOSUCHNICK, *socket._usr_ptr, (nick + " :No such nick/channel").data());
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr, (nick + " :No such nick/channel").data());
 		return;
 	}
 	else{
-		message = message + ":" + SERVER_NAME + " 311 " + user->GetUserNick() /* TODO доавить UserName и RealName как Миша закончит */; //TODO заменить код ошибки на дефайн
+		message = message + ":" + SERVER_NAME + " 311 " + user->GetUserNick() +
+				" " + user->GetUserName() + " " + user->GetUserHost() + " * " +
+				user->GetUserRealName() + "\r\n";//TODO заменить код ошибки на дефайн
+		cout << message << endl;
 		send(socket._fd, message.data(), message.size(), 0);
 	}
+//       311     RPL_WHOISUSER
+//                       "<nick> <user> <host> * :<real name>"
 
 //	if(socket._usr_ptr->ToStore().GetChanelsByNick != NULL) //TODO Как Миша доделает
 //		send();
+
 	message = message + ":" + SERVER_NAME + " 318 " + user->GetUserNick() + " :End of /WHOIS list\r\n"; //TODO поменять на дефайн
 	send(socket._fd, message.data(), message.size(), 0);
 //ERR_NONICKNAMEGIVEN(Ok)
@@ -290,9 +302,10 @@ void    Parser::stringParser(ClientSocket &socket) {
 
     std::string command = returnCommand(socket._msg_buff);
 
-    if (checkCommand(command))
+    if (!checkCommand(command))
     {
-    	errSendMsg(ERR_UNKNOWNCOMMAND, *socket._usr_ptr, (command + " :Unknown command").data());
+    	errSendMsg(CODE_TO_STRING(ERR_UNKNOWNCOMMAND), *socket._usr_ptr, (command + " :Unknown command").data());
+    	socket._msg_buff.clear();
     	return;
     }
 
