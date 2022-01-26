@@ -395,17 +395,20 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
     if (paramList.size() == 1) {
-        answer = ":You are no longer marked as being away";
+        answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_UNAWAY) + " " + socket._usr_ptr->GetUserNick() + ":You are no longer marked as being away\r\n";
         std::cout << answer << std::endl;
         send(socket._fd, answer.data(), answer.size(), 0);
         socket._usr_ptr->SetNotAway();
     } else {
-        answer = ":You have been marked as being away";
-        socket._usr_ptr->SetAway(paramList[1]);
+        answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NOWAWAY) + " " + socket._usr_ptr->GetUserNick() + ":You have been marked as being away\r\n";        
         std::cout << answer << std::endl;
         send(socket._fd, answer.data(), answer.size(), 0);
+        socket._usr_ptr->SetAway(paramList[1]);
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8963c02261e5db3bdfb75f7f2a5b630f1af51427
 }
 
 void    Parser::stringParser(ClientSocket &socket) {
