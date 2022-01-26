@@ -188,11 +188,6 @@ void         Parser::commandUSER (ClientSocket &socket ) {
                 send(socket._fd, answer.data(), answer.size(), 0);
             }
         }
-        else
-           ;// std::cout << "|INFO| [User is not added]" << std::endl;
-
-    } else {
-        ;// std::cout << "|INFO| [User is already active]" << std::endl;
     }
 }
 
@@ -255,11 +250,6 @@ void        Parser::commandNICK (ClientSocket &socket ) {
                 send(socket._fd, answer.data(), answer.size(), 0);
             }
         }
-        else
-            ;// std::cout << "|INFO| [Nick is not added]" << std::endl;
-
-    } else {
-        ;// std::cout << "|INFO| [Nick is already active]" << std::endl;
     }
 }
 
@@ -323,7 +313,8 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 	}
 	else{
 		message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_WHOISUSER) + " " + socket._usr_ptr->GetUserNick() + " " +
-				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName() + "\r\n";
+				user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " +
+				user->GetUserRealName() + "\r\n";
 	}
 
 	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFWHOIS) + " " + socket._usr_ptr->GetUserNick()
@@ -370,8 +361,6 @@ void	Parser::commandJOIN(ClientSocket& socket)
 // AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
 // AWAY									-- когда пришел
 // ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
-// LIST
-// JOIN
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -395,8 +384,6 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandQUIT(socket);
     } else if (command == "WHOIS") {
     	commandWHOIS(socket);
-    } else if (command == "JOIN"){
-		commandJOIN(socket);
     }
 
     socket._msg_buff.clear();
