@@ -12,6 +12,7 @@
 
 using std::string;
 using std::vector;
+using std::list;
 
 class Channel;
 
@@ -96,6 +97,8 @@ public:
 
 	bool IsAway() const;
 
+	bool IsMemberOfChannel(Channel *_channel_ptr);
+
 	/**
 	 *  Check is user info alreay set.
 	 *  @Return true if user info is already set.
@@ -127,6 +130,11 @@ public:
 	 */
 	int JoinChannel(const string &_channel_name, const string &_channel_password);
 
+	/**
+	 * Get information about channels visible to the User
+	 * @Return list with send ready string information.
+	 */
+	list<string> ChannelList(const string &_channel_name);
 };
 
 
