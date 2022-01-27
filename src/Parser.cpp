@@ -475,7 +475,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
-    std::cout << << std::endl;
+    // std::cout << << std::endl;
 
 
 
