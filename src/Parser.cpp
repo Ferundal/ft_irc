@@ -255,7 +255,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     }
 }
 
-void    Parser::commandRIVMSG (ClientSocket &socket ) {
+void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 
     std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string command = paramList[0];
@@ -330,11 +330,46 @@ void	Parser::commandWHOIS(ClientSocket& socket)
 //RPL_ENDOFWHOIS(Ok)
 }
 
+void	Parser::commandJOIN(ClientSocket& socket)
+{
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string command = paramList[0];
+	int param_count = countParam(socket._msg_buff);
 
-// AWAY :Прямо сейчас меня здесь нет  | AWAY :Отошел    -- когда отошел
-// AWAY									-- когда пришел
-// ISON <nick> <nick> ...   --- запрашивает ники тех, кто доступен
+	if(param_count != 2)
+	{
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,(command + " :Not enough parameters").data());
+		return;
+	}
 
+	socket._usr_ptr->JoinChannel(paramList[1], ""); // TODO сделать норм
+
+	string message;
+
+	message = message + ":" + socket._usr_ptr->GetUserNick() + " JOIN " + paramList[1] + "\r\n";
+//
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_TOPIC) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :TOPIC\r\n";
+
+//	353     RPL_NAMREPLY
+//	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NAMREPLY) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :" + socket._usr_ptr->GetUserNick() + "\r\n"; // TODO добавить список ников
+
+//	366     RPL_ENDOFNAMES
+//	"<channel> :End of /NAMES list"
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFNAMES) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :End of /NAMES list\r\n";
+
+	cout << message << endl;
+	send(socket._fd, message.data(), message.size(), 0);
+//	ERR_NEEDMOREPARAMS(Ok)          ERR_BANNEDFROMCHAN
+//	ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+//	ERR_CHANNELISFULL               ERR_BADCHANMASK
+//	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+//	RPL_TOPIC
+//	RPL_NAMREPLY
+}
 
 
 void 						Parser::commandAWAY( ClientSocket& socket ) {
@@ -392,13 +427,11 @@ void 						Parser::commandISON (ClientSocket& socket) {
     }
 }
 
-
-
-
-
-
-
-
+// PING
+// WHO
+// INVITE
+// LIST
+// PART
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -421,11 +454,13 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "NICK") {
 		commandNICK(socket);
     } else if (command == "PRIVMSG") {
-		commandRIVMSG(socket);
+		commandPRIVMSG(socket);
     } else if (command == "QUIT") {
     	commandQUIT(socket);
     } else if (command == "WHOIS") {
     	commandWHOIS(socket);
+    } else if (command == "JOIN"){
+		commandJOIN(socket);
     } else if (command == "AWAY") {
     	commandAWAY(socket);
     } else if (command == "ISON") {
