@@ -36,18 +36,20 @@ class Parser {
 		Parser  &operator = ( const Parser &other );
 
         // External func's
-        void                        stringParser ( ClientSocket &socket);
-        std::string					returnCommand ( std::string &str );
-        bool                        checkCommand ( std::string &str );
-        void						errSendMsg(const char* er_code, User& user, const char* msg);
+        void                        stringParser (ClientSocket &socket);
+        std::string					returnCommand (std::string &str);
+        bool                        checkCommand (std::string &str);
+        void						errSendMsg (const char* er_code, User& user, const char* msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
-        void                        commandRIVMSG (ClientSocket &socket);
+        void                        commandPRIVMSG (ClientSocket &socket);
         void                        commandQUIT (ClientSocket &socket);
-        void						commandWHOIS(ClientSocket& socket);
-        void 						commandJOIN(ClientSocket& socket);
-        void 						commandAWAY(ClientSocket& socket);
+        void						commandWHOIS (ClientSocket& socket);
+        void 						commandJOIN (ClientSocket& socket);
+        void 						commandAWAY (ClientSocket& socket);
+        void 						commandISON (ClientSocket& socket);
+
 
 
         int                         countParam ( std::string &str );
