@@ -379,7 +379,7 @@ void 						Parser::commandISON (ClientSocket& socket) {
     command = returnCommand(socket._msg_buff);
     if (socket._msg_buff.size() - command.size() <= 512) {
         answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
-        for (int i = 1; i < nicknameList.size(); ++i) {
+        for (size_t i = 1; i < nicknameList.size(); ++i) {
             if (socket._usr_ptr->ToStore().FindUserByNick(nicknameList[i]) != NULL)
                 answer += " " + nicknameList[i];
         }
