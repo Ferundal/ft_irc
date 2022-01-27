@@ -49,6 +49,10 @@ class Parser {
         void 						commandJOIN (ClientSocket& socket);
         void 						commandAWAY (ClientSocket& socket);
         void 						commandISON (ClientSocket& socket);
+        void 						commandLIST (ClientSocket& socket);
+        void 						commandPING (ClientSocket& socket);
+
+
 
 
 

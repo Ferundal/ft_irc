@@ -432,6 +432,50 @@ void 						Parser::commandISON (ClientSocket& socket) {
 // INVITE
 // LIST
 // PART
+
+
+void 						Parser::commandLIST (ClientSocket& socket) {
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	list<std::string>           listOfChanels;
+    std::string                 answer;
+
+
+    answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LISTSTART) + " " + socket._usr_ptr->GetUserNick() + "Channel :Users  Name\r\n";
+
+
+    if (paramList.size() == 1) {
+        listOfChanels = socket._usr_ptr->ChannelList("");
+        list<std::string>::iterator currChanel= listOfChanels.begin();
+        list<std::string>::iterator chanelsEnd= listOfChanels.end();
+        while (currChanel != chanelsEnd) {
+            answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + *currChanel + "\r\n";
+            send(socket._fd, answer.data(), answer.size(), 0);
+            std::cout << answer << std::endl;
+            ++currChanel;
+        }
+    } else {
+        for (size_t i = 0; i < paramList.size(); ++i) {
+            listOfChanels = socket._usr_ptr->ChannelList(paramList[i]);
+            if (!listOfChanels.empty()) {
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + *listOfChanels.begin() + "\r\n";
+            }
+        }
+    }
+
+    answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LISTEND) + " " + socket._usr_ptr->GetUserNick() + ":End of /LIST\r\n";
+
+}
+
+
+void 						Parser::commandPING (ClientSocket& socket) {
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+    
+
+}
+
+
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -465,6 +509,10 @@ void    Parser::stringParser(ClientSocket &socket) {
     	commandAWAY(socket);
     } else if (command == "ISON") {
         commandISON(socket);
+    } else if (command == "LIST") {
+        commandLIST(socket); // <----- Need Check
+    } else if (command == "PING") {
+        commandPING(socket);
     }
 
     socket._msg_buff.clear();

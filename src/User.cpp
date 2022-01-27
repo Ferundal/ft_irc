@@ -159,7 +159,7 @@ list<string> User::ChannelList(const string &_searching_channel_name) {
 	while (_curr_channel != _channels_end) {
 		if (this->IsMemberOfChannel(&*_curr_channel) ||
 		((!_curr_channel->_secret_channel_flag) && (!_curr_channel->_private_channel_flag))) {
-			_result.push_back("" + _curr_channel->_channel_name + (" " +
+			_result.push_back(("" + _curr_channel->_channel_name) + (" " +
 			_curr_channel->_user_store.size()) + " :" +
 			_curr_channel->_channel_topic);
 		} else {
