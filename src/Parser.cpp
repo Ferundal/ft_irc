@@ -255,7 +255,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     }
 }
 
-void    Parser::commandRIVMSG (ClientSocket &socket ) {
+void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 
     std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string command = paramList[0];
@@ -342,15 +342,19 @@ void	Parser::commandJOIN(ClientSocket& socket)
 		return;
 	}
 
+	socket._usr_ptr->JoinChannel(paramList[1], ""); // TODO сделать норм
+
 	string message;
 
+	message = message + ":" + socket._usr_ptr->GetUserNick() + " JOIN " + paramList[1] + "\r\n";
+//
 	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_TOPIC) + " " + socket._usr_ptr->GetUserNick() + " "
 			+ paramList[1] + " :TOPIC\r\n";
 
 //	353     RPL_NAMREPLY
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
-//	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NAMREPLY) + " " //+ socket._usr_ptr->GetUserNick() + " "
-//			+ paramList[1] + " :@archie0 kreker" + "\r\n"; // TODO добавить список ников
+	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NAMREPLY) + " " + socket._usr_ptr->GetUserNick() + " "
+			+ paramList[1] + " :" + socket._usr_ptr->GetUserNick() + "\r\n"; // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
@@ -410,8 +414,9 @@ void 						Parser::commandISON (ClientSocket& socket) {
     command = returnCommand(socket._msg_buff);
     if (socket._msg_buff.size() - command.size() <= 512) {
         answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
-        for (int i = 1; i < nicknameList.size(); ++i) {
-            answer += " " + nicknameList[i];
+        for (size_t i = 1; i < nicknameList.size(); ++i) {
+            if (socket._usr_ptr->ToStore().FindUserByNick(nicknameList[i]) != NULL)
+                answer += " " + nicknameList[i];
         }
         answer += "\r\n";
         std::cout << answer << std::endl;
@@ -422,6 +427,11 @@ void 						Parser::commandISON (ClientSocket& socket) {
     }
 }
 
+// PING
+// WHO
+// INVITE
+// LIST
+// PART
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -444,7 +454,7 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "NICK") {
 		commandNICK(socket);
     } else if (command == "PRIVMSG") {
-		commandRIVMSG(socket);
+		commandPRIVMSG(socket);
     } else if (command == "QUIT") {
     	commandQUIT(socket);
     } else if (command == "WHOIS") {

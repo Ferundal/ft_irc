@@ -43,7 +43,7 @@ class Parser {
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
-        void                        commandRIVMSG (ClientSocket &socket);
+        void                        commandPRIVMSG (ClientSocket &socket);
         void                        commandQUIT (ClientSocket &socket);
         void						commandWHOIS (ClientSocket& socket);
         void 						commandJOIN (ClientSocket& socket);
