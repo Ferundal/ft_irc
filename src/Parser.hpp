@@ -52,9 +52,8 @@ class Parser {
         void 						commandLIST (ClientSocket& socket);
         void 						commandPING (ClientSocket& socket);
 		void 						commandWHO (ClientSocket& socket);
-
-
-
+        void 						commandINVITE (ClientSocket& socket);
+        void 						commandPART (ClientSocket& socket);
 
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );

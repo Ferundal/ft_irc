@@ -64,6 +64,7 @@ void Channel::DeleteFromOperators(User *_user_to_delete) {
 					}
  				}
 			}
+			return;
 		}
 		++_curr_moderator;
 	}

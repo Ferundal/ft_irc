@@ -133,7 +133,6 @@ std::vector<std::string> Parser::mySplit ( std::string str ) {
     size_t      i = 0;
     std::string symb = " ";
     size_t      countP = countParam(str);
-    cout << "SplitParamCount: " << countP<< endl;
     std::vector<std::string> commandArr(countP);
 
 //    std::cout << "Count" << countP << std::endl;
@@ -430,17 +429,19 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	list<std::string>           listOfChanels;
     std::string                 answer;
+    // int i = 0;
 
 
     answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LISTSTART) + " " + socket._usr_ptr->GetUserNick() + " Channel :Users  Name\r\n";
-    send(socket._fd, answer.data(), answer.size(), 0);
     std::cout << answer << std::endl;
+    send(socket._fd, answer.data(), answer.size(), 0);
 
     if (paramList.size() == 1) {
         listOfChanels = socket._usr_ptr->ChannelList("");
         list<std::string>::iterator currChanel= listOfChanels.begin();
         list<std::string>::iterator chanelsEnd= listOfChanels.end();
         while (currChanel != chanelsEnd) {
+            answer = "";
             answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *currChanel + "\r\n";
             send(socket._fd, answer.data(), answer.size(), 0);
             std::cout << answer << std::endl;
@@ -450,13 +451,14 @@ void 						Parser::commandLIST (ClientSocket& socket) {
         for (size_t i = 0; i < paramList.size(); ++i) {
             listOfChanels = socket._usr_ptr->ChannelList(paramList[i]);
             if (!listOfChanels.empty()) {
+                answer = "";
                 answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + "" + *listOfChanels.begin() + "\r\n";
                 send(socket._fd, answer.data(), answer.size(), 0);
                 std::cout << answer << std::endl;
             }
         }
     }
-
+    answer = "";
     answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LISTEND) + " " + socket._usr_ptr->GetUserNick() + " :End of /LIST\r\n";
     send(socket._fd, answer.data(), answer.size(), 0);
     std::cout << answer << std::endl;
@@ -466,7 +468,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 
 void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
-
+    std::cout << "PONG " << paramList[1] << std::endl;
     // std::cout << << std::endl;
 }
 
@@ -493,6 +495,39 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //
 //  ERR_NOSUCHSERVER
 
+}
+
+void 						Parser::commandINVITE (ClientSocket& socket) {
+    std::cout << socket._msg_buff << std::endl;
+}
+
+
+// NULL if there is not
+void 						Parser::commandPART (ClientSocket& socket) {
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+    // [CHECK] There are no same Chanels in ListOfChanels
+    for (size_t i = 1; i < paramList.size(); ++i) {
+        if ((socket._usr_ptr->ToStore().FindChannelByName(paramList[i]) == NULL)) {
+		    errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr, (paramList[i] + " :No such channel").data());
+            return;
+        }
+    }
+    
+    // [CHECK] There are more than 1 parameters in ListOfParameters
+    if (paramList.size() >= 2) {
+        for (size_t i = 1; i < paramList.size(); ++i) {
+            if(socket._usr_ptr->LeaveChannel(paramList[i]) == 442) {
+    
+    // [CHECK] There is not on chanel
+        		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr, (paramList[i] + " :You're not on that channel").data());
+                return;
+            }
+        }
+    } else {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters").data());
+        return;
+    }
 }
 
 
@@ -536,6 +571,10 @@ void    Parser::stringParser(ClientSocket &socket) {
         commandPING(socket);
     } else if (command == "WHO"){
     	commandWHO(socket);
+    } else if (command == "INVITE") {
+        commandINVITE(socket); // <--- Nothing
+    } else if (command == "PART") {
+        commandPART(socket);
     }
 
     socket._msg_buff.clear();
