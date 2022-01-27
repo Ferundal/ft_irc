@@ -149,10 +149,11 @@ string ft_to_string(int num) {
 	if (num == 0)
 		return (string("0"));
 	while (num / 10 != 0) {
-		curr_char = num % 10;
+		curr_char = num % 10 + '0';
 		_result = curr_char + _result;
 		num = num / 10;
 	}
+	_result = (char)(num + '0') + _result;
 	return (_result);
 }
 
