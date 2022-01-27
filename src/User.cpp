@@ -3,6 +3,7 @@
 //
 
 #include "User.hpp"
+#include <stdlib.h>
 
 User::User(int _new_fd) : _fd(_new_fd), _is_active(false), _is_away(false) {}
 
@@ -142,6 +143,19 @@ UserInfoStore &User::ToStore() {
 	return (*this->_to_user_store);
 }
 
+string ft_to_string(int num) {
+	string _result;
+	char curr_char;
+	if (num == 0)
+		return (string("0"));
+	while (num / 10 != 0) {
+		curr_char = num % 10;
+		_result = curr_char + _result;
+		num = num / 10;
+	}
+	return (_result);
+}
+
 list<string> User::ChannelList(const string &_searching_channel_name) {
 	list<string> _result;
 	list<Channel>::iterator _curr_channel = this->ToStore()._active_channels.begin();
@@ -159,8 +173,8 @@ list<string> User::ChannelList(const string &_searching_channel_name) {
 	while (_curr_channel != _channels_end) {
 		if (this->IsMemberOfChannel(&*_curr_channel) ||
 		((!_curr_channel->_secret_channel_flag) && (!_curr_channel->_private_channel_flag))) {
-			_result.push_back(("" + _curr_channel->_channel_name) + (" " +
-			_curr_channel->_user_store.size()) + " :" +
+			_result.push_back(_curr_channel->_channel_name + " " +
+									  ft_to_string(_curr_channel->_user_store.size()) + " :" +
 			_curr_channel->_channel_topic);
 		} else {
 			if (_curr_channel->_private_channel_flag) {
