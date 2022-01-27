@@ -74,6 +74,17 @@ bool User::IsAway() const {
 	return (this->_is_away);
 }
 
+bool User::IsMemberOfChannel(Channel *_channel_ptr) {
+	vector<Channel *>::iterator _curr_channel_ptr = this->_membership.begin();
+	vector<Channel *>::iterator _channel_ptrs_end = this->_membership.end();
+	while (_curr_channel_ptr != _channel_ptrs_end) {
+		if (*_curr_channel_ptr == _channel_ptr)
+			return (true);
+		++_curr_channel_ptr;
+	}
+	return (false);
+}
+
 bool User::IsUserInfoSet() const {
 	if (_user_name.empty())
 		return false;
@@ -129,4 +140,34 @@ string User::GetUserFullName() const {
 
 UserInfoStore &User::ToStore() {
 	return (*this->_to_user_store);
+}
+
+list<string> User::ChannelList(const string &_searching_channel_name) {
+	list<string> _result;
+	list<Channel>::iterator _curr_channel = this->ToStore()._active_channels.begin();
+	list<Channel>::iterator _channels_end = this->ToStore()._active_channels.end();
+	if (!_searching_channel_name.empty()) {
+		while (_curr_channel != _channels_end) {
+			if (_curr_channel->_channel_name == _searching_channel_name) {
+				_channels_end = _curr_channel;
+				++_channels_end;
+				break;
+			}
+			++_curr_channel;
+		}
+	}
+	while (_curr_channel != _channels_end) {
+		if (this->IsMemberOfChannel(&*_curr_channel) ||
+		((!_curr_channel->_secret_channel_flag) && (!_curr_channel->_private_channel_flag))) {
+			_result.push_back(_curr_channel->_channel_name + (" " +
+			_curr_channel->_user_store.size()) + " :" +
+			_curr_channel->_channel_topic);
+		} else {
+			if (_curr_channel->_private_channel_flag) {
+				_result.push_back("Prv" + _curr_channel->_channel_name);
+			}
+			++_curr_channel;
+		}
+	}
+	return (_result);
 }
