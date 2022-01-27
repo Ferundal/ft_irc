@@ -51,7 +51,7 @@ class Parser {
         void 						commandISON (ClientSocket& socket);
         void 						commandLIST (ClientSocket& socket);
         void 						commandPING (ClientSocket& socket);
-
+		void 						commandWHO (ClientSocket& socket);
 
 
 

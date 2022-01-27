@@ -172,10 +172,6 @@ void         Parser::commandUSER (ClientSocket &socket ) {
         return;
     }
 
-
-
-
-
 	if (socket._usr_ptr->IsActive() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
@@ -354,7 +350,7 @@ void	Parser::commandJOIN(ClientSocket& socket)
 //	353     RPL_NAMREPLY
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
 	message = message + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_NAMREPLY) + " " + socket._usr_ptr->GetUserNick() + " "
-			+ paramList[1] + " :" + socket._usr_ptr->GetUserNick() + "\r\n"; // TODO добавить список ников
+			+ paramList[1] + " :@archie " + socket._usr_ptr->GetUserNick() + "\r\n"; // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
@@ -427,11 +423,7 @@ void 						Parser::commandISON (ClientSocket& socket) {
     }
 }
 
-// PING
-// WHO
-// INVITE
-// LIST
-// PART
+
 
 
 void 						Parser::commandLIST (ClientSocket& socket) {
@@ -476,22 +468,44 @@ void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
     // std::cout << << std::endl;
+}
 
+void 						Parser::commandWHO(ClientSocket& socket)
+{
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string                 command;
+	std::string                 answer;
 
+	socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
+	answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_WHOREPLY) +
+			" " + paramList[1] + " NePess * 127.0.0.1 kreker :Shuchu Pes\r\n";
+	answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFWHO) +
+			" " + paramList[1] + " :End of /WHO list\r\n";
+	cout << answer << endl;
+	send(socket._fd, answer.data(), answer.size(), 0);
+//	USER NePess * 127.0.0.1 :Shuchu Pes
+//	352     RPL_WHOREPLY
+//	"<channel> <user> <host> <server> <nick> \
+//  <H|G>[*][@|+] :<hopcount> <real name>"
+//
+//  315     RPL_ENDOFWHO
+//  "<name> :End of /WHO list"
+//
+//  ERR_NOSUCHSERVER
 
 }
 
 
-
+// PING
+// WHO
+// INVITE
+// LIST
+// PART
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
 
     std::string command = returnCommand(socket._msg_buff);
-
-
-    // std::cout << "COmmand: " << command << std::endl; //DEBUG out
-
 
     if (!checkCommand(command))
     {
@@ -520,6 +534,8 @@ void    Parser::stringParser(ClientSocket &socket) {
         commandLIST(socket); // <----- Need Check
     } else if (command == "PING") {
         commandPING(socket);
+    } else if (command == "WHO"){
+    	commandWHO(socket);
     }
 
     socket._msg_buff.clear();
