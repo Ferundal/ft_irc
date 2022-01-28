@@ -321,6 +321,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 	std::string					command	= paramList[0];
 	int							param_count = countParam(socket._msg_buff);
 
+	std::cout << ">>" << paramList[1] << "<<" << std::endl;
 	if(param_count != 2)
 	{
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
