@@ -467,7 +467,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::cout << "PONG " << paramList[1] << std::endl;
-<<<<<<< HEAD
+
     // std::cout << << std::endl;
 }
 
@@ -494,13 +494,12 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //
 //  ERR_NOSUCHSERVER
 
-=======
->>>>>>> 76546fa25ca01d19d51bebf48b084d995c3968fc
 }
 
 void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string                 answer;
+    User*						reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
     // Checking NEEDMOREPARAM
     if (paramList.size() != 3) {
@@ -509,7 +508,7 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
     }
 
     // Checking ERR_NOSUCHNICK
-    if (socket._usr_ptr->ToStore().FindUserByNick(paramList[1]) == NULL) {
+    if (reciever == NULL) {
     	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr, (paramList[1] + " :No such nick/channel").data());
         return;
     }
@@ -520,20 +519,30 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
-    // Checking ERR_USERONCHANNEL 443   <--- Not work
-    if (socket._usr_ptr) {
-        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
-        return;
-    }
+//    // Checking ERR_USERONCHANNEL 443   <--- Not work
+//    if (socket._usr_ptr) {
+//        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
+//        return;
+//    }
+//
+//    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
+//        if (socket._usr_ptr) {
+//        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
+//        return;
+//    }
 
-    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
-        if (socket._usr_ptr) {
-        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
-        return;
-    }
+//	reciever->IsAway()
 
     answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_INVITING) + " " + paramList[2] + " " + paramList[1] + "\r\n";
-    send(socket._fd, answer.data(), answer.size(), 0);
+	send(socket._fd, answer.data(), answer.size(), 0);
+	cout << answer << endl;
+	answer.clear();
+    answer = answer + ":" + socket._usr_ptr->GetUserNick() + " INVITE " + paramList[1] + " " + paramList[2] + "\r\n";
+    cout << answer << endl;
+    send(reciever->GetUserFd(), answer.data(), answer.size(), 0);
+
+    //  :Angel INVITE Wiz #Dust         ; Пользователь Angel пригласил WiZ на
+    //                                  канал #Dust
 }
 
 void 						Parser::commandPART (ClientSocket& socket) {
@@ -601,13 +610,9 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "LIST") {
         commandLIST(socket); // <----- Need Check
     } else if (command == "PING") {
-<<<<<<< HEAD
         commandPING(socket);
     } else if (command == "WHO"){
     	commandWHO(socket);
-=======
-        commandPING(socket); // <----- Done
->>>>>>> 76546fa25ca01d19d51bebf48b084d995c3968fc
     } else if (command == "INVITE") {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
