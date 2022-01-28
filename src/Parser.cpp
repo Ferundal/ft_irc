@@ -480,9 +480,9 @@ void 						Parser::commandWHO(ClientSocket& socket)
 
 	socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
 	answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_WHOREPLY) +
-			" " + paramList[1] + " NePess * 127.0.0.1 kreker :Shuchu Pes\r\n";
+			" " + paramList[1] + " has 4 users. Operator: psina\r\n";
 	answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ENDOFWHO) +
-			" " + paramList[1] + " :End of /WHO list\r\n";
+			" * :End of /WHO list\r\n";
 	cout << answer << endl;
 	send(socket._fd, answer.data(), answer.size(), 0);
 //	USER NePess * 127.0.0.1 :Shuchu Pes
