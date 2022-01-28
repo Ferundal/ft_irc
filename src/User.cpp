@@ -95,6 +95,7 @@ bool User::IsUserInfoSet() const {
 int User::LeaveChannel(const string &_channel_name) {
 	if (this->ToStore().FindChannelByName(_channel_name) == NULL) {
 		return (ERR_NOSUCHCHANNEL);
+	}
 	this->ToStore().LeaveChannel(this, _channel_name);
 	return (1);
 }
