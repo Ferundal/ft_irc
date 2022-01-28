@@ -42,8 +42,8 @@ int Channel::DeleteUser(User *_user_to_delete) {
 	while (_curr_user_ptr != _begin) {
 		--_curr_user_ptr;
 		if(*_curr_user_ptr == _user_to_delete) {
-			this->DeleteFromOperators(_user_to_delete);
 			this->_user_store.erase(_curr_user_ptr);
+			this->DeleteFromOperators(_user_to_delete);
 			return (0);
 		}
 	}
