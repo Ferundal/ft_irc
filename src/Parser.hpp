@@ -40,6 +40,7 @@ class Parser {
         std::string					returnCommand (std::string &str);
         bool                        checkCommand (std::string &str);
         void						errSendMsg (const char* er_code, User& user, const char* msg);
+        void 						rplSendMsg(const char* rpl_code, User& user, const char* msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
