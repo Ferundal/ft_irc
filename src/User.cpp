@@ -92,15 +92,10 @@ bool User::IsUserInfoSet() const {
 	return true;
 }
 
-int User::LeaveChannel(const string _channel_name) {
-	vector<Channel *>::iterator _curr_membership = this->_membership.begin();
-	vector<Channel *>::iterator _memberships_end = this->_membership.begin();
-	while (_curr_membership != _memberships_end) {
-		if ((*_curr_membership)->_channel_name == _channel_name) {
-
-		}
-		++_curr_membership;
-	}
+int User::LeaveChannel(const string &_channel_name) {
+	if (this->ToStore().FindChannelByName(_channel_name) == NULL) {
+		return (ERR_NOSUCHCHANNEL);
+	this->ToStore().LeaveChannel(this, _channel_name);
 	return (1);
 }
 

@@ -111,7 +111,7 @@ public:
 	 *  @Return 0 if success.
 	 *  @Return 1 if User is not a member of _channel_name.
 	 */
-	int LeaveChannel(const string _channel_name);
+	int LeaveChannel(const string &_channel_name);
 
 	/**
 	 *  Create name of the user for server in server responce format

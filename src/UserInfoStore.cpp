@@ -51,7 +51,7 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 	}
 }
 
-void UserInfoStore::DeleteChannel(string &_delete_channel_name) {
+void UserInfoStore::DeleteChannel(const string &_delete_channel_name) {
 	list<Channel>::iterator _curr_channel = _active_channels.begin();
 	list<Channel>::iterator _active_channels_end = _active_channels.end();
 	while (_curr_channel !=  _active_channels_end) {
@@ -121,6 +121,24 @@ int UserInfoStore::CreateNewChannel(User *_owner_ptr, const string &_new_channel
 	_active_channels.push_back(Channel(_owner_ptr, _new_channel_name, _new_channel_password));
 	_owner_ptr->_membership.push_back(&_active_channels.back());
 	return (0);
+}
+
+int UserInfoStore::LeaveChannel(User *_member_user_ptr,
+								const string &_channel_to_leave) {
+	vector<Channel *>::iterator _memberships_begin = _member_user_ptr->_membership.begin();
+	vector<Channel *>::iterator _curr_membership = _member_user_ptr->_membership.end();
+	while (_curr_membership != _memberships_begin) {
+		--_curr_membership;
+		if ((*_curr_membership)->_channel_name == _channel_to_leave) {
+			(*_curr_membership)->DeleteUser(_member_user_ptr);
+			if ((*_curr_membership)->_user_store.empty()) {
+				this->DeleteChannel(_channel_to_leave);
+			}
+			_member_user_ptr->_membership.erase(_curr_membership);
+			return (0);
+		}
+	}
+	return (ERR_NOTONCHANNEL);
 }
 
 void UserInfoStore::PrintUserInfoStore() {
