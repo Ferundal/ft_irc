@@ -437,7 +437,6 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	list<std::string>           listOfChanels;
     std::string                 answer;
-    // int i = 0;
 
 
     answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LISTSTART) + " " + socket._usr_ptr->GetUserNick() + " Channel :Users  Name\r\n";
@@ -460,7 +459,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             listOfChanels = socket._usr_ptr->ChannelList(paramList[i]);
             if (!listOfChanels.empty()) {
                 answer = "";
-                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + "" + *listOfChanels.begin() + "\r\n";
+                answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *listOfChanels.begin() + "\r\n";
                 send(socket._fd, answer.data(), answer.size(), 0);
                 std::cout << answer << std::endl;
             }
@@ -476,17 +475,48 @@ void 						Parser::commandLIST (ClientSocket& socket) {
 
 void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
-
-    std::cout << "POMG " << paramList[1] << std::endl;
-
+    std::cout << "PONG " << paramList[1] << std::endl;
 }
 
 void 						Parser::commandINVITE (ClientSocket& socket) {
-    std::cout << socket._msg_buff << std::endl;
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+    // Checking NEEDMOREPARAM
+    if (paramList.size() != 3) {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters").data());
+        return;
+    }
+
+    // Checking ERR_NOSUCHNICK
+    if (socket._usr_ptr->ToStore().FindUserByNick(paramList[1]) == NULL) {
+    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr, (paramList[1] + " :No such nick/channel").data());
+        return;
+    }
+
+    if (socket._usr_ptr->LeaveChannel(paramList[2]) == 442) {
+        errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr, (paramList[2] + " :You're not on that channel").data());
+        return;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
-
-// NULL if there is not
 void 						Parser::commandPART (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
@@ -502,7 +532,7 @@ void 						Parser::commandPART (ClientSocket& socket) {
     if (paramList.size() >= 2) {
         for (size_t i = 1; i < paramList.size(); ++i) {
             if(socket._usr_ptr->LeaveChannel(paramList[i]) == 442) {
-    
+                std::cout << "[PART]: User was deleted" << std::endl;
     // [CHECK] There is not on chanel
         		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr, (paramList[i] + " :You're not on that channel").data());
                 return;
@@ -512,8 +542,6 @@ void 						Parser::commandPART (ClientSocket& socket) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr, (paramList[0] + " :Not enough parameters").data());
         return;
     }
-
-
 }
 
 
@@ -554,11 +582,11 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "LIST") {
         commandLIST(socket); // <----- Need Check
     } else if (command == "PING") {
-        commandPING(socket); // <----- Nothing 
+        commandPING(socket); // <----- Done
     } else if (command == "INVITE") {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
-        commandPART(socket);
+        commandPART(socket); // <----- Done
     }
 
     socket._msg_buff.clear();
