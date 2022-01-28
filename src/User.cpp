@@ -195,11 +195,12 @@ int User::SendInvite(const string &_invited_user_nick,
 			if (_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
 				return (ERR_USERONCHANNEL);
 			}
-			if ((*_curr_membership)->_invite_only_channel_flag &&
-				!(*_curr_membership)->IsOperator(this)) {
-				return (ERR_CHANOPRIVSNEEDED);
+			if ((*_curr_membership)->_invite_only_channel_flag == true) {
+				if (!(*_curr_membership)->IsOperator(this)) {
+					return (ERR_CHANOPRIVSNEEDED);
+				}
+				(*_curr_membership)->AddInvite(_invited_user_ptr);
 			}
-			(*_curr_membership)->AddInvite(_invited_user_ptr);
 			return (0);
 		}
 	}
