@@ -479,6 +479,7 @@ void 						Parser::commandPING (ClientSocket& socket) {
 
 void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+    std::string                 answer;
 
     // Checking NEEDMOREPARAM
     if (paramList.size() != 3) {
@@ -492,28 +493,26 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
+    // Checking ERR_NOTONCHANNEL
     if (socket._usr_ptr->LeaveChannel(paramList[2]) == 442) {
         errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr, (paramList[2] + " :You're not on that channel").data());
         return;
     }
 
+    // Checking ERR_USERONCHANNEL 443   <--- Not work
+    if (socket._usr_ptr) {
+        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
+        return;
+    }
 
+    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
+        if (socket._usr_ptr) {
+        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
+        return;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_INVITING) + " " + paramList[2] + " " + paramList[1] + "\r\n";
+    send(socket._fd, answer.data(), answer.size(), 0);
 }
 
 void 						Parser::commandPART (ClientSocket& socket) {
