@@ -194,7 +194,7 @@ int User::SendInvite(const string &_invited_user_nick,
 	while (_curr_membership != _memberships_begin) {
 		--_curr_membership;
 		if ((*_curr_membership)->_channel_name == _channel_invite_to) {
-			if (_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
+			if (!_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
 				return (ERR_USERONCHANNEL);
 			}
 			if ((*_curr_membership)->_invite_only_channel_flag == true) {
@@ -203,6 +203,24 @@ int User::SendInvite(const string &_invited_user_nick,
 				}
 				(*_curr_membership)->AddInvite(_invited_user_ptr);
 			}
+			return (0);
+		}
+	}
+	return (ERR_NOTONCHANNEL);
+}
+
+int User::ChangeTopic(const string &_channel_to_change_topic,
+					  const string &_new_topic) {
+	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
+	vector<Channel *>::iterator _curr_membership = this->_membership.end();
+	while (_curr_membership != _memberships_begin) {
+		--_curr_membership;
+		if ((*_curr_membership)->_channel_name == _channel_to_change_topic) {
+			if ((*_curr_membership)->_topic_for_operators_flag == true &&
+				!(*_curr_membership)->IsOperator(this)) {
+				return (ERR_CHANOPRIVSNEEDED);
+			}
+			(*_curr_membership)->_channel_topic = _new_topic;
 			return (0);
 		}
 	}

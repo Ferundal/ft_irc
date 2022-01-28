@@ -137,6 +137,8 @@ public:
 	list<string> ChannelList(const string &_channel_name);
 
 	int SendInvite(const string &_invited_user_nick, const string &_channel_invite_to);
+
+	int ChangeTopic(const string &_channel_to_change_topic, const string &_new_topic);
 };
 
 
