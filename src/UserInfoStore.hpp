@@ -25,13 +25,14 @@ private:
 	list<User> _users_store;
 	list<User *> _connected_users;
 	list<Channel> _active_channels;
+private:
+	void	DeleteChannel(const string &_delete_channel_name);
 public:
 	UserInfoStore();
 	~UserInfoStore();
 	bool	IsNickAvalable(const string _searching_nick) const;
 	User	&CreateNewUser(int _new_user_fd);
 	void	DeleteUser(User *_user_to_delete);
-	void	DeleteChannel(string &_delete_channel_name);
 	User	*FindUserByNick(string _searching_nick);
 
 	/**
@@ -44,6 +45,7 @@ public:
 	int		FindReceivers(vector<string> &_searching_receivers, vector<User *> &_result);
 	Channel	*FindChannelByName(string _searching_channel_name);
 	int		CreateNewChannel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);
+	int		LeaveChannel(User *_member_user_ptr, const string  &_channel_to_leave);
 	void	PrintUserInfoStore();
 };
 
