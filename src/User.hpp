@@ -135,6 +135,8 @@ public:
 	 * @Return list with send ready string information.
 	 */
 	list<string> ChannelList(const string &_channel_name);
+
+	int SendInvite(const string &_invited_user_nick, const string &_channel_invite_to);
 };
 
 
