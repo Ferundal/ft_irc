@@ -12,16 +12,7 @@ Server::Server(int n_connect) try : _cnct_socket()
 		_pfd.push_back(pollfd());
 		bzero(&_pfd[0], sizeof (_pfd[0]));
 		_pfd[0].fd = _cnct_socket.getfd();
-		/*
-		 * POLLIN      0x0001     Можно считывать данные
-		 * POLLPRI     0x0002     Есть срочные данные
-		 * POLLOUT     0x0004     Запись не будет блокирована
-		 * POLLERR     0x0008     Произошла ошибка
-		 * POLLHUP     0x0010     "Положили трубку"
-		 * POLLNVAL    0x0020     Неверный запрос: fd не открыт
-		 */
 		_pfd[0].events = POLLIN;
-
 	}
 }
 catch(exception& e)
@@ -97,7 +88,7 @@ void	Server::addNewClientSocket()
 	pollfd new_pfd;
 	bzero(&new_pfd, sizeof (new_pfd));
 	new_pfd.fd = new_client._fd;
-	new_pfd.events = POLLIN | POLLERR | POLLHUP; // По умолчанию у клиентских сокетов запись открыта, POLLOUT не нужно смотреть
+	new_pfd.events = POLLIN | POLLERR | POLLHUP;
 	new_pfd.revents = 0;
 	_pfd.push_back(new_pfd);
 }
