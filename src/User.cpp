@@ -5,7 +5,7 @@
 #include "User.hpp"
 #include <stdlib.h>
 
-User::User(int _new_fd) : _fd(_new_fd), _is_active(false), _is_away(false) {}
+User::User(int _new_fd) : _fd(_new_fd), _is_activated(false), _is_away(false) {}
 
 const string &User::GetUserNick() const {
 	return (this->_nick);
@@ -51,7 +51,7 @@ int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name
 int User::SetActive() {
 	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
 		this->_to_user_store->_connected_users.push_back(this);
-		this->_is_active = true;
+		this->_is_activated = true;
 		return (0);
 	}
 	else
@@ -68,7 +68,7 @@ void User::SetNotAway() {
 }
 
 bool User::IsActivated() const {
-	return (this->_is_active);
+	return (this->_is_activated);
 }
 
 bool User::IsAway() const {

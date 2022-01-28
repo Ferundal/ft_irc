@@ -21,7 +21,7 @@ class User {
 	friend class UserInfoStore;
 private:
 	int					_fd;
-	bool				_is_active;
+	bool				_is_activated;
 	string				_user_name;
 	string				_host_name;
 	string				_server_name;
