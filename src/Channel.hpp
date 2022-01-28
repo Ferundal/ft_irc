@@ -56,6 +56,8 @@ public:
 	 * Delete invite for _checked_user_ptr if it is exist.
 	 */
 	void DeleteInvite(User *_user_for_invitation_delete);
+
+	bool IsOperator(User *_checked_user_prt);
 };
 
 

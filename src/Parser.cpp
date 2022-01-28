@@ -463,7 +463,6 @@ void 						Parser::commandWHO(ClientSocket& socket)
 void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string                 answer;
-    User*						reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
     // Checking NEEDMOREPARAM
     if (paramList.size() != 3) {
@@ -471,6 +470,7 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         (paramList[0] + " :Not enough parameters").data());
         return;
     }
+	User*						reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
     // Checking ERR_NOSUCHNICK
     if (reciever == NULL) {

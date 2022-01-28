@@ -105,3 +105,15 @@ void Channel::DeleteInvite(User *_user_for_invitation_delete) {
 		++_curr_invited_user;
 	}
 }
+
+bool Channel::IsOperator(User *_checked_user_prt) {
+	vector<User *>::iterator _curr_operator = this->_invites.begin();
+	vector<User *>::iterator _operators_end = this->_invites.end();
+	while (_curr_operator != _operators_end) {
+		if (*_curr_operator == _checked_user_prt) {
+			return (true);
+		}
+		++_curr_operator;
+	}
+	return (false);
+}
