@@ -38,14 +38,14 @@ void Channel::AddUser(User &_new_user) {
 
 int Channel::DeleteUser(User *_user_to_delete) {
 	vector<User *>::iterator _begin = _user_store.begin();
-	vector<User *>::iterator _curr_user_ptr = --_user_store.end();
+	vector<User *>::iterator _curr_user_ptr = _user_store.end();
 	while (_curr_user_ptr != _begin) {
+		--_curr_user_ptr;
 		if(*_curr_user_ptr == _user_to_delete) {
-			this->DeleteFromOperators(_user_to_delete);
 			this->_user_store.erase(_curr_user_ptr);
+			this->DeleteFromOperators(_user_to_delete);
 			return (0);
 		}
-		--_curr_user_ptr;
 	}
 	return (1);
 }
@@ -64,6 +64,7 @@ void Channel::DeleteFromOperators(User *_user_to_delete) {
 					}
  				}
 			}
+			return;
 		}
 		++_curr_moderator;
 	}

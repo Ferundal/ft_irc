@@ -36,8 +36,8 @@ void UserInfoStore::DeleteUser(User *_user_to_delete) {
 			(*_curr_joined_channel)->DeleteUser(_user_to_delete);
 			if ((*_curr_joined_channel)->_user_store.empty()) {
 				DeleteChannel((*_curr_joined_channel)->_channel_name);
-				break;
 			}
+			_user_to_delete->_membership.erase(_curr_joined_channel);
 		}
 	}
 	list<User>::iterator _curr_user = _users_store.end();
@@ -119,21 +119,38 @@ Channel *UserInfoStore::FindChannelByName(string _searching_channel_name) {
 int UserInfoStore::CreateNewChannel(User *_owner_ptr, const string &_new_channel_name,
 									const string &_new_channel_password) {
 	_active_channels.push_back(Channel(_owner_ptr, _new_channel_name, _new_channel_password));
+	_owner_ptr->_membership.push_back(&_active_channels.back());
 	return (0);
 }
 
 void UserInfoStore::PrintUserInfoStore() {
-	list<User>::iterator _curr_user = _users_store.begin();
-	list<User>::iterator _end_user = _users_store.end();
-	while (_curr_user != _end_user) {
-		std::cout << _curr_user->_fd << " " << _curr_user->_nick << " " << _curr_user->_real_name << std::endl;
-		++_curr_user;
+	std::cout << "-------------All users------------" << std::endl;
+	{
+		list<User>::iterator _curr_user = _users_store.begin();
+		list<User>::iterator _end_user = _users_store.end();
+		while (_curr_user != _end_user) {
+			std::cout << _curr_user->_fd << " " << _curr_user->_nick << " "
+					  << _curr_user->_real_name << std::endl;
+			++_curr_user;
+		}
 	}
-	list<User *>::iterator _curr_nick = _connected_users.begin();
-	list<User *>::iterator _end_nick = _connected_users.end();
-	while (_curr_nick != _end_nick) {
-		std::cout << *_curr_nick << std::endl;
-		++_curr_nick;
+	std::cout << "-------------All active users------------" << std::endl;
+	{
+		list<User *>::iterator _curr_nick = _connected_users.begin();
+		list<User *>::iterator _end_nick = _connected_users.end();
+		while (_curr_nick != _end_nick) {
+			std::cout << *_curr_nick << std::endl;
+			++_curr_nick;
+		}
 	}
-
+	std::cout << "-------------Channels------------" << std::endl;
+	{
+		list<Channel>::iterator _curr_channel_ptr = _active_channels.begin();
+		list<Channel>::iterator _channels_ptr_end = _active_channels.end();
+		while (_curr_channel_ptr != _channels_ptr_end) {
+			std::cout << _curr_channel_ptr->_channel_name << std::endl;
+			++_curr_channel_ptr;
+		}
+	}
+	std::cout << "-------------End------------" << std::endl << std::endl;
 }
