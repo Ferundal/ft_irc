@@ -106,6 +106,8 @@ int User::JoinChannel(const string &_channel_name, const string &_channel_passwo
 		this->_to_user_store->CreateNewChannel(this, _channel_name, _channel_password);
 		return (0);
 	}
+	if (this->IsMemberOfChannel(_channel_ptr))
+		return (ERR_USERONCHANNEL);
 	if (_channel_ptr->_invite_only_channel_flag == true &&
 		_channel_ptr->IsInvited(this) == false)
 		return (ERR_INVITEONLYCHAN);
