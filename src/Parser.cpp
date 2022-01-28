@@ -178,7 +178,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
 	if (socket._usr_ptr->IsActivated() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
-            if (socket._usr_ptr->SetActive() == 0) {
+            if (socket._usr_ptr->SetActivated() == 0) {
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
@@ -236,7 +236,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
         isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
-            if (socket._usr_ptr->SetActive() == 0) {
+            if (socket._usr_ptr->SetActivated() == 0) {
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,

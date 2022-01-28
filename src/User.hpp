@@ -83,7 +83,7 @@ public:
 	 *  @Return 0 if success.
 	 *  @Return 1 if User has not enough information to be active.
 	 */
-	int SetActive(void);
+	int SetActivated(void);
 
 	void SetAway(const string &_new_away_message);
 	void SetNotAway(void);

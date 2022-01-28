@@ -48,7 +48,7 @@ int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name
 	}
 }
 
-int User::SetActive() {
+int User::SetActivated() {
 	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
 		this->_to_user_store->_connected_users.push_back(this);
 		this->_is_activated = true;
