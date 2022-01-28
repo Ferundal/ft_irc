@@ -289,7 +289,6 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 void	Parser::commandQUIT(ClientSocket& socket)
 {
 	cout << "QUIT command done" << endl; // DEBUG out
-	socket._usr_ptr->ToStore().DeleteUser(socket._usr_ptr);
 	throw Parser::UserDeleteException();
 }
 
@@ -340,7 +339,7 @@ void	Parser::commandJOIN(ClientSocket& socket)
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,(command + " :Not enough parameters").data());
 		return;
 	}
-
+	std::cout << ">>" << paramList[1] << "<<" << std::endl;
 	socket._usr_ptr->JoinChannel(paramList[1], ""); // TODO сделать норм
 
 	string message;
