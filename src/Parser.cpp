@@ -175,7 +175,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
         return;
     }
 
-	if (socket._usr_ptr->IsActive() == false) {
+	if (socket._usr_ptr->IsActivated() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
         if (isSetUserInfo == false) {
             if (socket._usr_ptr->SetActive() == 0) {
@@ -232,7 +232,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
         }
     }
 
-	if (socket._usr_ptr->IsActive() == false) {
+	if (socket._usr_ptr->IsActivated() == false) {
         isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
         if (isSetNickInfo == false) {
             // std::cout << "|INFO| [Nick successfuly added]" << std::endl;

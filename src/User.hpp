@@ -93,7 +93,7 @@ public:
 	 *  @Return true if user is mark as active.
 	 *  @Return false if not.
 	 */
-	bool IsActive() const;
+	bool IsActivated() const;
 
 	bool IsAway() const;
 

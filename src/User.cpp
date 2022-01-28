@@ -67,7 +67,7 @@ void User::SetNotAway() {
 	this->_is_away = false;
 }
 
-bool User::IsActive() const {
+bool User::IsActivated() const {
 	return (this->_is_active);
 }
 
