@@ -307,7 +307,7 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 	}
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISUSER), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName()).data());
-	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
+	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
 //ERR_NONICKNAMEGIVEN(Ok)					  RPL_WHOISSERVER
 //RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS??
@@ -445,7 +445,8 @@ void 						Parser::commandWHO(ClientSocket& socket)
 
 	//socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
 	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-		(paramList[1] + "   * 127.0.0.1 kreker H :Shuchu Pes").data());
+		(paramList[1] + " * 127.0.0.1 kreker H :Shuchu Pes").data());
+//"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
 	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
 		(paramList[1] + " :End of /WHO list").data());
 
