@@ -374,7 +374,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 		while (_curr_channel_user != _channel_users_end) {
 			answer.clear();
 			answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " + paramList[1] + "\r\n";
-			std::cout << answer << std::endl; // DEBUG outr
+			std::cout << "FD: "<< (*_curr_channel_user)->GetUserFd() << " " << answer << std::endl; // DEBUG outr
 			send((*_curr_channel_user)->GetUserFd(), answer.data(), answer.size(), 0);
 			++_curr_channel_user;
 		}
