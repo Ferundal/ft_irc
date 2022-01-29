@@ -226,3 +226,18 @@ int User::ChangeTopic(const string &_channel_to_change_topic,
 	}
 	return (ERR_NOTONCHANNEL);
 }
+
+int User::GetTopic(const string &_channel_to_get_topic, string &_topic_store) {
+	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
+	vector<Channel *>::iterator _curr_membership = this->_membership.end();
+	while (_curr_membership != _memberships_begin) {
+		--_curr_membership;
+		if ((*_curr_membership)->_channel_name == _channel_to_get_topic) {
+			if ((*_curr_membership)->_channel_topic == "")
+				return (RPL_NOTOPIC);
+			_topic_store = (*_curr_membership)->_channel_topic;
+			return (0);
+		}
+	}
+	return (ERR_NOTONCHANNEL);
+}

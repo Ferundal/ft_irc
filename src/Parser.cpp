@@ -84,6 +84,23 @@ void Parser::rplSendMsg(const char* rpl_code, User& user, const char* msg)
 	send(user.GetUserFd(), answer.data(), answer.size(), 0);
 }
 
+void Parser::rplSendMsgFrom(const string &sender, const char* rpl_code, User& user, const char* msg)
+{
+	std::string answer;
+	answer = answer + ":" + sender + " " + rpl_code + " " + user.GetUserNick() + " " + msg + "\r\n";
+	cout << answer << endl; // DEBUG out
+	send(user.GetUserFd(), answer.data(), answer.size(), 0);
+}
+
+void Parser::rplSendMsgToGroup(const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg) {
+	vector<User *>::const_iterator _curr_user_ptr = users.begin();
+	vector<User *>::const_iterator _user_ptrs_end = users.end();
+	while (_curr_user_ptr != _user_ptrs_end) {
+		rplSendMsgFrom(sender, rpl_code, **_curr_user_ptr, msg);
+		++_curr_user_ptr;
+	}
+}
+
 std::string Parser::returnCommand ( std::string &str ) {
     std::string command;
     int         pos;
@@ -523,7 +540,7 @@ void 						Parser::commandPART (ClientSocket& socket) {
     // [CHECK] There are more than 1 parameters in ListOfParameters
     if (paramList.size() >= 2) {
         for (size_t i = 1; i < paramList.size(); ++i) {
-            if(socket._usr_ptr->LeaveChannel(paramList[i]) == 442) {
+            if(socket._usr_ptr->LeaveChannel(paramList[i]) == ERR_NOTONCHANNEL) {
     // [CHECK] There is not on chanel
         		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
 			   		(paramList[i] + " :You're not on that channel").data());
@@ -535,6 +552,51 @@ void 						Parser::commandPART (ClientSocket& socket) {
 	    	(paramList[0] + " :Not enough parameters").data());
         return;
     }
+}
+
+void 						Parser::commandTOPIC (ClientSocket& socket) {
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+	// Command need at least one param, send error if not enouth args
+	if (paramList.size() < 2) {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
+				   (paramList[0] + " :Not enough parameters").data());
+		return;
+	}
+	// Sent info about channel name
+	if (paramList.size() == 2) {
+		std::string topic_store;
+		int status = socket._usr_ptr->GetTopic(paramList[1], topic_store);
+		if (status == 0) {
+			topic_store = ":" + topic_store;
+			rplSendMsg(CODE_TO_STRING(RPL_TOPIC), *socket._usr_ptr,
+					topic_store.data());
+		} else if (status == ERR_NOTONCHANNEL) {
+			errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
+					(paramList[1] + " :You're not on that channel").data());
+		}
+		else if (status == RPL_NOTOPIC) {
+			rplSendMsg(CODE_TO_STRING(RPL_NOTOPIC), *socket._usr_ptr,
+					(paramList[1] + " :No topic is set").data());
+		}
+		return;
+	}
+	//change current topic and send information about it to all users in channel
+	if (paramList.size() == 3) {
+		int status = socket._usr_ptr->ChangeTopic(paramList[1], paramList[2]);
+		if (status == 0) {
+			const vector<User *> &channel_users_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1])->GetChannelUsers();
+			rplSendMsgToGroup(socket._usr_ptr->GetUserNick(), CODE_TO_STRING(RPL_TOPIC),
+							  channel_users_ptr, (": " + paramList[2]).data());
+		} else if (status == ERR_NOTONCHANNEL) {
+			errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
+					   (paramList[1] + " :You're not on that channel").data());
+		} else if (status == ERR_CHANOPRIVSNEEDED) {
+			errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr,
+					   (paramList[1] + " :You're not channel operator").data());
+		}
+		return;
+	}
 }
 
 void    Parser::stringParser(ClientSocket &socket) {
@@ -577,7 +639,9 @@ void    Parser::stringParser(ClientSocket &socket) {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
         commandPART(socket); // <----- Done
-    }
+    } else if (command == "TOPIC") {
+		commandTOPIC(socket);
+	}
 
     socket._msg_buff.clear();
 }
