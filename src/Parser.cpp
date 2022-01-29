@@ -363,12 +363,16 @@ void	Parser::commandJOIN(ClientSocket& socket){
 		status = socket._usr_ptr->JoinChannel(paramList[1], paramList[2]);
 	if (status == 0) {
 		string answer;
-		answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " +
-				 paramList[1] + "\r\n";
-		cout << answer << endl;// DEBUG out
-		send(socket._fd, answer.data(), answer.size(), 0);
-		answer.clear();
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+		vector<User *>::const_iterator _curr_channel_user = channel_ptr->GetChannelUsers().begin();
+		vector<User *>::const_iterator _channel_users_end = channel_ptr->GetChannelUsers().end();
+		while (_curr_channel_user != _channel_users_end) {
+			answer.clear();
+			answer = answer + ":" + socket._usr_ptr->GetUserFullName() + " JOIN " + paramList[1] + "\r\n";
+			std::cout << answer << std::endl; // DEBUG outr
+			send((*_curr_channel_user)->GetUserFd(), answer.data(), answer.size(), 0);
+			++_curr_channel_user;
+		}
 		answer.clear();
 		string topic;
 		status = socket._usr_ptr->GetTopic(paramList[1], topic);
@@ -495,12 +499,17 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //	352     RPL_WHOREPLY
 //	"<channel> <user> <host> <server> <nick> \
 //  <H|G>[*][@|+] :<hopcount> <real name>"
-	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-		(paramList[1] + " Psina * 127.0.0.1 archie0 @ :Luto").data());
-	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-		(paramList[1] + " Dubin * 127.0.0.1 lololo * :kek").data());
-	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-		(paramList[1] + " hgfg * 127.0.0.1 hgfgh * :jgdds").data());
+	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+	vector<User*> usr_vector = channel->GetChannelUsers();
+	for (int i = 0; i < usr_vector.size(); ++i)
+	{
+		rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+				   (paramList[1] + " " + usr_vector[i]->GetUserName() + " "
+				   + usr_vector[i]->GetUserHost() + " "
+				   + SERVER_NAME + " "
+				   + usr_vector[i]->GetUserNick() + " * "
+				   + usr_vector[i]->GetUserRealName()).data());
+	}
 //		(paramList[1] + " has 2 users. Operator: archie0").data());
 //"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
 
@@ -511,7 +520,6 @@ void 						Parser::commandWHO(ClientSocket& socket)
 		(paramList[1] + " :End of /WHO list").data());
 
 // INFO kreker - nickname  NePess - username * - hostname 127.0.0.1 - servername :Shuchu Pes - realname
-
 
 //  ERR_NOSUCHSERVER
 }
@@ -542,17 +550,17 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
-//    // Checking ERR_USERONCHANNEL 443   <--- Not work
-//    if (socket._usr_ptr) {
-//        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
-//        return;
-//    }
-//
-//    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
-//        if (socket._usr_ptr) {
-//        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
-//        return;
-//    }
+    // Checking ERR_USERONCHANNEL 443   <--- Not work
+    if (socket._usr_ptr) {
+        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
+        return;
+    }
+
+    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
+        if (socket._usr_ptr) {
+        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
+        return;
+    }
 
     rplSendMsg(CODE_TO_STRING(RPL_INVITING), *socket._usr_ptr,
     	(paramList[2] + " " + paramList[1]).data());
