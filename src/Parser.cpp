@@ -321,7 +321,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 	std::string					command	= paramList[0];
 	int							param_count = countParam(socket._msg_buff);
 
-	std::cout << ">>" << paramList[1] << "<<" << std::endl;
+	std::cout << ">>" << paramList[1] << "<<" << std::endl; // DEBUG out
 	if(param_count != 2)
 	{
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
@@ -337,12 +337,12 @@ void	Parser::commandJOIN(ClientSocket& socket){
 	answer.clear();
 
 	rplSendMsg(CODE_TO_STRING(RPL_TOPIC), *socket._usr_ptr,
-    	(answer + ":TOPIC").data());
+   		(answer + paramList[1] + " :TOPIC").data());
 
 //	353     RPL_NAMREPLY
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
 	rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
-    	(answer + paramList[1] + " :@archie " + socket._usr_ptr->GetUserNick()).data()); // TODO добавить список ников
+    	(answer + paramList[1] + " :@ " + socket._usr_ptr->GetUserNick()).data()); // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
@@ -572,7 +572,7 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "PING") {
         commandPING(socket);
     } else if (command == "WHO"){
-    	commandWHO(socket);
+    	;//commandWHO(socket);
     } else if (command == "INVITE") {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
