@@ -98,7 +98,7 @@ void Parser::sendMsgToGroup(const string &sender, const char* rpl_code, const ch
 	std::string reply;
 	while (_curr_user_ptr != _user_ptrs_end) {
 		reply.clear();
-		reply= reply + ":" + sender + " " + rpl_code + " " + group + " :" + msg + "\r\n";
+		reply = reply + ":" + sender + " " + rpl_code + " " + group + " :" + msg + "\r\n";
 		cout << reply << endl; // DEBUG out
 		send((*_curr_user_ptr)->GetUserFd(), reply.data(), reply.size(), 0);
 		++_curr_user_ptr;
@@ -360,16 +360,25 @@ void	Parser::commandJOIN(ClientSocket& socket){
 	if (paramList.size() == 2)
 		status = socket._usr_ptr->JoinChannel(paramList[1], "");
 	else
-		status = socket._usr_ptr->JoinChannel(paramList[1], paramList[2]);// TODO сделать норм
+		status = socket._usr_ptr->JoinChannel(paramList[1], paramList[2]);
 	if (status == 0) {
 		string answer;
-		answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " +
-				 paramList[1] + "\r\n";
-		cout << answer << endl;// DEBUG out
-		send(socket._fd, answer.data(), answer.size(), 0);
+//		answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " +
+//				 paramList[1] + "\r\n";
+//		cout << answer << endl;// DEBUG out
+//		send(socket._fd, answer.data(), answer.size(), 0);
+//		answer.clear();
+		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+		vector<User *>::const_iterator _curr_channel_user = channel_ptr->GetChannelUsers().begin();
+		vector<User *>::const_iterator _channel_users_end = channel_ptr->GetChannelUsers().end();
+		while (_curr_channel_user != _channel_users_end) {
+			answer.clear();
+			answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " + paramList[1] + "\r\n";
+			std::cout << answer << std::endl; // DEBUG outr
+			send((*_curr_channel_user)->GetUserFd(), answer.data(), answer.size(), 0);
+			++_curr_channel_user;
+		}
 		answer.clear();
-
-
 		string topic;
 		status = socket._usr_ptr->GetTopic(paramList[1], topic);
 		if (status == 0) {
@@ -384,17 +393,13 @@ void	Parser::commandJOIN(ClientSocket& socket){
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
 //	socket._usr_ptr->ToStore().FindChannelByName();
 		rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
-				   (answer + paramList[1] + " : jhon " +
-					socket._usr_ptr->GetUserNick() +
-					" archie0 @lololo").data()); // TODO добавить список ников
+				   (answer + paramList[1] + " :" + channel_ptr->NameReply()).data()); // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
 		rplSendMsg(CODE_TO_STRING(RPL_ENDOFNAMES), *socket._usr_ptr,
 				   (answer + paramList[1] + " :End of /NAMES list").data());
-	} else if (status == ERR_USERONCHANNEL) {
-		errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr,
-				   (paramList[1] + " :is already on channel").data());
+
 	} else if (status == ERR_INVITEONLYCHAN) {
 		errSendMsg(CODE_TO_STRING(ERR_INVITEONLYCHAN), *socket._usr_ptr,
 				   (paramList[1] + " :Cannot join channel (+i)").data());
@@ -527,7 +532,7 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         (paramList[0] + " :Not enough parameters").data());
         return;
     }
-	User*						reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
+	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
     // Checking ERR_NOSUCHNICK
     if (reciever == NULL) {
