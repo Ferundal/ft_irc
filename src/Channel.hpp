@@ -40,7 +40,9 @@ private:
 	void AddUser(User &_new_user);
 	void DeleteFromOperators(User *_user_to_delete);
 	int DeleteUser(User *_user_to_delete);
+
 public:
+	const vector<User *> &GetChannelUsers() const;
 	Channel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);
 	~Channel();
 	void AddInvite(User *_new_invite_user_ptr);
@@ -56,6 +58,8 @@ public:
 	 * Delete invite for _checked_user_ptr if it is exist.
 	 */
 	void DeleteInvite(User *_user_for_invitation_delete);
+
+	bool IsOperator(User *_checked_user_prt);
 };
 
 

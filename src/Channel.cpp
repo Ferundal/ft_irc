@@ -50,6 +50,10 @@ int Channel::DeleteUser(User *_user_to_delete) {
 	return (1);
 }
 
+const vector<User *> &Channel::GetChannelUsers() const {
+	return (_user_store);
+}
+
 void Channel::DeleteFromOperators(User *_user_to_delete) {
 	vector<User *>::iterator _curr_moderator = _operators.begin();
 	vector<User *>::iterator _moderators_end = _operators.end();
@@ -104,4 +108,16 @@ void Channel::DeleteInvite(User *_user_for_invitation_delete) {
 		}
 		++_curr_invited_user;
 	}
+}
+
+bool Channel::IsOperator(User *_checked_user_prt) {
+	vector<User *>::iterator _curr_operator = this->_invites.begin();
+	vector<User *>::iterator _operators_end = this->_invites.end();
+	while (_curr_operator != _operators_end) {
+		if (*_curr_operator == _checked_user_prt) {
+			return (true);
+		}
+		++_curr_operator;
+	}
+	return (false);
 }
