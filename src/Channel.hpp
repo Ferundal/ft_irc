@@ -21,6 +21,7 @@ class Channel {
 private:
 	string			_channel_name;
 	string			_password;
+	bool			_is_topic_set;
 	string			_channel_topic;
 	bool			_private_channel_flag;
 	bool			_secret_channel_flag;
@@ -54,6 +55,8 @@ public:
 	 */
 	bool IsInvited(User *_checked_user_ptr);
 
+
+	bool IsTopicSet();
 	/*
 	 * Delete invite for _checked_user_ptr if it is exist.
 	 */

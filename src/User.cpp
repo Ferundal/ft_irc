@@ -221,6 +221,7 @@ int User::ChangeTopic(const string &_channel_to_change_topic,
 				return (ERR_CHANOPRIVSNEEDED);
 			}
 			(*_curr_membership)->_channel_topic = _new_topic;
+			(*_curr_membership)->_is_topic_set = true;
 			return (0);
 		}
 	}
@@ -233,7 +234,7 @@ int User::GetTopic(const string &_channel_to_get_topic, string &_topic_store) {
 	while (_curr_membership != _memberships_begin) {
 		--_curr_membership;
 		if ((*_curr_membership)->_channel_name == _channel_to_get_topic) {
-			if ((*_curr_membership)->_channel_topic == "")
+			if (!(*_curr_membership)->IsTopicSet())
 				return (RPL_NOTOPIC);
 			_topic_store = (*_curr_membership)->_channel_topic;
 			return (0);
