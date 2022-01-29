@@ -618,10 +618,16 @@ void 						Parser::commandPART (ClientSocket& socket) {
 				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
 				cout << answer << endl; // DEBUG out
 				answer.clear();
-				answer	= ":" + socket._usr_ptr->GetUserNick() + " MODE " + channel_name + " +o " + (*channel->GetChannelUsers().begin())->GetUserNick() + "\r\n";
-				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
-				cout << answer << endl; // DEBUG out
-				answer.clear();
+				if (_need_new_operatir == true) {
+					answer = ":" + socket._usr_ptr->GetUserNick() + " MODE " +
+							 channel_name + " +o " +
+							 (*(channel->GetChannelUsers().begin() +
+								1))->GetUserNick() + "\r\n";
+					send(usr_vector[i]->GetUserFd(), answer.data(),
+						 answer.size(), 0);
+					cout << answer << endl; // DEBUG out
+					answer.clear();
+				}
 			}
             socket._usr_ptr->LeaveChannel(paramList[i]);
         }
