@@ -277,8 +277,11 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(int i = 0; i < usr_vector.size(); ++i)
 		{
-			answer	= ":" + usr_vector[i]->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
+			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+				continue;
+			answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
 			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			cout << answer << endl; // DEBUG out
 			answer.clear();
 		}
 	}
@@ -548,7 +551,7 @@ void 						Parser::commandPART (ClientSocket& socket) {
             return;
         }
     }
-    
+
     // [CHECK] There are more than 1 parameters in ListOfParameters
     if (paramList.size() >= 2) {
         for (size_t i = 1; i < paramList.size(); ++i) {
@@ -564,6 +567,20 @@ void 						Parser::commandPART (ClientSocket& socket) {
 	    	(paramList[0] + " :Not enough parameters").data());
         return;
     }
+
+	string channel_name = paramList[1];
+    string answer;
+    Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
+	vector<User*> usr_vector = channel->GetChannelUsers();
+	for(int i = 0; i < usr_vector.size(); ++i)
+	{
+		if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+			continue;
+		answer	= ":" + socket._usr_ptr->GetUserNick() + " PART " + channel_name + "\r\n";
+		send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+		cout << answer << endl; // DEBUG out
+		answer.clear();
+	}
 }
 
 void 						Parser::commandTOPIC (ClientSocket& socket) {
