@@ -63,6 +63,7 @@ public:
 	void DeleteInvite(User *_user_for_invitation_delete);
 
 	bool IsOperator(User *_checked_user_prt);
+	string NameReply();
 };
 
 
