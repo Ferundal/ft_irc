@@ -116,12 +116,18 @@ std::string Parser::returnCommand ( std::string &str ) {
         return (str.substr(0, pos));
 }
 
+
+
 bool         Parser::checkCommand ( std::string &command ) {
     for (int i = 0; i < COMMAND_COUNT; ++i)
         if (this->_commandList[i] == command) {
             return true;
         }
     return false;
+}
+
+bool	Parser::checkModeFlags(std::string &flags) {
+	return (true);
 }
 
 int                Parser::countParam (std::string &str) {
@@ -588,22 +594,36 @@ void 						Parser::commandPART (ClientSocket& socket) {
 			string channel_name = paramList[1];
 			string answer;
 			Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
+			if (channel == NULL) {
+				errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
+						   (paramList[i] + " : :No such channel").data());
+				continue;
+			}
+			if (!socket._usr_ptr->IsMemberOfChannel(channel)) {
+				errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
+						   (paramList[i] + " :You're not on that channel").data());
+				continue;
+			}
 			vector<User*> usr_vector = channel->GetChannelUsers();
-			for(size_t i = 0; i < usr_vector.size(); ++i)
-			{
+			bool _need_new_operatir = false;
+			if (channel->IsOperator(socket._usr_ptr) &&
+				channel->GetChannelOperators().size() == 1 &&
+				channel->GetChannelUsers().size() > 1) {
+				_need_new_operatir = true;
+			}
+			for(size_t i = 0; i < usr_vector.size(); ++i) {
 				if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
 					continue;
 				answer	= ":" + socket._usr_ptr->GetUserNick() + " PART " + channel_name + "\r\n";
 				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
 				cout << answer << endl; // DEBUG out
 				answer.clear();
+				answer	= ":" + socket._usr_ptr->GetUserNick() + " MODE " + channel_name + " +o " + (*channel->GetChannelUsers().begin())->GetUserNick() + "\r\n";
+				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+				cout << answer << endl; // DEBUG out
+				answer.clear();
 			}
-            if(socket._usr_ptr->LeaveChannel(paramList[i]) == ERR_NOTONCHANNEL) {
-    // [CHECK] There is not on chanel
-        		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
-			   		(paramList[i] + " :You're not on that channel").data());
-                return;
-            }
+            socket._usr_ptr->LeaveChannel(paramList[i]);
         }
     } else {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
@@ -662,6 +682,17 @@ void 						Parser::commandTOPIC (ClientSocket& socket) {
 	}
 }
 
+void Parser::commandMODE(ClientSocket &socket) {
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+
+	// Command need at least one param, send error if not enouth args
+	if (paramList.size() < 3) {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
+				   (paramList[0] + " :Not enough parameters").data());
+		return;
+	}
+}
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -704,6 +735,8 @@ void    Parser::stringParser(ClientSocket &socket) {
         commandPART(socket); // <----- Done
     } else if (command == "TOPIC") {
 		commandTOPIC(socket);
+	} else if (command == "MODE") {
+		commandMODE(socket);
 	}
 
     socket._msg_buff.clear();

@@ -55,6 +55,10 @@ const vector<User *> &Channel::GetChannelUsers() const {
 	return (_user_store);
 }
 
+const vector<User *> &Channel::GetChannelOperators() const {
+	return (_operators);
+}
+
 void Channel::DeleteFromOperators(User *_user_to_delete) {
 	vector<User *>::iterator _curr_moderator = _operators.begin();
 	vector<User *>::iterator _moderators_end = _operators.end();
