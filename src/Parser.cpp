@@ -97,56 +97,93 @@ bool         Parser::checkCommand ( std::string &command ) {
 }
 
 
-int          Parser::countParam ( std::string &str ) {
-    int     slovo, count = 0;
-    size_t  i = 0;
-    int     flag = 0;
-    char    symb = '\r';
+// int          Parser::countParam ( std::string &str ) {
+//     int     slovo, count = 0;
+//     size_t  i = 0;
+//     int     flag = 0;
+//     char    symb = '\r';
 
-    while (i < str.length()) {
-        if (str[i] == ':') {
-            flag = 1;
-            symb = ':';
-        }
-        ++i;
-    }
+//     while (i < str.length()) {
+//         if (str[i] == ':') {
+//             flag = 1;
+//             symb = ':';
+//         }
+//         ++i;
+//     }
 
-    i = 0;
+//     i = 0;
 
-    while (str[i] == ' ' && str[i] != symb)
-        i++;
-    slovo = 0;
+//     while (str[i] == ' ' && str[i] != symb)
+//         i++;
+//     slovo = 0;
 
-    while (str[i] != symb) {
-        if (str[i] != ' ' && slovo == 0) {
-            slovo = 1;
-            count++;
-        } else if (str[i] == ' ')
-            slovo = 0;
-        i++;
-    }
+//     while (str[i] != symb) {
+//         if (str[i] != ' ' && slovo == 0) {
+//             slovo = 1;
+//             count++;
+//         } else if (str[i] == ' ')
+//             slovo = 0;
+//         i++;
+//     }
 
-    return count + flag;
+//     return count + flag;
+// }
+
+int                Parser::countParam (std::string &str) {
+  char        symb = '\r';
+  int         n = 0;
+  int         count = 0;
+
+  if (str.find(":") != str.npos)
+    symb = ':';
+
+  while (str[n] != symb) {
+    if (str[n] == ' ')
+      ++count;
+    ++n;
+  }
+
+  if (str[n] == ':' || str[n] == '\r')
+    ++count;
+
+  return count;
 }
 
-std::vector<std::string> Parser::mySplit ( std::string str ) {
-    size_t      i = 0;
-    std::string symb = " ";
-    size_t      countP = countParam(str);
-    std::vector<std::string> commandArr(countP);
+// std::vector<std::string> Parser::mySplit ( std::string str ) {
+//     size_t      i = 0;
+//     std::string symb = " ";
+//     size_t      countP = countParam(str);
+//     std::vector<std::string> commandArr(countP);
 
-//    std::cout << "Count" << countP << std::endl;
-    while (i < countP) {
-        if (i == countP - 1)
-            symb = "\r";
-        commandArr[i] = str.substr(0, str.find(symb));
-//        std::cout << "commandArr[" << i << "]: " << commandArr[i] << std::endl;
-        str.erase(0, str.find(symb) + 1);
-        ++i;
-    }
-    cout << "SplitParamCount: " << countP<< endl;
+// //    std::cout << "Count" << countP << std::endl;
+//     while (i < countP) {
+//         if (i == countP - 1)
+//             symb = "\r";
+//         commandArr[i] = str.substr(0, str.find(symb));
+// //        std::cout << "commandArr[" << i << "]: " << commandArr[i] << std::endl;
+//         str.erase(0, str.find(symb) + 1);
+//         ++i;
+//     }
+//     cout << "SplitParamCount: " << countP<< endl;
 
-    return commandArr;
+//     return commandArr;
+// }
+
+std::vector<std::string>    Parser::mySplit ( std::string str ) {
+  int                       i = 0;
+  char                      symb = ' ';
+  int                       countWord = countParam(str);
+  std::vector<std::string>  wordList(countWord);
+
+  while (i < countWord) {
+    if (i == countWord - 1)
+        symb = '\r';
+    wordList[i] = str.substr(0, str.find(symb));
+    str.erase(0, str.find(symb) + 1);
+    ++i;
+  }
+
+  return wordList;
 }
 
 void         Parser::commandUSER (ClientSocket &socket ) {
@@ -284,6 +321,7 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 
 void	Parser::commandQUIT(ClientSocket& socket)
 {
+    void(socket._msg_buff);
 	cout << "QUIT command done" << endl; // DEBUG out
 	throw Parser::UserDeleteException();
 }
