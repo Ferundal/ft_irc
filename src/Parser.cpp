@@ -92,11 +92,15 @@ void Parser::rplSendMsgFrom(const string &sender, const char* rpl_code, User& us
 	send(user.GetUserFd(), answer.data(), answer.size(), 0);
 }
 
-void Parser::rplSendMsgToGroup(const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg) {
+void Parser::rplSendMsgToGroup(const string &sender, const char* rpl_code, const char *group, const vector<User *>& users, const char* msg) {
 	vector<User *>::const_iterator _curr_user_ptr = users.begin();
 	vector<User *>::const_iterator _user_ptrs_end = users.end();
+	std::string reply;
 	while (_curr_user_ptr != _user_ptrs_end) {
-		rplSendMsgFrom(sender, rpl_code, **_curr_user_ptr, msg);
+		reply.clear();
+		reply= reply + ":" + sender + " " + rpl_code + " " + group + " :" + msg + "\r\n";
+		cout << reply << endl; // DEBUG out
+		send((*_curr_user_ptr)->GetUserFd(), reply.data(), reply.size(), 0);
 		++_curr_user_ptr;
 	}
 }
@@ -120,53 +124,41 @@ bool         Parser::checkCommand ( std::string &command ) {
     return false;
 }
 
+int                Parser::countParam (std::string &str) {
+  char        symb = '\r';
+  int         n = 0;
+  int         count = 0;
 
-int          Parser::countParam ( std::string &str ) {
-    int     slovo, count = 0;
-    size_t  i = 0;
-    int     flag = 0;
-    char    symb = '\r';
+  if (str.find(":") != str.npos)
+    symb = ':';
 
-    while (i < str.length()) {
-        if (str[i] == ':') {
-            flag = 1;
-            symb = ':';
-        }
-        ++i;
-    }
+  while (str[n] != symb) {
+    if (str[n] == ' ')
+      ++count;
+    ++n;
+  }
 
-    i = 0;
+  if (str[n] == ':' || str[n] == '\r')
+    ++count;
 
-    while (str[i] == ' ' && str[i] != symb)
-        i++;
-    slovo = 0;
-
-    while (str[i] != symb) {
-        if (str[i] != ' ' && slovo == 0) {
-            slovo = 1;
-            count++;
-        } else if (str[i] == ' ')
-            slovo = 0;
-        i++;
-    }
-
-    return count + flag;
+  return count;
 }
 
-std::vector<std::string> Parser::mySplit ( std::string str ) {
-    size_t      i = 0;
-    std::string symb = " ";
-    size_t      countP = countParam(str);
-    std::vector<std::string> commandArr(countP);
+std::vector<std::string>    Parser::mySplit ( std::string str ) {
+  int                       i = 0;
+  char                      symb = ' ';
+  int                       countWord = countParam(str);
+  std::vector<std::string>  wordList(countWord);
 
-    while (i < countP) {
-        if (i == countP - 1)
-            symb = "\r";
-        commandArr[i] = str.substr(0, str.find(symb));
-        str.erase(0, str.find(symb) + 1);
-        ++i;
-    }
-    return commandArr;
+  while (i < countWord) {
+    if (i == countWord - 1)
+        symb = '\r';
+    wordList[i] = str.substr(0, str.find(symb));
+    str.erase(0, str.find(symb) + 1);
+    ++i;
+  }
+
+  return wordList;
 }
 
 void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересмотреть логику ошибок
@@ -311,7 +303,10 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 //	RPL_AWAY
 }
 
-void	Parser::commandQUIT(ClientSocket& socket){
+void	Parser::commandQUIT(ClientSocket& socket)
+{
+    void(socket._msg_buff);
+	cout << "QUIT command done" << endl; // DEBUG out
 	throw Parser::UserDeleteException();
 }
 
@@ -598,13 +593,16 @@ void 						Parser::commandTOPIC (ClientSocket& socket) {
 		}
 		return;
 	}
+	//delete : from topic
+	if (*paramList[2].data() == ':')
+		paramList[2].erase(0, 1);
 	//change current topic and send information about it to all users in channel
 	if (paramList.size() == 3) {
 		int status = socket._usr_ptr->ChangeTopic(paramList[1], paramList[2]);
 		if (status == 0) {
 			const vector<User *> &channel_users_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1])->GetChannelUsers();
 			rplSendMsgToGroup(socket._usr_ptr->GetUserNick(), CODE_TO_STRING(RPL_TOPIC),
-							  channel_users_ptr, (": " + paramList[2]).data());
+							  paramList[1].data(), channel_users_ptr, paramList[2].data());
 		} else if (status == ERR_NOTONCHANNEL) {
 			errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
 					   (paramList[1] + " :You're not on that channel").data());
