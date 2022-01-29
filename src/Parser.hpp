@@ -15,6 +15,10 @@
 #define TO_STRING_100(X) #X
 #define CODE_TO_STRING(X) TO_STRING_100(X)
 
+using std::cout;
+using std::vector;
+using std::string;
+
 class Parser {
     private:
         std::string _commandList[COMMAND_COUNT];
@@ -40,9 +44,15 @@ class Parser {
         std::string					returnCommand (std::string &str);
         bool                        checkCommand (std::string &str);
         void						errSendMsg (const char* er_code, User& user, const char* msg);
-        void 						rplSendMsg (const char* rpl_code, User& user, const char* msg);
-		void						rplSendMsgFrom (const string &sender, const char* rpl_code, User& user, const char* msg);
-		void						rplSendMsgToGroup (const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg);
+
+
+        // void 						rplSendMsg (const char* rpl_code, User& user, const char* msg);
+		// void						rplSendMsgFrom (const string &sender, const char* rpl_code, User& user, const char* msg);
+		// void						rplSendMsgToGroup (const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg);
+
+        void 						rplSendMsg(const char* rpl_code, User& user, const char* msg);
+		void						rplSendMsgFrom(const string &sender, const char* rpl_code, User& user, const char* msg);
+		void						rplSendMsgToGroup(const string &sender, const char* rpl_code, const char *group, const vector<User *>& users, const char* msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
