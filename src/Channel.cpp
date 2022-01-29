@@ -116,8 +116,8 @@ void Channel::DeleteInvite(User *_user_for_invitation_delete) {
 }
 
 bool Channel::IsOperator(User *_checked_user_prt) {
-	vector<User *>::iterator _curr_operator = this->_invites.begin();
-	vector<User *>::iterator _operators_end = this->_invites.end();
+	vector<User *>::iterator _curr_operator = this->_operators.begin();
+	vector<User *>::iterator _operators_end = this->_operators.end();
 	while (_curr_operator != _operators_end) {
 		if (*_curr_operator == _checked_user_prt) {
 			return (true);
@@ -125,4 +125,18 @@ bool Channel::IsOperator(User *_checked_user_prt) {
 		++_curr_operator;
 	}
 	return (false);
+}
+
+string Channel::NameReply() {
+	string nameReplyString;
+	vector<User *>::iterator _begin = _user_store.begin();
+	vector<User *>::iterator _curr_user_ptr = _user_store.end();
+	while (_curr_user_ptr != _begin) {
+		--_curr_user_ptr;
+		nameReplyString.append(" ");
+		if(this->IsOperator(*_curr_user_ptr))
+			nameReplyString.append("@");
+		nameReplyString.append((*_curr_user_ptr)->GetUserNick());
+	}
+	return (nameReplyString);
 }
