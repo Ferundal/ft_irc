@@ -357,7 +357,7 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 void	Parser::commandJOIN(ClientSocket& socket){
 	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
 	std::string					command	= paramList[0];
-	// int							param_count = countParam(socket._msg_buff);
+	//int							param_count = countParam(socket._msg_buff);
 
 	if(paramList.size() < 2)
 	{
