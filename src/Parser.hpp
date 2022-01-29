@@ -40,9 +40,9 @@ class Parser {
         std::string					returnCommand (std::string &str);
         bool                        checkCommand (std::string &str);
         void						errSendMsg (const char* er_code, User& user, const char* msg);
-        void 						rplSendMsg(const char* rpl_code, User& user, const char* msg);
-		void						rplSendMsgFrom(const string &sender, const char* rpl_code, User& user, const char* msg);
-		void						rplSendMsgToGroup(const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg);
+        void 						rplSendMsg (const char* rpl_code, User& user, const char* msg);
+		void						rplSendMsgFrom (const string &sender, const char* rpl_code, User& user, const char* msg);
+		void						rplSendMsgToGroup (const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg);
 
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
@@ -58,8 +58,8 @@ class Parser {
         void 						commandINVITE (ClientSocket& socket);
         void 						commandPART (ClientSocket& socket);
 		void 						commandTOPIC (ClientSocket& socket);
-
-        int                         countParam ( std::string &str );
+      
+        int                         countParam (std::string &str);
         // int                         countParamSP ( std::string &str );
 
         std::vector<std::string>    mySplit ( std::string str );

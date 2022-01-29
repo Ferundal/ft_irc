@@ -187,7 +187,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " Welcome to the party").data());
+			    	(answer + ":- " + SERVER_NAME + " Welcome to the party -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
 			    	(answer + ": " + SERVER_NAME + " End of /MOTD command").data());
             }
@@ -228,14 +228,21 @@ void        Parser::commandNICK (ClientSocket &socket ) {
             }
     }
 
-    // Check ERR_NICKNAMEINUSE
-    if (paramList.size() == 3) {
+    // Check ERR_NICKCOLLISION
+    if (paramList.size() == 2) {
+        if (socket._usr_ptr->SetNick(paramList[2]) != false) {
+            errSendMsg(CODE_TO_STRING(ERR_NICKCOLLISION), *socket._usr_ptr,
+		   		(paramList[1] + " :Nickname collision KILL").data());
+            return;
+    } else if (paramList.size() == 3) { //Check ERR_NICKNAMEINUSE
         if (socket._usr_ptr->SetNick(paramList[2]) != false) {
             errSendMsg(CODE_TO_STRING(ERR_NICKNAMEINUSE), *socket._usr_ptr,
 		   		(paramList[2] + " :Nickname is already in use").data());
             return;
         }
     }
+
+    
 
 	if (socket._usr_ptr->IsActivated() == false) {
         isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
@@ -252,14 +259,14 @@ void        Parser::commandNICK (ClientSocket &socket ) {
         }
     }
 }
+}
 
-void    Parser::commandPRIVMSG (ClientSocket &socket ){
+void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 
     std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::string command = paramList[0];
 	int param_count = countParam(socket._msg_buff);
-	if (param_count < 3)
-	{
+	if (param_count < 3) {
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
 	   		(":No recipient given ("+ command+ ")").data());
 		return;
@@ -604,11 +611,11 @@ void    Parser::stringParser(ClientSocket &socket) {
     	return;
     }
 
-    if (command == "USER"){
+    if (command == "USER") { //             ERR: 2, RPL: 0  [OK][OK]
 		commandUSER(socket);
-    } else if (command == "NICK") {
+    } else if (command == "NICK") {//       ERR: 4, RPL: 0  [OK][OK][OK][OK]
 		commandNICK(socket);
-    } else if (command == "PRIVMSG") {
+    } else if (command == "PRIVMSG") {//    ERR:
 		commandPRIVMSG(socket);
     } else if (command == "QUIT") {
     	commandQUIT(socket);
