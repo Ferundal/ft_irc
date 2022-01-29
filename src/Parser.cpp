@@ -363,21 +363,12 @@ void	Parser::commandJOIN(ClientSocket& socket){
 		status = socket._usr_ptr->JoinChannel(paramList[1], paramList[2]);
 	if (status == 0) {
 		string answer;
-//		answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " +
-//				 paramList[1] + "\r\n";
-//		cout << answer << endl;// DEBUG out
-//		send(socket._fd, answer.data(), answer.size(), 0);
-//		answer.clear();
+		answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " +
+				 paramList[1] + "\r\n";
+		cout << answer << endl;// DEBUG out
+		send(socket._fd, answer.data(), answer.size(), 0);
+		answer.clear();
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
-		vector<User *>::const_iterator _curr_channel_user = channel_ptr->GetChannelUsers().begin();
-		vector<User *>::const_iterator _channel_users_end = channel_ptr->GetChannelUsers().end();
-		while (_curr_channel_user != _channel_users_end) {
-			answer.clear();
-			answer = answer + ":" + socket._usr_ptr->GetUserNick() + " JOIN " + paramList[1] + "\r\n";
-			std::cout << "FD: "<< (*_curr_channel_user)->GetUserFd() << " " << answer << std::endl; // DEBUG outr
-			send((*_curr_channel_user)->GetUserFd(), answer.data(), answer.size(), 0);
-			++_curr_channel_user;
-		}
 		answer.clear();
 		string topic;
 		status = socket._usr_ptr->GetTopic(paramList[1], topic);
