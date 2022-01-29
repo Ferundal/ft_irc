@@ -194,7 +194,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
 
 	if (socket._usr_ptr->IsActivated() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        if (isSetUserInfo == false) {
+        if (isSetUserInfo == false) { //USER NePess * 127.0.0.1 :Shuchu Pes
             if (socket._usr_ptr->SetActivated() == 0) {
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
@@ -259,37 +259,50 @@ void        Parser::commandNICK (ClientSocket &socket ) {
             	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " Welcome to the party").data());
             	rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
-			    	(answer + ":" + SERVER_NAME + "End of /MOTD command").data());
+			    	(answer + ":" + SERVER_NAME + " End of /MOTD command").data());
             }
         }
     }
 }
 
 void    Parser::commandPRIVMSG (ClientSocket &socket ){
-
-    std::vector<std::string>    paramList = mySplit(socket._msg_buff);
-    std::string command = paramList[0];
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string command = paramList[0];
 	int param_count = countParam(socket._msg_buff);
 	if (param_count < 3)
 	{
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
-	   		(":No recipient given ("+ command+ ")").data());
+				   (":No recipient given ("+ command+ ")").data());
 		return;
 	}
 
-    // TODO реализовать отправку по всем никнеймам?
-    std::string nick = paramList[1]; // TODO проверка параметра на имя ника или канала  - разделить
-    std::string answer;
-    User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(nick);
+	// TODO реализовать отправку по всем никнеймам?
+	std::string sender = paramList[1]; // TODO проверка параметра на имя ника или канала  - разделить
+	Channel* channel;
+	std::string answer;
+	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
+	{
+		vector<User*> usr_vector = channel->GetChannelUsers();
+		for(int i = 0; i < usr_vector.size(); ++i)
+		{
+			answer	= ":" + usr_vector[i]->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
+			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			answer.clear();
+		}
+	}
+	else
+	{
+		User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
 
-    if (receiver == NULL) {
-    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-	   		(nick + " :No such nick/channel").data());
-    	return;
-    }
+		if (receiver == NULL) {
+			errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+					   (sender + " :No such sender/channel").data());
+			return;
+		}
 
-	answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + nick + " " + paramList[2] + "\r\n";
-	send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+		answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
+		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+	}
 
 //	ERR_NORECIPIENT(Ok)             ERR_NOTEXTTOSEND
 //	ERR_CANNOTSENDTOCHAN			ERR_NOTOPLEVEL
@@ -324,8 +337,9 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 	}
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISUSER), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName()).data());
-	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
+	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
+
 //ERR_NONICKNAMEGIVEN(Ok)					  RPL_WHOISSERVER
 //RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS??
 //RPL_AWAY(кто отошел)                        RPL_WHOISOPERATOR
@@ -358,8 +372,9 @@ void	Parser::commandJOIN(ClientSocket& socket){
 
 //	353     RPL_NAMREPLY
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
+//	socket._usr_ptr->ToStore().FindChannelByName();
 	rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
-    	(answer + paramList[1] + " :@ " + socket._usr_ptr->GetUserNick()).data()); // TODO добавить список ников
+    	(answer + paramList[1] + " : jhon " + socket._usr_ptr->GetUserNick() + " archie0 @lololo").data()); // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
@@ -372,6 +387,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 //	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
 //	RPL_TOPIC
 //	RPL_NAMREPLY
+// <nick> <user> <host> * :<real name>
 }
 
 
@@ -412,9 +428,6 @@ void 						Parser::commandISON (ClientSocket& socket) {
         return;
     }
 }
-
-
-
 
 void 						Parser::commandLIST (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -461,21 +474,25 @@ void 						Parser::commandWHO(ClientSocket& socket)
 	std::string                 command;
 	std::string                 answer;
 
-	//socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-		(paramList[1] + " * 127.0.0.1 kreker H :Shuchu Pes").data());
-//"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
-	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
-		(paramList[1] + " :End of /WHO list").data());
-
-//	USER NePess * 127.0.0.1 :Shuchu Pes
 //	352     RPL_WHOREPLY
 //	"<channel> <user> <host> <server> <nick> \
 //  <H|G>[*][@|+] :<hopcount> <real name>"
-//
+	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+		(paramList[1] + " Psina * 127.0.0.1 archie0 @ :Luto").data());
+	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+		(paramList[1] + " Dubin * 127.0.0.1 lololo * :kek").data());
+//		(paramList[1] + " has 2 users. Operator: archie0").data());
+//"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
+
+
 //  315     RPL_ENDOFWHO
 //  "<name> :End of /WHO list"
-//
+	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
+		(paramList[1] + " :End of /WHO list").data());
+
+// INFO kreker - nickname  NePess - username * - hostname 127.0.0.1 - servername :Shuchu Pes - realname
+
+
 //  ERR_NOSUCHSERVER
 }
 
@@ -634,7 +651,7 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "PING") {
         commandPING(socket);
     } else if (command == "WHO"){
-    	;//commandWHO(socket);
+    	commandWHO(socket);
     } else if (command == "INVITE") {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
