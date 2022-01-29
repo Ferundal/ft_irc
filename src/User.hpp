@@ -9,6 +9,7 @@
 #include <exception>
 #include "Channel.hpp"
 #include "UserInfoStore.hpp"
+#include "reply_answers.hpp"
 
 using std::string;
 using std::vector;
@@ -21,7 +22,7 @@ class User {
 	friend class UserInfoStore;
 private:
 	int					_fd;
-	bool				_is_active;
+	bool				_is_activated;
 	string				_user_name;
 	string				_host_name;
 	string				_server_name;
@@ -83,7 +84,7 @@ public:
 	 *  @Return 0 if success.
 	 *  @Return 1 if User has not enough information to be active.
 	 */
-	int SetActive(void);
+	int SetActivated(void);
 
 	void SetAway(const string &_new_away_message);
 	void SetNotAway(void);
@@ -93,7 +94,7 @@ public:
 	 *  @Return true if user is mark as active.
 	 *  @Return false if not.
 	 */
-	bool IsActive() const;
+	bool IsActivated() const;
 
 	bool IsAway() const;
 
@@ -137,6 +138,9 @@ public:
 	list<string> ChannelList(const string &_channel_name);
 
 	int SendInvite(const string &_invited_user_nick, const string &_channel_invite_to);
+
+	int GetTopic(const string &_channel_to_get_topic, string &_topic_store);
+	int ChangeTopic(const string &_channel_to_change_topic, const string &_new_topic);
 };
 
 

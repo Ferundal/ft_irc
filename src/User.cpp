@@ -5,7 +5,7 @@
 #include "User.hpp"
 #include <stdlib.h>
 
-User::User(int _new_fd) : _fd(_new_fd), _is_active(false), _is_away(false) {}
+User::User(int _new_fd) : _fd(_new_fd), _is_activated(false), _is_away(false) {}
 
 const string &User::GetUserNick() const {
 	return (this->_nick);
@@ -48,10 +48,10 @@ int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name
 	}
 }
 
-int User::SetActive() {
+int User::SetActivated() {
 	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
 		this->_to_user_store->_connected_users.push_back(this);
-		this->_is_active = true;
+		this->_is_activated = true;
 		return (0);
 	}
 	else
@@ -67,8 +67,8 @@ void User::SetNotAway() {
 	this->_is_away = false;
 }
 
-bool User::IsActive() const {
-	return (this->_is_active);
+bool User::IsActivated() const {
+	return (this->_is_activated);
 }
 
 bool User::IsAway() const {
@@ -106,6 +106,8 @@ int User::JoinChannel(const string &_channel_name, const string &_channel_passwo
 		this->_to_user_store->CreateNewChannel(this, _channel_name, _channel_password);
 		return (0);
 	}
+	if (this->IsMemberOfChannel(_channel_ptr))
+		return (ERR_USERONCHANNEL);
 	if (_channel_ptr->_invite_only_channel_flag == true &&
 		_channel_ptr->IsInvited(this) == false)
 		return (ERR_INVITEONLYCHAN);
@@ -192,7 +194,7 @@ int User::SendInvite(const string &_invited_user_nick,
 	while (_curr_membership != _memberships_begin) {
 		--_curr_membership;
 		if ((*_curr_membership)->_channel_name == _channel_invite_to) {
-			if (_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
+			if (!_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
 				return (ERR_USERONCHANNEL);
 			}
 			if ((*_curr_membership)->_invite_only_channel_flag == true) {
@@ -201,6 +203,39 @@ int User::SendInvite(const string &_invited_user_nick,
 				}
 				(*_curr_membership)->AddInvite(_invited_user_ptr);
 			}
+			return (0);
+		}
+	}
+	return (ERR_NOTONCHANNEL);
+}
+
+int User::ChangeTopic(const string &_channel_to_change_topic,
+					  const string &_new_topic) {
+	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
+	vector<Channel *>::iterator _curr_membership = this->_membership.end();
+	while (_curr_membership != _memberships_begin) {
+		--_curr_membership;
+		if ((*_curr_membership)->_channel_name == _channel_to_change_topic) {
+			if ((*_curr_membership)->_topic_for_operators_flag == true &&
+				!(*_curr_membership)->IsOperator(this)) {
+				return (ERR_CHANOPRIVSNEEDED);
+			}
+			(*_curr_membership)->_channel_topic = _new_topic;
+			return (0);
+		}
+	}
+	return (ERR_NOTONCHANNEL);
+}
+
+int User::GetTopic(const string &_channel_to_get_topic, string &_topic_store) {
+	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
+	vector<Channel *>::iterator _curr_membership = this->_membership.end();
+	while (_curr_membership != _memberships_begin) {
+		--_curr_membership;
+		if ((*_curr_membership)->_channel_name == _channel_to_get_topic) {
+			if ((*_curr_membership)->_channel_topic == "")
+				return (RPL_NOTOPIC);
+			_topic_store = (*_curr_membership)->_channel_topic;
 			return (0);
 		}
 	}

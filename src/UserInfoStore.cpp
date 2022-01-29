@@ -16,7 +16,7 @@ User &UserInfoStore::CreateNewUser(int _new_user_fd) {
 }
 
 void UserInfoStore::DeleteUser(User *_user_to_delete) {
-	if (_user_to_delete->_is_active) {
+	if (_user_to_delete->_is_activated) {
 		{
 			list<User *>::iterator _curr_active_user = _connected_users.begin();
 			list<User *>::iterator _active_user_end = _connected_users.end();
