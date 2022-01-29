@@ -275,7 +275,7 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
 		vector<User*> usr_vector = channel->GetChannelUsers();
-		for(int i = 0; i < usr_vector.size(); ++i)
+		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
 			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
 				continue;
@@ -348,7 +348,7 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 void	Parser::commandJOIN(ClientSocket& socket){
 	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
 	std::string					command	= paramList[0];
-	int							param_count = countParam(socket._msg_buff);
+	//int							param_count = countParam(socket._msg_buff);
 
 	if(paramList.size() < 2)
 	{
@@ -582,7 +582,7 @@ void 						Parser::commandPART (ClientSocket& socket) {
 			string answer;
 			Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
 			vector<User*> usr_vector = channel->GetChannelUsers();
-			for(int i = 0; i < usr_vector.size(); ++i)
+			for(size_t i = 0; i < usr_vector.size(); ++i)
 			{
 				if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
 					continue;
