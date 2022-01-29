@@ -384,9 +384,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
 //	socket._usr_ptr->ToStore().FindChannelByName();
 		rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
-				   (answer + paramList[1] + " : jhon " +
-					socket._usr_ptr->GetUserNick() +
-					" archie0 @lololo").data()); // TODO добавить список ников
+				   (answer + paramList[1] + " : @kreker archie0").data()); // TODO добавить список ников
 
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
@@ -502,6 +500,8 @@ void 						Parser::commandWHO(ClientSocket& socket)
 		(paramList[1] + " Psina * 127.0.0.1 archie0 @ :Luto").data());
 	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
 		(paramList[1] + " Dubin * 127.0.0.1 lololo * :kek").data());
+	rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+		(paramList[1] + " hgfg * 127.0.0.1 hgfgh * :jgdds").data());
 //		(paramList[1] + " has 2 users. Operator: archie0").data());
 //"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
 
