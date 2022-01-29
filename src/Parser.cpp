@@ -92,11 +92,15 @@ void Parser::rplSendMsgFrom(const string &sender, const char* rpl_code, User& us
 	send(user.GetUserFd(), answer.data(), answer.size(), 0);
 }
 
-void Parser::rplSendMsgToGroup(const string &sender, const char* rpl_code, const vector<User *>& users, const char* msg) {
+void Parser::rplSendMsgToGroup(const string &sender, const char* rpl_code, const char *group, const vector<User *>& users, const char* msg) {
 	vector<User *>::const_iterator _curr_user_ptr = users.begin();
 	vector<User *>::const_iterator _user_ptrs_end = users.end();
+	std::string reply;
 	while (_curr_user_ptr != _user_ptrs_end) {
-		rplSendMsgFrom(sender, rpl_code, **_curr_user_ptr, msg);
+		reply.clear();
+		reply= reply + ":" + sender + " " + rpl_code + " " + group + " :" + msg + "\r\n";
+		cout << reply << endl; // DEBUG out
+		send((*_curr_user_ptr)->GetUserFd(), reply.data(), reply.size(), 0);
 		++_curr_user_ptr;
 	}
 }
@@ -572,13 +576,16 @@ void 						Parser::commandTOPIC (ClientSocket& socket) {
 		}
 		return;
 	}
+	//delete : from topic
+	if (*paramList[2].data() == ':')
+		paramList[2].erase(0, 1);
 	//change current topic and send information about it to all users in channel
 	if (paramList.size() == 3) {
 		int status = socket._usr_ptr->ChangeTopic(paramList[1], paramList[2]);
 		if (status == 0) {
 			const vector<User *> &channel_users_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1])->GetChannelUsers();
 			rplSendMsgToGroup(socket._usr_ptr->GetUserNick(), CODE_TO_STRING(RPL_TOPIC),
-							  channel_users_ptr, (": " + paramList[2]).data());
+							  paramList[1].data(), channel_users_ptr, paramList[2].data());
 		} else if (status == ERR_NOTONCHANNEL) {
 			errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
 					   (paramList[1] + " :You're not on that channel").data());
