@@ -192,9 +192,16 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
         return;
     }
 
+    // Общий алгоритм NICK - валидная команда в целом? валидный ник в целом? установить ник
+    // 1) User -> User -> Nick	--- 1.User - Ok 2.User - err
+    // 2) Nick -> User -> 		--- 1.Nick - Ok 2.User - Ok
+    // 3) Nick -> Nick -> User	--- 1.Nick - Ok 2.Nick - Ok 3.User - Ok
+    // 4) User -> Nick			--- 1.User - Ok 2.Nick - Ok
+
+
 	if (socket._usr_ptr->IsActivated() == false) {
         isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        if (isSetUserInfo == false) { //USER NePess * 127.0.0.1 :Shuchu Pes
+        if (isSetUserInfo == false) {
             if (socket._usr_ptr->SetActivated() == 0) {
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
@@ -208,19 +215,16 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
 }
 
 
-//          ERR_NONICKNAMEGIVEN(OK)             ERR_ERRONEUSNICKNAME
-//          ERR_NICKNAMEINUSE(OK)               ERR_NICKCOLLISION(OK)
+//          ERR_NONICKNAMEGIVEN(OK)             ERR_ERRONEUSNICKNAME(OK)
+//          ERR_NICKNAMEINUSE             ERR_NICKCOLLISION(OK)
 void        Parser::commandNICK (ClientSocket &socket ) {
     int                         checker = 0;
     std::vector<std::string>    paramList;
     std::string                 answer;
     std::string                 command;
-
-
     
     // Check ERR_NONICKNAMEGIVEN | if there are no nickname  in parameters
     paramList = mySplit(socket._msg_buff);\
-
 
     for (size_t i = 0; i < paramList.size(); ++i) {
         if (checkCommand(paramList[i]) == true && countParam(socket._msg_buff) == 2)
@@ -243,18 +247,11 @@ void        Parser::commandNICK (ClientSocket &socket ) {
                 return;
             }
     }
-
-    // Check ERR_NICKCOLLISION
-    // Общий алгоритм NICK - валидная команда в целом? валидный ник в целом? установить ник
-	// 1) User -> User -> Nick	--- 1.User - Ok 2.User - err
-	// 2) Nick -> User -> 		--- 1.Nick - Ok 2.User - Ok
-	// 3) Nick -> Nick -> User	--- 1.Nick - Ok 2.Nick - Ok 3.User - Ok
-	// 4) User -> Nick			--- 1.User - Ok 2.Nick - Ok
-
+// Check ERR_NICKCOLLISION
 	if (paramList.size() <= 2) {
 		if (socket._usr_ptr->SetNick(paramList[1]) != false) {
-			errSendMsg(CODE_TO_STRING(ERR_NICKCOLLISION), *socket._usr_ptr,
-					   (paramList[1] + " :Nickname collision KILL").data());
+			errSendMsg(CODE_TO_STRING(ERR_NICKNAMEINUSE), *socket._usr_ptr,
+					   (paramList[1] + " :Nickname is already in use").data());
 			return;
 		}
 	}
@@ -706,7 +703,9 @@ void 						Parser::commandPART (ClientSocket& socket) {
 	string channel_name = paramList[1];
     string answer;
     Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
-	vector<User*> usr_vector = channel->GetChannelUsers();
+	if (channel == NULL)
+		return;
+    vector<User*> usr_vector = channel->GetChannelUsers();
 
 	for(size_t i = 0; i < usr_vector.size(); ++i)
 	{

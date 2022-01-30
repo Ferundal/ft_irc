@@ -43,9 +43,9 @@ void Server::grabConnection()
 					++it;
 				}
 				catch (Parser::UserDeleteException& e) // User delete
-					{
+				{
 					deleteClientSocket(it);
-					}
+				}
 			} else
 				++it;
 		}
@@ -59,12 +59,15 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	char	r_buf[2] = {0,};
 	ClientSocket& sckt = *findSocketIter(it->fd);
 
+	// 1) qfewef\n
+	// 2) 2323f23f\r\n
+	// 3) qwdqwddEOF
 	while (true)
 	{
-		r_len = recv(it->fd, &r_buf, 1, 0);
+		r_len = recv(it->fd, &r_buf, 1, MSG_DONTWAIT);
 		if (((r_len == 0) && (r_frst_flag == false)))
 			throw Parser::UserDeleteException();
-		else if (r_len == 0)
+		else if (r_len == -1 || r_len == 0)
 			break;
 		else
 			r_frst_flag = true;
