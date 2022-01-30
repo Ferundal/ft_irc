@@ -3,7 +3,7 @@
 ConnectSocket::ConnectSocket(int domain, int type, int protocol) throw (SocketConfigException) : _fd(-1)
 {
 	if ((this->_fd = socket(domain, type, protocol)) == -1) throw SocketConfigException("Socket create error");
-	if ((setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, (int[]){true}, sizeof(int))) == -1) throw SocketConfigException("Error setsockopt");
+	if ((setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, (const int[]){true}, sizeof(int))) == -1) throw SocketConfigException("Error setsockopt");
 }
 
 void ConnectSocket::binding(int family, int port, in_addr_t ip)

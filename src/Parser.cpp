@@ -803,8 +803,8 @@ void Parser::commandMODE(ClientSocket &socket) {
 				return;
 			}
 			if (!target_user_ptr->IsMemberOfChannel(channel_ptr)) {
-				errSendMsg(CODE_TO_STRING(ERR_USERNOTINCHANNEL), *socket._usr_ptr,
-						   (target_user_ptr->GetUserNick() + " " + channel_ptr->GetChannelName() + " :They aren't on that channel").data());
+				errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+						   (target_user_ptr->GetUserNick() + " :No such nick/channel").data());
 				return;
 			}
 			if (!turning_off_flag && !channel_ptr->IsOperator(target_user_ptr)) {
@@ -820,6 +820,7 @@ void Parser::commandMODE(ClientSocket &socket) {
 		} else if (paramList[2][find_start] == 'p') {
 			if (channel_ptr->_private_channel_flag && turning_off_flag) {
 				channel_ptr->_private_channel_flag = false;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE ");
 			}
 			if (!channel_ptr->_private_channel_flag && !turning_off_flag) {
 				channel_ptr->_private_channel_flag = true;
