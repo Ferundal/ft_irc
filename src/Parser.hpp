@@ -64,6 +64,7 @@ class Parser {
         void 						commandPART (ClientSocket& socket);
 		void 						commandTOPIC (ClientSocket& socket);
 		void						commandMODE (ClientSocket& socket);
+		void						commandNOTICE (ClientSocket& socket);
 
         int                         countParam ( std::string &str );
         // int                         countParamSP ( std::string &str );

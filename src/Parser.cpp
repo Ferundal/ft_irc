@@ -267,19 +267,25 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	std::string command = paramList[0];
 	int param_count = countParam(socket._msg_buff);
+
 	if (param_count < 3)
 	{
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
 				   (":No recipient given ("+ command+ ")").data());
 		return;
 	}
+//	for(int i = 1; i < paramList.size(); ++i)
+//	{
+//		if
+//	}
 
 	// TODO реализовать отправку по всем никнеймам?
-	std::string sender = paramList[1]; // TODO проверка параметра на имя ника или канала  - разделить
+	std::string sender = paramList[1];
 	Channel* channel;
 	std::string answer;
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
+		//	errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN),*socket._usr_ptr,) TODO сделать после того как сделается MODE
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
@@ -287,6 +293,9 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 				continue;
 			answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
 			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			if (usr_vector[i]->IsAway())
+				rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
+						   (usr_vector[i]->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
 			cout << answer << endl; // DEBUG out
 			answer.clear();
 		}
@@ -303,13 +312,19 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 
 		answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
 		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+		if (receiver->IsAway())
+			rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
+					   (receiver->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
 	}
 
-//	ERR_NORECIPIENT(Ok)             ERR_NOTEXTTOSEND
-//	ERR_CANNOTSENDTOCHAN			ERR_NOTOPLEVEL
-//	ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
-//	ERR_NOSUCHNICK(Ok)
-//	RPL_AWAY
+//	ERR_NORECIPIENT(Ok) - не указан получатель
+//	ERR_CANNOTSENDTOCHAN(в процессе)
+//	ERR_WILDTOPLEVEL(IRC OPERATORS only)
+//	ERR_NOSUCHNICK(Ok) - нет такого ника или канала
+//	RPL_AWAY(в процессе) - нет
+//	ERR_NOTEXTTOSEND() - нет текста
+//	ERR_NOTOPLEVEL(IRC OPERATORS)
+//	ERR_TOOMANYTARGETS
 }
 
 void	Parser::commandQUIT(ClientSocket& socket)
@@ -699,6 +714,43 @@ void Parser::commandMODE(ClientSocket &socket) {
 	}
 }
 
+void Parser::commandNOTICE(ClientSocket& socket){
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string command = paramList[0];
+	int param_count = countParam(socket._msg_buff);
+	if (param_count < 3){
+		return;
+	}
+
+	std::string sender = paramList[1];
+	Channel* channel;
+	std::string answer;
+	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
+	{
+		vector<User*> usr_vector = channel->GetChannelUsers();
+		for(size_t i = 0; i < usr_vector.size(); ++i)
+		{
+			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+				continue;
+			answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
+			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			cout << answer << endl; // DEBUG out
+			answer.clear();
+		}
+	}
+	else
+	{
+		User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
+
+		if (receiver == NULL) {
+			return;
+		}
+
+		answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
+		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+	}
+}
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -743,7 +795,9 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandTOPIC(socket);
 	} else if (command == "MODE") {
 		commandMODE(socket);
-	}
+	} else if (command == "NOTICE"){
+		commandNOTICE(socket);
+    }
 
     socket._msg_buff.clear();
 }
