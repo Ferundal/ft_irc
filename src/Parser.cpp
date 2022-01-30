@@ -199,7 +199,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
             	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
 			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " Welcome to the party").data());
+			    	(answer + ":- " + SERVER_NAME + " Welcome to the party -").data());
             	rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
 			    	(answer + ": " + SERVER_NAME + " End of /MOTD command").data());
             }
@@ -240,14 +240,21 @@ void        Parser::commandNICK (ClientSocket &socket ) {
             }
     }
 
-    // Check ERR_NICKNAMEINUSE
-    if (paramList.size() == 3) {
+    // Check ERR_NICKCOLLISION
+    if (paramList.size() == 2) {
+        if (socket._usr_ptr->SetNick(paramList[2]) != false) {
+            errSendMsg(CODE_TO_STRING(ERR_NICKCOLLISION), *socket._usr_ptr,
+		   		(paramList[1] + " :Nickname collision KILL").data());
+            return;
+    } else if (paramList.size() == 3) { //Check ERR_NICKNAMEINUSE
         if (socket._usr_ptr->SetNick(paramList[2]) != false) {
             errSendMsg(CODE_TO_STRING(ERR_NICKNAMEINUSE), *socket._usr_ptr,
 		   		(paramList[2] + " :Nickname is already in use").data());
             return;
         }
     }
+
+    
 
 	if (socket._usr_ptr->IsActivated() == false) {
         isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
@@ -264,13 +271,26 @@ void        Parser::commandNICK (ClientSocket &socket ) {
         }
     }
 }
+}
 
-void    Parser::commandPRIVMSG (ClientSocket &socket ){
+
+void    Parser::commandPRIVMSG (ClientSocket &socket ) {
+
+
+        // ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
+        // ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+        // ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
+        // ERR_NOSUCHNICK
+        // RPL_AWAY
+
+
+
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	std::string command = paramList[0];
+
+    // Checking ERR_NORECIPIENT
 	int param_count = countParam(socket._msg_buff);
-	if (param_count < 3)
-	{
+	if (param_count < 3) {
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
 				   (":No recipient given ("+ command+ ")").data());
 		return;
@@ -321,37 +341,51 @@ void	Parser::commandQUIT(ClientSocket& socket)
 	throw Parser::UserDeleteException();
 }
 
+
+        //   ERR_NOSUCHSERVER [OK]           ERR_NONICKNAMEGIVEN [OK]
+        //   RPL_WHOISUSER [OK]              RPL_WHOISCHANNELS [In process]
+        //   RPL_WHOISCHANNELS [In process]  RPL_WHOISSERVER [OK]
+        //   RPL_AWAY [OK]                   RPL_WHOISOPERATOR [OK]
+        //   RPL_WHOISIDLE [OK]              ERR_NOSUCHNICK [OK]
+        //   RPL_ENDOFWHOIS [OK]
+
+
+
 void	Parser::commandWHOIS(ClientSocket& socket){
+	string                      answer;
+	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
+	std::string                 nick = paramList[1];
+	User                        *user; // По кому ищется и отправляется инфа
+
+    // Checking ERR_NONICKNAMEGIVEN
 	int param_count = countParam(socket._msg_buff);
-	if(param_count != 2)
-	{
+	if (param_count != 2) {
 		errSendMsg(CODE_TO_STRING(ERR_NONICKNAMEGIVEN), *socket._usr_ptr,
 	   		":No nickname given");
 		return;
 	}
 
-	string answer;
-	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
-	std::string  nick = paramList[1];
-	User* user; // По кому ищется и отправляется инфа
-
-	if((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL)
-	{
+	if ((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL) {
+        // Checking ERR_NOSUCHNICK
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 	   		(nick + " :No such nick/channel").data());
 		return;
 	}
+    // Sending RPL_WHOISUSER
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISUSER), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName()).data());
-	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
+    // Sending RPL_ENDOFWHOIS
+    rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
 
-//ERR_NONICKNAMEGIVEN(Ok)					  RPL_WHOISSERVER
-//RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS??
-//RPL_AWAY(кто отошел)                        RPL_WHOISOPERATOR
-//RPL_WHOISIDLE(Кто простаивает)              ERR_NOSUCHNICK(Ok)
-//RPL_ENDOFWHOIS(Ok)
 }
+
+        //   ERR_NEEDMOREPARAMS [OK]              ERR_BANNEDFROMCHAN
+        //   ERR_INVITEONLYCHAN [OK]              ERR_BADCHANNELKEY [OK]
+        //   ERR_CHANNELISFULL               ERR_BADCHANMASK
+        //   ERR_NOSUCHCHANNEL [OK]               ERR_TOOMANYCHANNELS
+        //   RPL_TOPIC [OK]
+
 
 void	Parser::commandJOIN(ClientSocket& socket){
 	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
@@ -441,6 +475,8 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
     }
 }
 
+//  RPL_ISON                ERR_NEEDMOREPARAMS
+
 
 void 						Parser::commandISON (ClientSocket& socket) {
 	std::vector<std::string>    nicknameList = mySplit(socket._msg_buff);
@@ -463,6 +499,10 @@ void 						Parser::commandISON (ClientSocket& socket) {
         return;
     }
 }
+
+        //   ERR_NOSUCHSERVER [OK]                RPL_LISTSTART [OK]
+        //   RPL_LIST [OK]                        RPL_LISTEND [OK]
+
 
 void 						Parser::commandLIST (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -503,6 +543,9 @@ void 						Parser::commandPING (ClientSocket& socket) {
     std::cout << "PONG " << paramList[1] << std::endl; // DEBUG out
 }
 
+            // ERR_NOSUCHSERVER
+            // RPL_WHOREPLY [OK]                    RPL_ENDOFWHO [OK]
+
 void 						Parser::commandWHO(ClientSocket& socket)
 {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -536,6 +579,12 @@ void 						Parser::commandWHO(ClientSocket& socket)
 
 //  ERR_NOSUCHSERVER
 }
+
+
+        //   ERR_NEEDMOREPARAMS [OK]              ERR_NOSUCHNICK [OK]
+        //   ERR_NOTONCHANNEL [OK]                ERR_USERONCHANNEL
+        //   ERR_CHANOPRIVSNEEDED
+        //   RPL_INVITING [OK]                    RPL_AWAY
 
 void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -582,6 +631,9 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
     cout << answer << endl;// DEBUG out
     send(reciever->GetUserFd(), answer.data(), answer.size(), 0);
 }
+
+    //          ERR_NEEDMOREPARAMS [OK]             ERR_NOSUCHCHANNEL [OK]
+    //          ERR_NOTONCHANNEL [OK]
 
 void 						Parser::commandPART (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -643,7 +695,27 @@ void 						Parser::commandPART (ClientSocket& socket) {
 	    	(paramList[0] + " :Not enough parameters").data());
         return;
     }
+
+	string channel_name = paramList[1];
+    string answer;
+    Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
+	vector<User*> usr_vector = channel->GetChannelUsers();
+
+	for(size_t i = 0; i < usr_vector.size(); ++i)
+	{
+		if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+			continue;
+		answer	= ":" + socket._usr_ptr->GetUserNick() + " PART " + channel_name + "\r\n";
+		send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+		cout << answer << endl; // DEBUG out
+		answer.clear();
+	}
 }
+
+
+        //   ERR_NEEDMOREPARAMS [OK]              ERR_NOTONCHANNEL [ok]
+        //   RPL_NOTOPIC [OK]                     RPL_TOPIC [OK]
+        //   ERR_CHANOPRIVSNEEDED [OK]
 
 void 						Parser::commandTOPIC (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -742,33 +814,33 @@ void    Parser::stringParser(ClientSocket &socket) {
     	return;
     }
 
-    if (command == "USER"){
+    if (command == "USER") { //             ERR: 2, RPL: 0  [OK][OK]
 		commandUSER(socket);
-    } else if (command == "NICK") {
+    } else if (command == "NICK") {//       ERR: 4, RPL: 0  [OK][OK][OK][OK]
 		commandNICK(socket);
-    } else if (command == "PRIVMSG") {
+    } else if (command == "PRIVMSG") {//    ERR: 7, RPL: 1 [OK][KO][KO][KO][KO][KO][KO][OK]  <--- need more info
 		commandPRIVMSG(socket);
-    } else if (command == "QUIT") {
+    } else if (command == "QUIT") {//       There are no ERR / RPL
     	commandQUIT(socket);
-    } else if (command == "WHOIS") {
+    } else if (command == "WHOIS") {//      OK RPL_WHOISCHANNELS [In process]
     	commandWHOIS(socket);
-    } else if (command == "JOIN"){
+    } else if (command == "JOIN") {//       Not all err
 		commandJOIN(socket);
-    } else if (command == "AWAY") {
+    } else if (command == "AWAY") {//       ERR: 1 [OK], RPL: 1 [OK]
     	commandAWAY(socket);
-    } else if (command == "ISON") {
+    } else if (command == "ISON") {//       ERR: 1 [OK], RPL: 1 [OK]
         commandISON(socket);
-    } else if (command == "LIST") {
-        commandLIST(socket); // <----- Need Check
-    } else if (command == "PING") {
+    } else if (command == "LIST") {//       ERR: 1 [OK], RPL: 3 [OK][OK][OK]
+        commandLIST(socket);
+    } else if (command == "PING") {//       Nothing to do
         commandPING(socket);
-    } else if (command == "WHO"){
+    } else if (command == "WHO") {//        ERR: 1 [OK], RPL 2 [OK][OK]
     	commandWHO(socket);
-    } else if (command == "INVITE") {
-        commandINVITE(socket); // <--- Nothing
-    } else if (command == "PART") {
-        commandPART(socket); // <----- Done
-    } else if (command == "TOPIC") {
+    } else if (command == "INVITE") {//     ERR: 5 [OK][OK][OK][KO][KO], RPL 2 [OK][OK]
+        commandINVITE(socket);
+    } else if (command == "PART") {//       ERR: 3 [OK][OK][OK], RPL: 0
+        commandPART(socket); 
+    } else if (command == "TOPIC") {//      ERR: 3 [OK][OK][OK], RPL: 2 [OK][OK]
 		commandTOPIC(socket);
 	} else if (command == "MODE") {
 		commandMODE(socket);
