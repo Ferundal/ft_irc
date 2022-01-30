@@ -62,6 +62,10 @@ public:
 	 */
 	const string &GetUserRealName() const;
 
+	const string &GetAwayMessage() const;
+
+	const vector<Channel *> &GetChannels() const;
+
 	/**
 	 *  Set user nick to database.
 	 *  @Return 0 if success.

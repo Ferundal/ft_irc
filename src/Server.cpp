@@ -95,10 +95,28 @@ void	Server::addNewClientSocket()
 
 void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
 {
-	vector<ClientSocket>::iterator scket_it = findSocketIter(it->fd);
+	vector<ClientSocket>::iterator socket_it = findSocketIter(it->fd);
 
-	scket_it->_usr_ptr->ToStore().DeleteUser(scket_it->_usr_ptr);
-	this->_clnt_sockets.erase(scket_it);
+	string exit_message;
+	vector<Channel *> receivers = socket_it->_usr_ptr->GetChannels();
+	vector<Channel *>::iterator _curr_channel_ptr = receivers.begin();
+	vector<Channel *>::iterator _channel_ptrs_end = receivers.end();
+	while (_curr_channel_ptr != _channel_ptrs_end) {
+		vector<User *>::const_iterator _curr_channel_user_ptr = (*_curr_channel_ptr)->GetChannelUsers().begin();
+		vector<User *>::const_iterator _channel_user_ptrs_end = (*_curr_channel_ptr)->GetChannelUsers().end();
+		while (_curr_channel_user_ptr != _channel_user_ptrs_end) {
+			if (*_curr_channel_user_ptr != socket_it->_usr_ptr)
+			{
+				exit_message.clear();
+				exit_message += ":" + socket_it->_usr_ptr->GetUserNick() + " PART " + (*_curr_channel_ptr)->GetChannelName() +"\r\n";
+				send((*_curr_channel_user_ptr)->GetUserFd(),  socket_it->_msg_buff.data(), socket_it->_msg_buff.size(),0);
+			}
+			++_curr_channel_user_ptr;
+		}
+		++_curr_channel_ptr;
+	}
+	socket_it->_usr_ptr->ToStore().DeleteUser(socket_it->_usr_ptr);
+	this->_clnt_sockets.erase(socket_it);
 	close(it->fd);
 	this->_pfd.erase(it);
 }

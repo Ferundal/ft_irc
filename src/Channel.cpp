@@ -32,6 +32,10 @@ Channel::~Channel() {
 	}
 }
 
+string &Channel::GetChannelName() {
+	return (_channel_name);
+}
+
 void Channel::AddUser(User &_new_user) {
 	_user_store.push_back(&_new_user);
 	_new_user._membership.push_back(this);

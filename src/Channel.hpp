@@ -43,6 +43,7 @@ private:
 	int DeleteUser(User *_user_to_delete);
 
 public:
+	string &GetChannelName();
 	const vector<User *> &GetChannelUsers() const;
 	const vector<User *> &GetChannelOperators() const;
 	Channel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);

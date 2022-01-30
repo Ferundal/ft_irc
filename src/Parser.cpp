@@ -126,8 +126,10 @@ bool         Parser::checkCommand ( std::string &command ) {
     return false;
 }
 
-bool	Parser::checkModeFlags(std::string &flags) {
-	return (true);
+bool	IsChannel(const string &string_to_check) {
+	if (string_to_check.data()[0] == '#')
+		return (true);
+	return (false);
 }
 
 int                Parser::countParam (std::string &str) {
@@ -360,6 +362,11 @@ void	Parser::commandJOIN(ClientSocket& socket){
 	{
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
 	    (command + " :Not enough parameters").data());
+		return;
+	}
+	if (*(paramList[1].data()) != '#') {
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
+				   (paramList[1] + " :No such channel").data());
 		return;
 	}
 	int status;
@@ -696,6 +703,28 @@ void Parser::commandMODE(ClientSocket &socket) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
 				   (paramList[0] + " :Not enough parameters").data());
 		return;
+	}
+	if (IsChannel(paramList[1])) {
+		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(
+				paramList[1]);
+		if (channel_ptr == NULL) {
+			errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
+					(paramList[1] + " :No such channel").data());
+			return;
+		}
+		if (!channel_ptr->IsOperator(socket._usr_ptr)) {
+			errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
+					   (paramList[1] + " :No such channel").data());
+			return;
+		}
+	} else {
+		User *user_ptr = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
+		if (user_ptr != NULL) {
+			errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+					   (paramList[1] + " :No such nick/channel").data());
+			return;
+		}
+
 	}
 }
 
