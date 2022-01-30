@@ -267,9 +267,20 @@ void        Parser::commandNICK (ClientSocket &socket ) {
 
 
 void    Parser::commandPRIVMSG (ClientSocket &socket ) {
+
+
+        // ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
+        // ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+        // ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
+        // ERR_NOSUCHNICK
+        // RPL_AWAY
+
+
+
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	std::string command = paramList[0];
 
+    // Checking ERR_NORECIPIENT
 	int param_count = countParam(socket._msg_buff);
 	if (param_count < 3) {
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
@@ -322,36 +333,43 @@ void	Parser::commandQUIT(ClientSocket& socket)
 	throw Parser::UserDeleteException();
 }
 
+
+        //   ERR_NOSUCHSERVER [OK]           ERR_NONICKNAMEGIVEN [OK]
+        //   RPL_WHOISUSER [OK]              RPL_WHOISCHANNELS [In process]
+        //   RPL_WHOISCHANNELS [In process]  RPL_WHOISSERVER [OK]
+        //   RPL_AWAY [OK]                   RPL_WHOISOPERATOR [OK]
+        //   RPL_WHOISIDLE [OK]              ERR_NOSUCHNICK [OK]
+        //   RPL_ENDOFWHOIS [OK]
+
+
+
 void	Parser::commandWHOIS(ClientSocket& socket){
+	string                      answer;
+	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
+	std::string                 nick = paramList[1];
+	User                        *user; // По кому ищется и отправляется инфа
+
+    // Checking ERR_NONICKNAMEGIVEN
 	int param_count = countParam(socket._msg_buff);
-	if(param_count != 2)
-	{
+	if (param_count != 2) {
 		errSendMsg(CODE_TO_STRING(ERR_NONICKNAMEGIVEN), *socket._usr_ptr,
 	   		":No nickname given");
 		return;
 	}
 
-	string answer;
-	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
-	std::string  nick = paramList[1];
-	User* user; // По кому ищется и отправляется инфа
-
-	if((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL)
-	{
+	if ((user = socket._usr_ptr->ToStore().FindUserByNick(paramList[1])) == NULL) {
+        // Checking ERR_NOSUCHNICK
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 	   		(nick + " :No such nick/channel").data());
 		return;
 	}
+    // Sending RPL_WHOISUSER
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISUSER), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName()).data());
-	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
+    // Sending RPL_ENDOFWHOIS
+    rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
 
-//ERR_NONICKNAMEGIVEN(Ok)					  RPL_WHOISSERVER
-//RPL_WHOISUSER(Ok)                           RPL_WHOISCHANNELS??
-//RPL_AWAY(кто отошел)                        RPL_WHOISOPERATOR
-//RPL_WHOISIDLE(Кто простаивает)              ERR_NOSUCHNICK(Ok)
-//RPL_ENDOFWHOIS(Ok)
 }
 
 void	Parser::commandJOIN(ClientSocket& socket){
@@ -625,6 +643,11 @@ void 						Parser::commandPART (ClientSocket& socket) {
 	}
 }
 
+
+        //   ERR_NEEDMOREPARAMS [OK]              ERR_NOTONCHANNEL [ok]
+        //   RPL_NOTOPIC [OK]                     RPL_TOPIC [OK]
+        //   ERR_CHANOPRIVSNEEDED [OK]
+
 void 						Parser::commandTOPIC (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
@@ -693,13 +716,13 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandUSER(socket);
     } else if (command == "NICK") {//       ERR: 4, RPL: 0  [OK][OK][OK][OK]
 		commandNICK(socket);
-    } else if (command == "PRIVMSG") {//    ERR:
+    } else if (command == "PRIVMSG") {//    ERR: 7, RPL: 1 [OK][KO][KO][KO][KO][KO][KO][OK]  <--- need more info
 		commandPRIVMSG(socket);
-    } else if (command == "QUIT") {
+    } else if (command == "QUIT") {//       There are no ERR / RPL
     	commandQUIT(socket);
-    } else if (command == "WHOIS") {
+    } else if (command == "WHOIS") {//      OK RPL_WHOISCHANNELS [In process]
     	commandWHOIS(socket);
-    } else if (command == "JOIN"){
+    } else if (command == "JOIN") {//
 		commandJOIN(socket);
     } else if (command == "AWAY") {
     	commandAWAY(socket);
@@ -715,7 +738,7 @@ void    Parser::stringParser(ClientSocket &socket) {
         commandINVITE(socket); // <--- Nothing
     } else if (command == "PART") {
         commandPART(socket); // <----- Done
-    } else if (command == "TOPIC") {
+    } else if (command == "TOPIC") {//      ERR: 3 [OK][OK][OK], RPL: 2 [OK][OK]
 		commandTOPIC(socket);
 	}
 
