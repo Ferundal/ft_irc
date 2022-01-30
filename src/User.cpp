@@ -32,6 +32,8 @@ const vector<Channel *> &User::GetChannels() const {
 }
 
 int User::SetNick(const string &_new_nick) {
+	if (_new_nick == this->_nick)
+		return (0);
 	if (_to_user_store->IsNickAvalable(_new_nick) == false) {
 		return (1);
 	}
