@@ -43,6 +43,7 @@ class Parser {
         void                        stringParser (ClientSocket &socket);
         std::string					returnCommand (std::string &str);
         bool                        checkCommand (std::string &str);
+		bool						checkModeFlags(std::string &flags);
         void						errSendMsg (const char* er_code, User& user, const char* msg);
 
 
@@ -70,6 +71,8 @@ class Parser {
 		void 						commandTOPIC (ClientSocket& socket);
       
         int                         countParam (std::string &str);
+		void						commandMODE (ClientSocket& socket);
+
         // int                         countParamSP ( std::string &str );
 
         std::vector<std::string>    mySplit ( std::string str );

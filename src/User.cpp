@@ -27,6 +27,10 @@ const string &User::GetUserRealName() const {
 	return (this->_real_name);
 }
 
+const vector<Channel *> &User::GetChannels() const {
+	return (this->_membership);
+}
+
 int User::SetNick(const string &_new_nick) {
 	if (_to_user_store->IsNickAvalable(_new_nick) == false) {
 		return (1);
@@ -134,6 +138,10 @@ int User::CancelChannelMembership(Channel *_cannel_to_leave) {
 
 string User::GetUserFullName() const {
 	return (_nick + "!" + _user_name + "@" + _server_name);
+}
+
+const string &User::GetAwayMessage() const {
+	return (_away_message);
 }
 
 UserInfoStore &User::ToStore() {

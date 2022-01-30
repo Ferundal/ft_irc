@@ -32,6 +32,10 @@ Channel::~Channel() {
 	}
 }
 
+string &Channel::GetChannelName() {
+	return (_channel_name);
+}
+
 void Channel::AddUser(User &_new_user) {
 	_user_store.push_back(&_new_user);
 	_new_user._membership.push_back(this);
@@ -53,6 +57,10 @@ int Channel::DeleteUser(User *_user_to_delete) {
 
 const vector<User *> &Channel::GetChannelUsers() const {
 	return (_user_store);
+}
+
+const vector<User *> &Channel::GetChannelOperators() const {
+	return (_operators);
 }
 
 void Channel::DeleteFromOperators(User *_user_to_delete) {
