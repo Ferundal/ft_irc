@@ -265,7 +265,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     }
 }
 
-void    Parser::commandPRIVMSG (ClientSocket &socket ){
+void			Parser::commandPRIVMSG (ClientSocket &socket ){
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	std::string command = paramList[0];
 	int param_count = countParam(socket._msg_buff);
@@ -276,10 +276,14 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 				   (":No recipient given ("+ command+ ")").data());
 		return;
 	}
-//	for(int i = 1; i < paramList.size(); ++i)
-//	{
-//		if
-//	}
+	for (size_t i = 1; i < paramList.size(); ++i)
+		for (size_t j = i + 1; j < paramList.size(); ++j)
+			if (paramList[i] == paramList[j]){
+				errSendMsg(CODE_TO_STRING(ERR_TOOMANYTARGETS),*socket._usr_ptr,
+			   		(paramList[i] + " :Duplicate recipients. No message delivered").data());
+				return;
+			}
+
 
 	// TODO реализовать отправку по всем никнеймам?
 	std::string sender = paramList[1];
@@ -326,7 +330,7 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ){
 //	RPL_AWAY(в процессе) - нет
 //	ERR_NOTEXTTOSEND() - нет текста
 //	ERR_NOTOPLEVEL(IRC OPERATORS)
-//	ERR_TOOMANYTARGETS
+//	ERR_TOOMANYTARGETS(ok)
 }
 
 void	Parser::commandQUIT(ClientSocket& socket)

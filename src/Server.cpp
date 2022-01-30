@@ -26,28 +26,29 @@ void Server::grabConnection()
 	if (_pfd[0].revents & POLLIN)
 		// Новый пользователь
 		addNewClientSocket();
-	if (poll(_pfd.data(), _pfd.size(), -1) == -1) throw exception();
-	vector<pollfd>::iterator it = ++_pfd.begin();
-	while(it < _pfd.end())
-	{
-		if(it->revents & POLLHUP)
+	else{
+		vector<pollfd>::iterator it = ++_pfd.begin();
+		while(it < _pfd.end())
 		{
-			//Пользователь отсоединился
-			deleteClientSocket(it);
-		}
-		else if(it->revents & POLLIN )
-		{
-			//Пользователь выслал данныe
-			try {
-				readCommand(it);
-				++it;
-			}
-			catch (Parser::UserDeleteException& e) // User delete
+			if(it->revents & POLLHUP)
 			{
+				//Пользователь отсоединился
 				deleteClientSocket(it);
 			}
-		} else
-			++it;
+			else if(it->revents & POLLIN )
+			{
+				//Пользователь выслал данныe
+				try {
+					readCommand(it);
+					++it;
+				}
+				catch (Parser::UserDeleteException& e) // User delete
+					{
+					deleteClientSocket(it);
+					}
+			} else
+				++it;
+		}
 	}
 }
 
@@ -62,7 +63,7 @@ void	Server::readCommand(vector<pollfd>::iterator it)
 	{
 		r_len = recv(it->fd, &r_buf, 1, 0);
 		if (((r_len == 0) && (r_frst_flag == false)))
-			throw Parser::UserDeleteException(); //delete exception
+			throw Parser::UserDeleteException();
 		else if (r_len == 0)
 			break;
 		else
