@@ -207,16 +207,20 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
     }
 }
 
+
+//          ERR_NONICKNAMEGIVEN(OK)             ERR_ERRONEUSNICKNAME
+//          ERR_NICKNAMEINUSE(OK)               ERR_NICKCOLLISION(OK)
 void        Parser::commandNICK (ClientSocket &socket ) {
-	// TODO Checking repeat NICK and USER in DB
-    bool                        isSetNickInfo;
     int                         checker = 0;
     std::vector<std::string>    paramList;
     std::string                 answer;
     std::string                 command;
+
+
     
     // Check ERR_NONICKNAMEGIVEN | if there are no nickname  in parameters
-    paramList = mySplit(socket._msg_buff);
+    paramList = mySplit(socket._msg_buff);\
+
 
     for (size_t i = 0; i < paramList.size(); ++i) {
         if (checkCommand(paramList[i]) == true && countParam(socket._msg_buff) == 2)
@@ -241,67 +245,61 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     }
 
     // Check ERR_NICKCOLLISION
-    if (paramList.size() == 2) {
-        if (socket._usr_ptr->SetNick(paramList[2]) != false) {
-            errSendMsg(CODE_TO_STRING(ERR_NICKCOLLISION), *socket._usr_ptr,
-		   		(paramList[1] + " :Nickname collision KILL").data());
-            return;
-    } else if (paramList.size() == 3) { //Check ERR_NICKNAMEINUSE
-        if (socket._usr_ptr->SetNick(paramList[2]) != false) {
-            errSendMsg(CODE_TO_STRING(ERR_NICKNAMEINUSE), *socket._usr_ptr,
-		   		(paramList[2] + " :Nickname is already in use").data());
-            return;
-        }
-    }
+    // Общий алгоритм NICK - валидная команда в целом? валидный ник в целом? установить ник
+	// 1) User -> User -> Nick	--- 1.User - Ok 2.User - err
+	// 2) Nick -> User -> 		--- 1.Nick - Ok 2.User - Ok
+	// 3) Nick -> Nick -> User	--- 1.Nick - Ok 2.Nick - Ok 3.User - Ok
+	// 4) User -> Nick			--- 1.User - Ok 2.Nick - Ok
 
-    
+	if (paramList.size() <= 2) {
+		if (socket._usr_ptr->SetNick(paramList[1]) != false) {
+			errSendMsg(CODE_TO_STRING(ERR_NICKCOLLISION), *socket._usr_ptr,
+					   (paramList[1] + " :Nickname collision KILL").data());
+			return;
+		}
+	}
 
-	if (socket._usr_ptr->IsActivated() == false) {
-        isSetNickInfo = socket._usr_ptr->SetNick(paramList[1]);
-        if (isSetNickInfo == false) {
-            // std::cout << "|INFO| [Nick successfuly added]" << std::endl;
-            if (socket._usr_ptr->SetActivated() == 0) {
-            	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
-            	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " Welcome to the party").data());
-            	rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
-			    	(answer + ":" + SERVER_NAME + " End of /MOTD command").data());
-            }
-        }
-    }
-}
+	if(socket._usr_ptr->SetActivated() == 0)
+	{
+		rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
+				   (answer + ":- " + SERVER_NAME + " answer of the day -").data());
+		rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
+				   (answer + ":- " + SERVER_NAME + " Welcome to the party").data());
+		rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
+				   (answer + ":" + SERVER_NAME + " End of /MOTD command").data());
+	}
 }
 
 
-void    Parser::commandPRIVMSG (ClientSocket &socket ) {
-
-
-        // ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
-        // ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
-        // ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
-        // ERR_NOSUCHNICK
-        // RPL_AWAY
-
-
-
+void			Parser::commandPRIVMSG (ClientSocket &socket ){
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 	std::string command = paramList[0];
 
     // Checking ERR_NORECIPIENT
 	int param_count = countParam(socket._msg_buff);
+
 	if (param_count < 3) {
+
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
 				   (":No recipient given ("+ command+ ")").data());
 		return;
 	}
+	for (size_t i = 1; i < paramList.size(); ++i)
+		for (size_t j = i + 1; j < paramList.size(); ++j)
+			if (paramList[i] == paramList[j]){
+				errSendMsg(CODE_TO_STRING(ERR_TOOMANYTARGETS),*socket._usr_ptr,
+			   		(paramList[i] + " :Duplicate recipients. No message delivered").data());
+				return;
+			}
+
 
 	// TODO реализовать отправку по всем никнеймам?
-	std::string sender = paramList[1]; // TODO проверка параметра на имя ника или канала  - разделить
+	std::string sender = paramList[1];
 	Channel* channel;
 	std::string answer;
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
+		//	errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN),*socket._usr_ptr,) TODO сделать после того как сделается MODE
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
@@ -309,6 +307,9 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 				continue;
 			answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
 			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			if (usr_vector[i]->IsAway())
+				rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
+						   (usr_vector[i]->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
 			cout << answer << endl; // DEBUG out
 			answer.clear();
 		}
@@ -325,13 +326,19 @@ void    Parser::commandPRIVMSG (ClientSocket &socket ) {
 
 		answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
 		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+		if (receiver->IsAway())
+			rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
+					   (receiver->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
 	}
 
-//	ERR_NORECIPIENT(Ok)             ERR_NOTEXTTOSEND
-//	ERR_CANNOTSENDTOCHAN			ERR_NOTOPLEVEL
-//	ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
-//	ERR_NOSUCHNICK(Ok)
-//	RPL_AWAY
+//	ERR_NORECIPIENT(Ok) - не указан получатель
+//	ERR_CANNOTSENDTOCHAN(в процессе)
+//	ERR_WILDTOPLEVEL(IRC OPERATORS only)
+//	ERR_NOSUCHNICK(Ok) - нет такого ника или канала
+//	RPL_AWAY(в процессе) - нет
+//	ERR_NOTEXTTOSEND() - нет текста
+//	ERR_NOTOPLEVEL(IRC OPERATORS)
+//	ERR_TOOMANYTARGETS(ok)
 }
 
 void	Parser::commandQUIT(ClientSocket& socket)
@@ -557,7 +564,7 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //  <H|G>[*][@|+] :<hopcount> <real name>"
 	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
 	vector<User*> usr_vector = channel->GetChannelUsers();
-	for (int i = 0; i < usr_vector.size(); ++i)
+	for (size_t i = 0; i < usr_vector.size(); ++i)
 	{
 		rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
 				   (paramList[1] + " " + usr_vector[i]->GetUserName() + " "
@@ -800,6 +807,43 @@ void Parser::commandMODE(ClientSocket &socket) {
 	}
 }
 
+void Parser::commandNOTICE(ClientSocket& socket){
+	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::string command = paramList[0];
+	int param_count = countParam(socket._msg_buff);
+	if (param_count < 3){
+		return;
+	}
+
+	std::string sender = paramList[1];
+	Channel* channel;
+	std::string answer;
+	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
+	{
+		vector<User*> usr_vector = channel->GetChannelUsers();
+		for(size_t i = 0; i < usr_vector.size(); ++i)
+		{
+			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+				continue;
+			answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
+			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+			cout << answer << endl; // DEBUG out
+			answer.clear();
+		}
+	}
+	else
+	{
+		User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
+
+		if (receiver == NULL) {
+			return;
+		}
+
+		answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
+		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+	}
+}
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -844,7 +888,9 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandTOPIC(socket);
 	} else if (command == "MODE") {
 		commandMODE(socket);
-	}
+	} else if (command == "NOTICE"){
+		commandNOTICE(socket);
+    }
 
     socket._msg_buff.clear();
 }
