@@ -8,6 +8,7 @@ Server::Server(int n_connect) try : _cnct_socket()
 {
 	this->_cnct_socket.binding();
 	if (listen(_cnct_socket.getfd(), n_connect) == -1) throw exception();
+	{
 		_pfd.push_back(pollfd());
 		bzero(&_pfd[0], sizeof (_pfd[0]));
 		_pfd[0].fd = _cnct_socket.getfd();

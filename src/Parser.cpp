@@ -180,7 +180,6 @@ std::vector<std::string>    Parser::mySplit ( std::string str ) {
 }
 
 void         Parser::commandUSER (ClientSocket &socket ) {
-    bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
     std::string                 answer;
 
@@ -214,7 +213,6 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 }
 
 void        Parser::commandNICK (ClientSocket &socket ) {
-    int                         checker = 0;
     std::vector<std::string>    paramList;
     std::string                 answer;
     std::string                 command;
