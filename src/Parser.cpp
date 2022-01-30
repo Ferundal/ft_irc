@@ -513,6 +513,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *currChanel + "\r\n";
             send(socket._fd, answer.data(), answer.size(), 0);
             std::cout << answer << std::endl; // DEBUG out
+            answer.clear();
             ++currChanel;
         }
     } else {
@@ -521,6 +522,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             if (!listOfChanels.empty()) {
                 answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *listOfChanels.begin() + "\r\n";
                 send(socket._fd, answer.data(), answer.size(), 0);
+                answer.clear();
                 std::cout << answer << std::endl; // DEBUG out
             }
         }
