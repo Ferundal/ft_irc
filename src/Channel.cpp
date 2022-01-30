@@ -227,7 +227,7 @@ void Channel::SendToMembersFromUser(User &sender, const string message) {
 	string sending_message;
 	sending_message += ':' + sender.GetUserNick() + " " + message + "\r\n";
 	while (curr_user_ptr != user_ptrs_end) {
-		std::cout << "FD " << (*curr_user_ptr)->GetUserFd() << " << \"" << sending_message << "\"" <<std::endl;
+		std::cout << "FD " << (*curr_user_ptr)->GetUserFd() << " << " << sending_message <<std::endl;
 		send((*curr_user_ptr)->GetUserFd(), sending_message.data(), sending_message.size(), 0);
 		++curr_user_ptr;
 	}
