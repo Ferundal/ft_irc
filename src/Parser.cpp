@@ -211,9 +211,6 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
 //          ERR_NONICKNAMEGIVEN(OK)             ERR_ERRONEUSNICKNAME
 //          ERR_NICKNAMEINUSE(OK)               ERR_NICKCOLLISION(OK)
 void        Parser::commandNICK (ClientSocket &socket ) {
-	// TODO Checking repeat NICK and USER in DB
-	std::cout << "DEBUG NICK: " << socket._msg_buff << std::endl; //DEBUG out
-    bool                        isSetNickInfo;
     int                         checker = 0;
     std::vector<std::string>    paramList;
     std::string                 answer;
@@ -567,7 +564,7 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //  <H|G>[*][@|+] :<hopcount> <real name>"
 	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
 	vector<User*> usr_vector = channel->GetChannelUsers();
-	for (int i = 0; i < usr_vector.size(); ++i)
+	for (size_t i = 0; i < usr_vector.size(); ++i)
 	{
 		rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
 				   (paramList[1] + " " + usr_vector[i]->GetUserName() + " "
