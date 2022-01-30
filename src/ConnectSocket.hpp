@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "string"
 #include <cstring>
 #include "exception"
 
@@ -21,10 +22,21 @@ using namespace std;
 class ConnectSocket
 {
 public:
+	class SocketConfigException : public std::exception
+	{
+	public:
+		SocketConfigException(const string str) : _str(str){};
+		virtual ~SocketConfigException() throw() {};
+		const char * what() const throw(){return _str.data();};
+	private:
+		string _str;
+	};
+public:
+
 	/*
 	 * protocol=0 - по умолчанию - в соответствии с domain
 	 */
-	explicit	ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (exception);
+	explicit	ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (SocketConfigException);
 	int			getfd() const;
 	void		binding(int family=AF_INET, int port=PORT, in_addr_t ip=INADDR_ANY);
 

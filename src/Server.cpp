@@ -6,9 +6,8 @@
 
 Server::Server(int n_connect) try : _cnct_socket()
 {
-	listen(_cnct_socket.getfd(), n_connect); //  n_connect - максимальная длина, до которой может расти очередь ожидающих соединений
-	// Внесение данных первого элемента ConnetSocket в pfd
-	{
+	this->_cnct_socket.binding();
+	if (listen(_cnct_socket.getfd(), n_connect) == -1) throw exception();
 		_pfd.push_back(pollfd());
 		bzero(&_pfd[0], sizeof (_pfd[0]));
 		_pfd[0].fd = _cnct_socket.getfd();
@@ -54,14 +53,11 @@ void Server::grabConnection()
 
 void	Server::readCommand(vector<pollfd>::iterator it)
 {
-	bool	r_frst_flag = false;
-	int		r_len;
-	char	r_buf[2] = {0,};
-	ClientSocket& sckt = *findSocketIter(it->fd);
+	bool			r_frst_flag = false;
+	int				r_len;
+	char			r_buf[2] = {0,};
+	ClientSocket&	sckt = *findSocketIter(it->fd);
 
-	// 1) qfewef\n
-	// 2) 2323f23f\r\n
-	// 3) qwdqwddEOF
 	while (true)
 	{
 		r_len = recv(it->fd, &r_buf, 1, MSG_DONTWAIT);

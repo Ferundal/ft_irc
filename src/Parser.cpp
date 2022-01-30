@@ -169,8 +169,7 @@ std::vector<std::string>    Parser::mySplit ( std::string str ) {
   return wordList;
 }
 
-void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересмотреть логику ошибок
-	// TODO Checking repeat NICK and USER in DB
+void         Parser::commandUSER (ClientSocket &socket ) {
     bool                        isSetUserInfo;
     std::vector<std::string>    paramList;
     std::string                 answer;
@@ -179,7 +178,7 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
     paramList = mySplit(socket._msg_buff);
 
     // Check ERR_NEEDMOREPARAMS
-    if (paramList.size() != 5) {
+    if (paramList.size() < 5) {
         errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
 	    	(paramList[0] + " :Not enough parameters").data());
         return;
@@ -192,31 +191,18 @@ void         Parser::commandUSER (ClientSocket &socket ) { // TODO пересм�
         return;
     }
 
-    // Общий алгоритм NICK - валидная команда в целом? валидный ник в целом? установить ник
-    // 1) User -> User -> Nick	--- 1.User - Ok 2.User - err
-    // 2) Nick -> User -> 		--- 1.Nick - Ok 2.User - Ok
-    // 3) Nick -> Nick -> User	--- 1.Nick - Ok 2.Nick - Ok 3.User - Ok
-    // 4) User -> Nick			--- 1.User - Ok 2.Nick - Ok
+	socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
+    if (socket._usr_ptr->SetActivated() == 0) {
+		rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
+			(answer + ":- " + SERVER_NAME + " answer of the day -").data());
+		rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
+			(answer + ":- " + SERVER_NAME + " Welcome to the party -").data());
+		rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
+			(answer + ": " + SERVER_NAME + " End of /MOTD command").data());
+	}
 
-
-	if (socket._usr_ptr->IsActivated() == false) {
-        isSetUserInfo = socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
-        if (isSetUserInfo == false) {
-            if (socket._usr_ptr->SetActivated() == 0) {
-            	rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " answer of the day -").data());
-            	rplSendMsg(CODE_TO_STRING(RPL_MOTD), *socket._usr_ptr,
-			    	(answer + ":- " + SERVER_NAME + " Welcome to the party -").data());
-            	rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
-			    	(answer + ": " + SERVER_NAME + " End of /MOTD command").data());
-            }
-        }
-    }
 }
 
-
-//          ERR_NONICKNAMEGIVEN(OK)             ERR_ERRONEUSNICKNAME(OK)
-//          ERR_NICKNAMEINUSE             ERR_NICKCOLLISION(OK)
 void        Parser::commandNICK (ClientSocket &socket ) {
     int                         checker = 0;
     std::vector<std::string>    paramList;
@@ -224,13 +210,8 @@ void        Parser::commandNICK (ClientSocket &socket ) {
     std::string                 command;
     
     // Check ERR_NONICKNAMEGIVEN | if there are no nickname  in parameters
-    paramList = mySplit(socket._msg_buff);\
-
-    for (size_t i = 0; i < paramList.size(); ++i) {
-        if (checkCommand(paramList[i]) == true && countParam(socket._msg_buff) == 2)
-            ++checker;
-    }
-    if (checker != 1) {
+    paramList = mySplit(socket._msg_buff);
+	if (countParam(socket._msg_buff) < 2) {
         errSendMsg(CODE_TO_STRING(ERR_NONICKNAMEGIVEN), *socket._usr_ptr,
 	   		":No nickname given");
         return;
@@ -623,7 +604,7 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
     }
 
     // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
-        if (socket._usr_ptr) {
+	if (socket._usr_ptr) {
         errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
         return;
     }
