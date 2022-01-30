@@ -132,6 +132,16 @@ bool	IsChannel(const string &string_to_check) {
 	return (false);
 }
 
+int		StringToInt(const string &curr_string) {
+	char	null_term_str[curr_string.size() + 1];
+
+	null_term_str[curr_string.size() + 1] = '\0';
+	for (size_t i = 0; i < curr_string.size(); i++) {
+		null_term_str[i] = curr_string[i];
+	}
+	return (atoi(null_term_str));
+}
+
 int                Parser::countParam (std::string &str) {
   char        symb = '\r';
   int         n = 0;
@@ -782,19 +792,109 @@ void Parser::commandMODE(ClientSocket &socket) {
 				   (paramList[0] + " :Not enough parameters").data());
 		return;
 	}
-	if (IsChannel(paramList[1])) {
+	if (IsChannel(paramList.at(1))) {
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(
-				paramList[1]);
+				paramList.at(1));
 		if (channel_ptr == NULL) {
 			errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
 					(paramList[1] + " :No such channel").data());
 			return;
 		}
 		if (!channel_ptr->IsOperator(socket._usr_ptr)) {
-			errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
-					   (paramList[1] + " :No such channel").data());
+			errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr,
+					   (paramList[1] + " :You're not channel operator").data());
 			return;
 		}
+		int 	find_start = 0;
+		bool	turning_off_flag = false;
+		if (paramList[2].find('+') == 0) {
+			find_start = 1;
+		}
+		if (paramList[2].find('-') == 0) {
+			turning_off_flag = true;
+			find_start = 1;
+		}
+		if (paramList[2][find_start] == 'o') {
+			if (paramList.size() < 4)
+				return;
+			User *target_user_ptr = socket._usr_ptr->ToStore().FindUserByNick(paramList[3]);
+			if (target_user_ptr == NULL) {
+				errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+						   (paramList[3] + " :No such nick/channel").data());
+				return;
+			}
+			if (!target_user_ptr->IsMemberOfChannel(channel_ptr)) {
+				errSendMsg(CODE_TO_STRING(ERR_USERNOTINCHANNEL), *socket._usr_ptr,
+						   (target_user_ptr->GetUserNick() + " " + channel_ptr->GetChannelName() + " :They aren't on that channel").data());
+				return;
+			}
+			if (!turning_off_flag && !channel_ptr->IsOperator(target_user_ptr)) {
+				channel_ptr->AddOperator(target_user_ptr);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " + channel_ptr->GetChannelName() + " +o " + target_user_ptr->GetUserNick());
+				return;
+			}
+			if (turning_off_flag && channel_ptr->IsOperator(target_user_ptr)) {
+				channel_ptr->DeleteFromOperatorsNoPromo(target_user_ptr);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " + channel_ptr->GetChannelName() + " -o " + target_user_ptr->GetUserNick());
+				return;
+			}
+		} else if (paramList[2][find_start] == 'p') {
+			if (channel_ptr->_private_channel_flag && turning_off_flag) {
+				channel_ptr->_private_channel_flag = false;
+			}
+			if (!channel_ptr->_private_channel_flag && !turning_off_flag) {
+				channel_ptr->_private_channel_flag = true;
+			}
+		} else if (paramList[2][find_start] == 's') {
+			if (channel_ptr->_secret_channel_flag && turning_off_flag) {
+				channel_ptr->_secret_channel_flag = false;
+			}
+			if (!channel_ptr->_secret_channel_flag && !turning_off_flag) {
+				channel_ptr->_secret_channel_flag = true;
+			}
+		} else if (paramList[2][find_start] == 't') {
+			if (channel_ptr->_topic_for_operators_flag && turning_off_flag) {
+				channel_ptr->_topic_for_operators_flag = false;
+			}
+			if (!channel_ptr->_topic_for_operators_flag && !turning_off_flag) {
+				channel_ptr->_topic_for_operators_flag = true;
+			}
+		} else if (paramList[2][find_start] == 'n') {
+			if (channel_ptr->_no_messages_from_outside_channel_flag && turning_off_flag) {
+				channel_ptr->_no_messages_from_outside_channel_flag = false;
+			}
+			if (!channel_ptr->_no_messages_from_outside_channel_flag && !turning_off_flag) {
+				channel_ptr->_no_messages_from_outside_channel_flag = true;
+			}
+		} else if (paramList[2][find_start] == 'm') {
+			if (channel_ptr->IsModerated() && turning_off_flag) {
+				channel_ptr->SetIsModerated(false);
+			}
+			if (!channel_ptr->IsModerated() && !turning_off_flag) {
+				channel_ptr->SetIsModerated(true);
+			}
+		} else if (paramList[2][find_start] == 'l') {
+			if (channel_ptr->IsLimited() && turning_off_flag && paramList.size() > 3) {
+				channel_ptr->SetIsModerated(-1);
+			}
+			if (!channel_ptr->IsLimited() && !turning_off_flag && paramList.size() > 3) {
+				channel_ptr->SetIsModerated(StringToInt(paramList[4]));
+			}
+		} else if (paramList[2][find_start] == 'b') {
+			if (turning_off_flag && paramList.size() > 3) {
+				channel_ptr->UnBanUser(paramList[3]);
+			}
+			if (!turning_off_flag) {
+				if (paramList.size() > 3) {
+					channel_ptr->BanUser(paramList[3]);
+				} else {
+					//TODO список забаненных
+				}
+			}
+		} else if (paramList[2][find_start] == 'v') {
+
+		}
+
 	} else {
 		User *user_ptr = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 		if (user_ptr != NULL) {

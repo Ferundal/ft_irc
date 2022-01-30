@@ -5,6 +5,7 @@
 #include <iostream>
 #include "vector"
 #include "cstdio"
+#include "cstdlib"
 #include "ClientSocket.hpp"
 #include "User.hpp"
 #include "error_answers.hpp"

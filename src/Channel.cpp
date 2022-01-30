@@ -63,6 +63,19 @@ const vector<User *> &Channel::GetChannelOperators() const {
 	return (_operators);
 }
 
+void Channel::DeleteFromOperatorsNoPromo(User *_user_to_delete) {
+	vector<User *>::iterator _curr_moderator = _operators.begin();
+	vector<User *>::iterator _moderators_end = _operators.end();
+	while (_curr_moderator != _moderators_end) {
+		if (*_curr_moderator == _user_to_delete) {
+			_operators.erase(_curr_moderator);
+			return;
+		}
+		++_curr_moderator;
+	}
+}
+
+
 void Channel::DeleteFromOperators(User *_user_to_delete) {
 	vector<User *>::iterator _curr_moderator = _operators.begin();
 	vector<User *>::iterator _moderators_end = _operators.end();
@@ -93,6 +106,11 @@ void Channel::AddInvite(User *_new_invite_user_ptr) {
 		++_curr_invited_user;
 	}
 	this->_invites.push_back(_new_invite_user_ptr);
+}
+
+int Channel::AddOperator(User *_new_operator) {
+	_operators.push_back(_new_operator);
+	return (0);
 }
 
 bool Channel::IsInvited(User *_checked_user_ptr) {
@@ -147,4 +165,70 @@ string Channel::NameReply() {
 		nameReplyString.append((*_curr_user_ptr)->GetUserNick());
 	}
 	return (nameReplyString);
+}
+
+bool Channel::IsModerated() {
+	return (_moderated_channel_flag);
+}
+
+void Channel::SetIsModerated(bool statement) {
+	if (statement == false && _moderated_channel_flag == true)
+		_can_talk_if_moderated.clear();
+	_moderated_channel_flag = statement;
+}
+
+bool Channel::IsLimited() {
+	if (_limited_users_on_channel < 0)
+		return (true);
+	return (false);
+}
+
+void Channel::SetIsLimited(int _limit) {
+	_limited_users_on_channel = _limit;
+}
+
+bool Channel::IsBanned(const string &_user_to_check) {
+	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	while (_curr_banned_user_name != _banned_user_names_end) {
+		if (_user_to_check == *_curr_banned_user_name)
+			return (true);
+		++_curr_banned_user_name;
+	}
+	return (false);
+}
+
+void Channel::BanUser(const string &_user_to_ban) {
+	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	while (_curr_banned_user_name != _banned_user_names_end) {
+		if (_user_to_ban == *_curr_banned_user_name)
+			return;
+		++_curr_banned_user_name;
+	}
+	_banned_users.push_back(_user_to_ban);
+}
+
+void Channel::UnBanUser(const string &_user_to_unban) {
+	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	while (_curr_banned_user_name != _banned_user_names_end) {
+		if (_user_to_unban == *_curr_banned_user_name) {
+			_banned_users.erase(_curr_banned_user_name);
+			return;
+		}
+		++_curr_banned_user_name;
+	}
+}
+
+void Channel::SendToMembersFromUser(User &sender, const string message) {
+	vector<User *>::iterator curr_user_ptr = _user_store.begin();
+	vector<User *>::iterator user_ptrs_end = _user_store.end();
+	string sending_message;
+	sending_message += ':' + sender.GetUserNick() + " " + message + "\r\n";
+	while (curr_user_ptr != user_ptrs_end) {
+		std::cout << "FD " << (*curr_user_ptr)->GetUserFd() << " << \"" << sending_message << "\"" <<std::endl;
+		send((*curr_user_ptr)->GetUserFd(), sending_message.data(), sending_message.size(), 0);
+		++curr_user_ptr;
+	}
 }
