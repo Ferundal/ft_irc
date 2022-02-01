@@ -90,7 +90,7 @@ all:				obj_dir_make libs_make ${NAME}
 
 
 obj_dir_make:
-					mkdir -p obj
+					@mkdir -p obj
 
 
 ${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
