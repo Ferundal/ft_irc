@@ -227,31 +227,6 @@ list<string> User::ChannelList(const string &_searching_channel_name) {
 	return (_result);
 }
 
-int User::SendInvite(const string &_invited_user_nick,
-					 const string &_channel_invite_to) {
-	User *_invited_user_ptr = this->ToStore().FindUserByNick(_invited_user_nick);
-	if (_invited_user_ptr == NULL)
-		return (ERR_NOSUCHNICK);
-	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
-	vector<Channel *>::iterator _curr_membership = this->_membership.end();
-	while (_curr_membership != _memberships_begin) {
-		--_curr_membership;
-		if ((*_curr_membership)->_channel_name == _channel_invite_to) {
-			if (!_invited_user_ptr->IsMemberOfChannel(*_curr_membership)) {
-				return (ERR_USERONCHANNEL);
-			}
-			if ((*_curr_membership)->_invite_only_channel_flag == true) {
-				if (!(*_curr_membership)->IsOperator(this)) {
-					return (ERR_CHANOPRIVSNEEDED);
-				}
-				(*_curr_membership)->AddInvite(_invited_user_ptr);
-			}
-			return (0);
-		}
-	}
-	return (ERR_NOTONCHANNEL);
-}
-
 int User::ChangeTopic(const string &_channel_to_change_topic,
 					  const string &_new_topic) {
 	vector<Channel *>::iterator _memberships_begin = this->_membership.begin();
