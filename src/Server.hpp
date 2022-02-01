@@ -40,7 +40,6 @@ private:
 
 	ConnectSocket			_cnct_socket;
 	vector<ClientSocket>	_clnt_sockets;
-	const char*				_pass;
 	vector<pollfd>			_pfd;
 	UserInfoStore			_user_bd;
 	Parser					_parser;

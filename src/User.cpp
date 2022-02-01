@@ -8,9 +8,9 @@
 User::User(int _new_fd) : _fd(_new_fd),
 							_is_activated(false),
 							_is_away(false),
-							_is_hidden(false),
 							_is_password_checked(false),
-							_is_receipt_server_notices(false){}
+							_is_hidden(false),
+							_is_receipt_server_notices(true){}
 
 const string &User::GetUserNick() const {
 	return (this->_nick);
