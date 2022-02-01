@@ -126,7 +126,7 @@ bool         Parser::checkCommand ( std::string &command ) {
     return false;
 }
 
-bool	IsChannel(const string &string_to_check) {
+bool	IsChannelName(const string &string_to_check) {
 	if (string_to_check.data()[0] == '#')
 		return (true);
 	return (false);
@@ -135,11 +135,25 @@ bool	IsChannel(const string &string_to_check) {
 int		StringToInt(const string &curr_string) {
 	char	null_term_str[curr_string.size() + 1];
 
-	null_term_str[curr_string.size() + 1] = '\0';
+	null_term_str[curr_string.size()] = '\0';
 	for (size_t i = 0; i < curr_string.size(); i++) {
 		null_term_str[i] = curr_string[i];
 	}
 	return (atoi(null_term_str));
+}
+
+string ft_to_string_p(int num) {
+	string _result;
+	char curr_char;
+	if (num == 0)
+		return (string("0"));
+	while (num / 10 != 0) {
+		curr_char = num % 10 + '0';
+		_result = curr_char + _result;
+		num = num / 10;
+	}
+	_result = (char)(num + '0') + _result;
+	return (_result);
 }
 
 int                Parser::countParam (std::string &str) {
@@ -278,14 +292,21 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 				return;
 			}
 
-
-	// TODO реализовать отправку по всем никнеймам?
 	std::string sender = paramList[1];
 	Channel* channel;
 	std::string answer;
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
-		//	errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN),*socket._usr_ptr,) TODO сделать после того как сделается MODE
+		if (channel->_no_messages_from_outside_channel_flag &&
+		!socket._usr_ptr->IsMemberOfChannel(channel)
+		||
+		(channel->IsModerated() &&
+		!channel->IsOperator(socket._usr_ptr) &&
+		!channel->IsHasVoiceRights(socket._usr_ptr))) {
+			errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN), *socket._usr_ptr,
+						(channel->GetChannelName() + " :Cannot send to channel").data());
+			return;
+		}
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
@@ -314,7 +335,8 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
 		if (receiver->IsAway())
 			rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
-					   (receiver->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
+					   (receiver->GetUserNick() + " :" +
+							   receiver->GetAwayMessege()).data());
 	}
 
 //	ERR_NORECIPIENT(Ok) - не указан получатель
@@ -589,8 +611,8 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         (paramList[0] + " :Not enough parameters").data());
         return;
     }
-	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
+	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
     // Checking ERR_NOSUCHNICK
     if (reciever == NULL) {
     	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
@@ -598,25 +620,32 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
+	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[2]);
+	if (reciever == NULL) {
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+				   (paramList[1] + " :No such nick/channel").data());
+		return;
+	}
+
     // Checking ERR_NOTONCHANNEL
-    if (socket._usr_ptr->LeaveChannel(paramList[2]) == ERR_NOTONCHANNEL) {
+    if (!socket._usr_ptr->IsMemberOfChannel(channel_invite_to_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
         (paramList[2] + " :You're not on that channel").data());
         return;
     }
 
     // Checking ERR_USERONCHANNEL 443   <--- Not work
-    if (socket._usr_ptr) {
+    if (reciever->IsMemberOfChannel(channel_invite_to_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
         return;
     }
 
     // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
-	if (socket._usr_ptr) {
+	if (channel_invite_to_ptr->IsInviteOnly() && !channel_invite_to_ptr->IsOperator(socket._usr_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
         return;
     }
-
+	channel_invite_to_ptr->AddInvite(reciever);
     rplSendMsg(CODE_TO_STRING(RPL_INVITING), *socket._usr_ptr,
     	(paramList[2] + " " + paramList[1]).data());
 
@@ -763,7 +792,7 @@ void 						Parser::commandTOPIC (ClientSocket& socket) {
 }
 
 void Parser::commandMODE(ClientSocket &socket) {
-	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
+	std::vector<std::string> paramList = mySplit(socket._msg_buff);
 
 	// Command need at least one param, send error if not enouth args
 	if (paramList.size() < 3) {
@@ -771,12 +800,22 @@ void Parser::commandMODE(ClientSocket &socket) {
 				   (paramList[0] + " :Not enough parameters").data());
 		return;
 	}
-	if (IsChannel(paramList.at(1))) {
+	int find_start = 0;
+	bool turning_off_flag = false;
+	if (paramList[2].find('+') == 0) {
+		find_start = 1;
+	}
+	if (paramList[2].find('-') == 0) {
+		turning_off_flag = true;
+		find_start = 1;
+	}
+	string correct_flags = "opsitnmlbvkw";
+	if (IsChannelName(paramList.at(1))) {
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(
 				paramList.at(1));
 		if (channel_ptr == NULL) {
 			errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
-					(paramList[1] + " :No such channel").data());
+					   (paramList[1] + " :No such channel").data());
 			return;
 		}
 		if (!channel_ptr->IsOperator(socket._usr_ptr)) {
@@ -784,19 +823,18 @@ void Parser::commandMODE(ClientSocket &socket) {
 					   (paramList[1] + " :You're not channel operator").data());
 			return;
 		}
-		int 	find_start = 0;
-		bool	turning_off_flag = false;
-		if (paramList[2].find('+') == 0) {
-			find_start = 1;
+		if (correct_flags.find(paramList[2][find_start], 0) == string::npos) {
+			errSendMsg(CODE_TO_STRING(ERR_UMODEUNKNOWNFLAG), *socket._usr_ptr,
+					   (paramList[1] + " :Unknown MODE flag").data());
+			return;
 		}
-		if (paramList[2].find('-') == 0) {
-			turning_off_flag = true;
-			find_start = 1;
-		}
-		if (paramList[2][find_start] == 'o') {
+		if (paramList[2][find_start] == 'o' ||
+			paramList[2][find_start] == 'v') {
+
 			if (paramList.size() < 4)
 				return;
-			User *target_user_ptr = socket._usr_ptr->ToStore().FindUserByNick(paramList[3]);
+			User *target_user_ptr = socket._usr_ptr->ToStore().FindUserByNick(
+					paramList[3]);
 			if (target_user_ptr == NULL) {
 				errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 						   (paramList[3] + " :No such nick/channel").data());
@@ -804,85 +842,216 @@ void Parser::commandMODE(ClientSocket &socket) {
 			}
 			if (!target_user_ptr->IsMemberOfChannel(channel_ptr)) {
 				errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-						   (target_user_ptr->GetUserNick() + " :No such nick/channel").data());
+						   (target_user_ptr->GetUserNick() +
+							" :No such nick/channel").data());
 				return;
 			}
-			if (!turning_off_flag && !channel_ptr->IsOperator(target_user_ptr)) {
-				channel_ptr->AddOperator(target_user_ptr);
-				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " + channel_ptr->GetChannelName() + " +o " + target_user_ptr->GetUserNick());
-				return;
-			}
-			if (turning_off_flag && channel_ptr->IsOperator(target_user_ptr)) {
-				channel_ptr->DeleteFromOperatorsNoPromo(target_user_ptr);
-				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " + channel_ptr->GetChannelName() + " -o " + target_user_ptr->GetUserNick());
-				return;
+			if (paramList[2][find_start] == 'o') {
+				if (!turning_off_flag &&
+					!channel_ptr->IsOperator(target_user_ptr)) {
+					channel_ptr->AddOperator(target_user_ptr);
+					channel_ptr->SendToMembersFromUser(*socket._usr_ptr,
+													   "MODE " +
+													   channel_ptr->GetChannelName() +
+													   " +o " +
+													   target_user_ptr->GetUserNick());
+				}
+				if (turning_off_flag &&
+					channel_ptr->IsOperator(target_user_ptr)) {
+					channel_ptr->DeleteFromOperatorsNoPromo(target_user_ptr);
+					channel_ptr->SendToMembersFromUser(*socket._usr_ptr,
+													   "MODE " +
+													   channel_ptr->GetChannelName() +
+													   " -o " +
+													   target_user_ptr->GetUserNick());
+				}
+			} else {
+				if (!turning_off_flag &&
+					!channel_ptr->IsHasVoiceRights(target_user_ptr)) {
+					channel_ptr->GiveVoiceRights(target_user_ptr);
+					channel_ptr->SendToMembersFromUser(*socket._usr_ptr,
+													   "MODE " +
+													   channel_ptr->GetChannelName() +
+													   " +v " +
+													   target_user_ptr->GetUserNick());
+				}
+				if (turning_off_flag &&
+					channel_ptr->IsHasVoiceRights(target_user_ptr)) {
+					channel_ptr->TakeAwayVoiceRights(target_user_ptr);
+					channel_ptr->SendToMembersFromUser(*socket._usr_ptr,
+													   "MODE " +
+													   channel_ptr->GetChannelName() +
+													   " -v " +
+													   target_user_ptr->GetUserNick());
+				}
 			}
 		} else if (paramList[2][find_start] == 'p') {
 			if (channel_ptr->_private_channel_flag && turning_off_flag) {
 				channel_ptr->_private_channel_flag = false;
-				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE ");
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -p");
 			}
 			if (!channel_ptr->_private_channel_flag && !turning_off_flag) {
 				channel_ptr->_private_channel_flag = true;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +p");
 			}
 		} else if (paramList[2][find_start] == 's') {
 			if (channel_ptr->_secret_channel_flag && turning_off_flag) {
 				channel_ptr->_secret_channel_flag = false;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -s");
 			}
 			if (!channel_ptr->_secret_channel_flag && !turning_off_flag) {
 				channel_ptr->_secret_channel_flag = true;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +s");
+			}
+		} else if (paramList[2][find_start] == 'i') {
+			if (channel_ptr->IsInviteOnly() && turning_off_flag) {
+				channel_ptr->SetInviteOnly(false);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -i");
+			}
+			if (!channel_ptr->IsInviteOnly() && !turning_off_flag) {
+				channel_ptr->SetInviteOnly(true);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +i");
 			}
 		} else if (paramList[2][find_start] == 't') {
 			if (channel_ptr->_topic_for_operators_flag && turning_off_flag) {
 				channel_ptr->_topic_for_operators_flag = false;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -t");
 			}
 			if (!channel_ptr->_topic_for_operators_flag && !turning_off_flag) {
 				channel_ptr->_topic_for_operators_flag = true;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +t");
 			}
 		} else if (paramList[2][find_start] == 'n') {
-			if (channel_ptr->_no_messages_from_outside_channel_flag && turning_off_flag) {
+			if (channel_ptr->_no_messages_from_outside_channel_flag &&
+				turning_off_flag) {
 				channel_ptr->_no_messages_from_outside_channel_flag = false;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -n");
 			}
-			if (!channel_ptr->_no_messages_from_outside_channel_flag && !turning_off_flag) {
+			if (!channel_ptr->_no_messages_from_outside_channel_flag &&
+				!turning_off_flag) {
 				channel_ptr->_no_messages_from_outside_channel_flag = true;
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +n");
 			}
 		} else if (paramList[2][find_start] == 'm') {
 			if (channel_ptr->IsModerated() && turning_off_flag) {
 				channel_ptr->SetIsModerated(false);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -m");
 			}
 			if (!channel_ptr->IsModerated() && !turning_off_flag) {
 				channel_ptr->SetIsModerated(true);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +m");
 			}
 		} else if (paramList[2][find_start] == 'l') {
-			if (channel_ptr->IsLimited() && turning_off_flag && paramList.size() > 3) {
-				channel_ptr->SetIsModerated(-1);
+			if (channel_ptr->IsLimited() && turning_off_flag) {
+				channel_ptr->SetIsLimited(-1);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -l");
 			}
-			if (!channel_ptr->IsLimited() && !turning_off_flag && paramList.size() > 3) {
-				channel_ptr->SetIsModerated(StringToInt(paramList[4]));
+			if (!channel_ptr->IsLimited() && !turning_off_flag &&
+				paramList.size() > 3) {
+				channel_ptr->SetIsLimited(StringToInt(paramList[3]));
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +l " +
+																	 ft_to_string_p(
+																			 channel_ptr->GetLimit()));
 			}
 		} else if (paramList[2][find_start] == 'b') {
 			if (turning_off_flag && paramList.size() > 3) {
 				channel_ptr->UnBanUser(paramList[3]);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " -b" +
+																	 paramList[3]);
 			}
 			if (!turning_off_flag) {
 				if (paramList.size() > 3) {
 					channel_ptr->BanUser(paramList[3]);
+					channel_ptr->SendToMembersFromUser(*socket._usr_ptr,
+													   "MODE " +
+													   channel_ptr->GetChannelName() +
+													   " +b " + paramList[3]);
 				} else {
-					//TODO список забаненных
+					channel_ptr->SendBanListToUser(*socket._usr_ptr);
 				}
 			}
-		} else if (paramList[2][find_start] == 'v') {
-
+		} else if (paramList[2][find_start] == 'k') {
+			if (turning_off_flag) {
+				channel_ptr->RemovePassword();
+			}
+			if (!turning_off_flag && paramList.size() > 3) {
+				channel_ptr->SetPassword(paramList[3]);
+				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
+																	 channel_ptr->GetChannelName() +
+																	 " +k " +
+																	 paramList[3]);
+			}
 		}
-
 	} else {
-		User *user_ptr = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
-		if (user_ptr != NULL) {
+		User *user_ptr = socket._usr_ptr->ToStore().FindUserByNick(
+				paramList[1]);
+		if (user_ptr == NULL) {
 			errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 					   (paramList[1] + " :No such nick/channel").data());
 			return;
 		}
-
+		if (socket._usr_ptr != user_ptr) {
+			errSendMsg(CODE_TO_STRING(ERR_USERSDONTMATCH), *socket._usr_ptr,
+					   (paramList[1] +
+						" :Cant change mode for other users").data());
+			return;
+		}
+		if (correct_flags.find(paramList[2][find_start], 0) == string::npos) {
+			errSendMsg(CODE_TO_STRING(ERR_UMODEUNKNOWNFLAG), *socket._usr_ptr,
+					   (paramList[1] + " :Unknown MODE flag").data());
+			return;
+		}
+		if (paramList[2][find_start] == 'i') {
+			if (turning_off_flag) {
+				user_ptr->_is_hidden = false;
+				rplSendMsg(CODE_TO_STRING(RPL_UMODEIS), *socket._usr_ptr,
+						   ("MODE " + user_ptr->GetUserNick() + " -i").data());
+			} else {
+				user_ptr->_is_hidden = true;
+				rplSendMsg(CODE_TO_STRING(RPL_UMODEIS), *socket._usr_ptr,
+						   ("MODE " + user_ptr->GetUserNick() + " +i").data());
+			}
+		} else if (paramList[2][find_start] == 's') {
+			if (turning_off_flag) {
+				user_ptr->_is_receipt_server_notices = false;
+				rplSendMsg(CODE_TO_STRING(RPL_UMODEIS), *socket._usr_ptr,
+						   ("MODE " + user_ptr->GetUserNick() + " -s").data());
+			} else {
+				user_ptr->_is_receipt_server_notices = true;
+				rplSendMsg(CODE_TO_STRING(RPL_UMODEIS), *socket._usr_ptr,
+						   ("MODE " + user_ptr->GetUserNick() + " +s").data());
+			}
+		}
 	}
 }
 

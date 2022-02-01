@@ -20,6 +20,9 @@ using std::cout;
 using std::vector;
 using std::string;
 
+class ClientSocket;
+class User;
+
 class Parser {
     private:
         std::string _commandList[COMMAND_COUNT];

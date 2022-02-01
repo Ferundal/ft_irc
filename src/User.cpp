@@ -5,7 +5,11 @@
 #include "User.hpp"
 #include <stdlib.h>
 
-User::User(int _new_fd) : _fd(_new_fd), _is_activated(false), _is_away(false) {}
+User::User(int _new_fd) : _fd(_new_fd),
+							_is_activated(false),
+							_is_away(false),
+							_is_hidden(false),
+							_is_receipt_server_notices(false){}
 
 const string &User::GetUserNick() const {
 	return (this->_nick);
@@ -142,7 +146,7 @@ string User::GetUserFullName() const {
 	return (_nick + "!" + _user_name + "@" + _server_name);
 }
 
-const string &User::GetAwayMessage() const {
+const string &User::GetAwayMessege() const {
 	return (_away_message);
 }
 

@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include "User.hpp"
 #include "UserInfoStore.hpp"
+#include "Parser.hpp"
 
 using std::vector;
 using std::string;
@@ -53,28 +54,33 @@ public:
 	const vector<User *> &GetChannelOperators() const;
 	Channel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);
 	~Channel();
-	void AddInvite(User *_new_invite_user_ptr);
+
 	int AddOperator(User *_new_operator);
 
+	void SetInviteOnly(bool flag_condition);
+	bool IsInviteOnly();
 	/**
 	 * Check is _checked_user_ptr user invited.
 	 * @Rerurn true if invited.
 	 * @Return false if not.
 	 */
 	bool IsInvited(User *_checked_user_ptr);
-
+	void AddInvite(User *_new_invite_user_ptr);
 
 	bool IsTopicSet();
 	bool IsModerated();
 	void SetIsModerated(bool statement);
 	bool IsLimited();
 	void SetIsLimited(int _limit);
+	int	GetLimit();
 	bool IsBanned(const string &_user_to_check);
 	void BanUser(const string &_user_to_ban);
 	void UnBanUser(const string &_user_to_ban);
 	void SendToMembersFromUser(User &sender, const string _message);
 
-
+	void GiveVoiceRights(User *user_to_give_rights);
+	void TakeAwayVoiceRights(User *user_to_take_away_rights);
+	bool IsHasVoiceRights(User *user_to_check);
 
 
 
@@ -85,6 +91,12 @@ public:
 
 	bool IsOperator(User *_checked_user_prt);
 	string NameReply();
+	void SendBanListToUser(User &sender);
+
+	bool CheckPassword(const string &checked_password);
+	void SetPassword(const string &new_password);
+	void RemovePassword();
+
 };
 
 

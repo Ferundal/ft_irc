@@ -14,6 +14,8 @@
 
 using namespace std;
 
+class User;
+
 struct ClientSocket
 {
 	int			_fd;
