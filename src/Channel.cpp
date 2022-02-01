@@ -201,9 +201,15 @@ int Channel::GetLimit() {
 	return (_limited_users_on_channel);
 }
 
+bool Channel::IsLimitFull() {
+	if (_user_store.size() >= _limited_users_on_channel)
+		return (true);
+	return (false);
+}
+
 bool Channel::IsBanned(const string &_user_to_check) {
 	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
-	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.end();
 	while (_curr_banned_user_name != _banned_user_names_end) {
 		if (_user_to_check == *_curr_banned_user_name)
 			return (true);
@@ -214,7 +220,7 @@ bool Channel::IsBanned(const string &_user_to_check) {
 
 void Channel::BanUser(const string &_user_to_ban) {
 	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
-	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.end();
 	while (_curr_banned_user_name != _banned_user_names_end) {
 		if (_user_to_ban == *_curr_banned_user_name)
 			return;
@@ -225,7 +231,7 @@ void Channel::BanUser(const string &_user_to_ban) {
 
 void Channel::UnBanUser(const string &_user_to_unban) {
 	vector<string>::iterator _curr_banned_user_name = _banned_users.begin();
-	vector<string>::iterator _banned_user_names_end = _banned_users.begin();
+	vector<string>::iterator _banned_user_names_end = _banned_users.end();
 	while (_curr_banned_user_name != _banned_user_names_end) {
 		if (_user_to_unban == *_curr_banned_user_name) {
 			_banned_users.erase(_curr_banned_user_name);

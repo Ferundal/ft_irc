@@ -63,7 +63,9 @@ int User::SetUserInfo(const string &_new_user_name, const string &_new_host_name
 }
 
 int User::SetActivated() {
-	if (this->_user_name.empty() == false && this->_nick.empty() == false) {
+	if (this->_user_name.empty() == false &&
+		this->_nick.empty() == false &&
+		this->_is_password_checked == true) {
 		this->_to_user_store->_connected_users.push_back(this);
 		this->_is_activated = true;
 		return (0);
@@ -115,6 +117,8 @@ int User::LeaveChannel(const string &_channel_name) {
 
 
 int User::JoinChannel(const string &_channel_name, const string &_channel_password) {
+	if (this->_membership.size() >= _max_membership)
+		return (ERR_TOOMANYCHANNELS);
 	Channel *_channel_ptr = _to_user_store->FindChannelByName(_channel_name);
 	if (_channel_ptr == NULL) {
 		this->_to_user_store->CreateNewChannel(this, _channel_name, _channel_password);
@@ -122,6 +126,10 @@ int User::JoinChannel(const string &_channel_name, const string &_channel_passwo
 	}
 	if (this->IsMemberOfChannel(_channel_ptr))
 		return (ERR_USERONCHANNEL);
+	if (_channel_ptr->IsLimited() && _channel_ptr->IsLimitFull())
+		return (ERR_CHANNELISFULL);
+	if (_channel_ptr->IsBanned(this->_user_name))
+		return (ERR_BANNEDFROMCHAN);
 	if (_channel_ptr->_invite_only_channel_flag == true &&
 		_channel_ptr->IsInvited(this) == false)
 		return (ERR_INVITEONLYCHAN);

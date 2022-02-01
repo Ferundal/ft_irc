@@ -299,12 +299,14 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 	std::string answer;
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
-		if (channel->_no_messages_from_outside_channel_flag &&
-		!socket._usr_ptr->IsMemberOfChannel(channel)
+		if ((channel->_no_messages_from_outside_channel_flag &&
+		!socket._usr_ptr->IsMemberOfChannel(channel))
 		||
 		(channel->IsModerated() &&
 		!channel->IsOperator(socket._usr_ptr) &&
-		!channel->IsHasVoiceRights(socket._usr_ptr))) {
+		!channel->IsHasVoiceRights(socket._usr_ptr))
+		||
+		(channel->IsBanned(socket._usr_ptr->GetUserNick()))) {
 			errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN), *socket._usr_ptr,
 						(channel->GetChannelName() + " :Cannot send to channel").data());
 			return;
@@ -468,19 +470,27 @@ void	Parser::commandJOIN(ClientSocket& socket){
 			rplSendMsg(CODE_TO_STRING(RPL_NOTOPIC), *socket._usr_ptr,
 					   (paramList[1] + " :No topic is set").data());
 		}
-
 //	353     RPL_NAMREPLY
 //	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
 //	socket._usr_ptr->ToStore().FindChannelByName();
 		rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
 			(answer + paramList[1] + " :" + channel_ptr->NameReply()).data()); // TODO добавить список ников
-
-
 //	366     RPL_ENDOFNAMES
 //	"<channel> :End of /NAMES list"
 		rplSendMsg(CODE_TO_STRING(RPL_ENDOFNAMES), *socket._usr_ptr,
 				   (answer + paramList[1] + " :End of /NAMES list").data());
-
+	} else if (status == ERR_USERONCHANNEL) {
+		errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr,
+				   (socket._usr_ptr->GetUserNick() + " " + paramList[1] + " :is already on channel").data());
+	} else if (status == ERR_TOOMANYCHANNELS) {
+		errSendMsg(CODE_TO_STRING(ERR_TOOMANYCHANNELS), *socket._usr_ptr,
+				   (paramList[1] + " :You have joined too many channels").data());
+	} else if (status == ERR_CHANNELISFULL) {
+		errSendMsg(CODE_TO_STRING(ERR_CHANNELISFULL), *socket._usr_ptr,
+				   (paramList[1] + " :Cannot join channel (+l)").data());
+	} else if (status == ERR_BANNEDFROMCHAN) {
+		errSendMsg(CODE_TO_STRING(ERR_BANNEDFROMCHAN), *socket._usr_ptr,
+				   (paramList[1] + " :Cannot join channel (+b)").data());
 	} else if (status == ERR_INVITEONLYCHAN) {
 		errSendMsg(CODE_TO_STRING(ERR_INVITEONLYCHAN), *socket._usr_ptr,
 				   (paramList[1] + " :Cannot join channel (+i)").data());
@@ -1014,7 +1024,7 @@ void Parser::commandMODE(ClientSocket &socket) {
 				channel_ptr->UnBanUser(paramList[3]);
 				channel_ptr->SendToMembersFromUser(*socket._usr_ptr, "MODE " +
 																	 channel_ptr->GetChannelName() +
-																	 " -b" +
+																	 " -b " +
 																	 paramList[3]);
 			}
 			if (!turning_off_flag) {
@@ -1099,7 +1109,7 @@ void Parser::commandNOTICE(ClientSocket& socket){
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
-			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick() || !usr_vector[i]->_is_receipt_server_notices || channel->IsBanned(socket._usr_ptr->GetUserNick()))
 				continue;
 			answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
 			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
@@ -1111,10 +1121,9 @@ void Parser::commandNOTICE(ClientSocket& socket){
 	{
 		User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
 
-		if (receiver == NULL) {
+		if (receiver == NULL || !receiver->_is_receipt_server_notices) {
 			return;
 		}
-
 		answer	= ":" + socket._usr_ptr->GetUserNick() + " NOTICE " + sender + " " + paramList[2] + "\r\n";
 		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
 	}

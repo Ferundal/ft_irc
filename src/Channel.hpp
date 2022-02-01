@@ -73,6 +73,7 @@ public:
 	bool IsLimited();
 	void SetIsLimited(int _limit);
 	int	GetLimit();
+	bool IsLimitFull();
 	bool IsBanned(const string &_user_to_check);
 	void BanUser(const string &_user_to_ban);
 	void UnBanUser(const string &_user_to_ban);

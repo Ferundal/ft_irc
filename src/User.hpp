@@ -31,8 +31,10 @@ private:
 	bool				_is_away;
 	string				_away_message;
 	UserInfoStore		*_to_user_store;
+	const static int	_max_membership = 10;
 	vector<Channel *>	_membership;
 public:
+	bool				_is_password_checked;
 	bool				_is_hidden;
 	bool				_is_receipt_server_notices;
 private:
