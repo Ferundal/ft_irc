@@ -391,7 +391,28 @@ void	Parser::commandWHOIS(ClientSocket& socket){
     // Sending RPL_WHOISUSER
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISUSER), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " " + user->GetUserName() + " " + user->GetUserHost() + " * " + user->GetUserRealName()).data());
-    // Sending RPL_ENDOFWHOIS
+	// Sending RPL_WHOISSERVER
+	rplSendMsg(CODE_TO_STRING(RPL_WHOISSERVER), *socket._usr_ptr,
+			   (answer + user->GetUserNick() + " " + user->GetServerName() + " : Worst Server Ever").data());
+	// Sending RPL_WHOISCHANNELS
+	vector<Channel *>::const_iterator curr_user_channel = user->GetChannels().begin();
+	vector<Channel *>::const_iterator user_channels_end = user->GetChannels().end();
+	answer.clear();
+	answer =  user->GetUserNick() + " :";
+	while (curr_user_channel != user_channels_end) {
+		if (!(*curr_user_channel)->_secret_channel_flag || socket._usr_ptr->IsMemberOfChannel(*curr_user_channel)) {
+			if ((*curr_user_channel)->IsOperator(user))
+				answer += "@";
+			else if ((*curr_user_channel)->IsHasVoiceRights(user))
+				answer += "+";
+			answer += (*curr_user_channel)->GetChannelName() + " ";
+		}
+		++curr_user_channel;
+	}
+	rplSendMsg(CODE_TO_STRING(RPL_WHOISCHANNELS), *socket._usr_ptr,
+			   answer.data());
+	answer.clear();
+	// Sending RPL_ENDOFWHOIS
     rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
 
@@ -538,6 +559,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             send(socket._fd, answer.data(), answer.size(), 0);
             std::cout << answer << std::endl; // DEBUG out
             ++currChanel;
+			answer.clear();
         }
     } else {
         for (size_t i = 0; i < paramList.size(); ++i) {
@@ -546,6 +568,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
                 answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *listOfChanels.begin() + "\r\n";
                 send(socket._fd, answer.data(), answer.size(), 0);
                 std::cout << answer << std::endl; // DEBUG out
+				answer.clear();
             }
         }
     }
@@ -583,6 +606,7 @@ void 						Parser::commandWHO(ClientSocket& socket)
 				   + usr_vector[i]->GetUserNick() + " * "
 				   + usr_vector[i]->GetUserRealName()).data());
 	}
+
 //		(paramList[1] + " has 2 users. Operator: archie0").data());
 //"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
 

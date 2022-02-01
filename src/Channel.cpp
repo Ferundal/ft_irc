@@ -184,8 +184,6 @@ bool Channel::IsModerated() {
 }
 
 void Channel::SetIsModerated(bool statement) {
-	if (statement == false && _moderated_channel_flag == true)
-		_can_talk_if_moderated.clear();
 	_moderated_channel_flag = statement;
 }
 
