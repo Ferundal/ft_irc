@@ -315,55 +315,59 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 				return;
 			}
 
-	std::string sender = paramList[1];
-	Channel* channel;
-	std::string answer;
-	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
+	for (size_t j = 0; j < paramList.size(); ++j)
 	{
-		if ((channel->_no_messages_from_outside_channel_flag &&
-		!socket._usr_ptr->IsMemberOfChannel(channel))
-		||
-		(channel->IsModerated() &&
-		!channel->IsOperator(socket._usr_ptr) &&
-		!channel->IsHasVoiceRights(socket._usr_ptr))
-		||
-		(!channel->IsOperator(socket._usr_ptr) &&
-		channel->IsBanned(socket._usr_ptr->GetUserNick()))) {
-			errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN), *socket._usr_ptr,
-						(channel->GetChannelName() + " :Cannot send to channel").data());
-			return;
-		}
-		vector<User*> usr_vector = channel->GetChannelUsers();
-		for(size_t i = 0; i < usr_vector.size(); ++i)
+		std::string sender = paramList[j];
+		Channel* channel;
+		std::string answer;
+		if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 		{
-			if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
-				continue;
-			answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
-			send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
-			if (usr_vector[i]->IsAway())
+			if ((channel->_no_messages_from_outside_channel_flag &&
+			!socket._usr_ptr->IsMemberOfChannel(channel))
+			||
+			(channel->IsModerated() &&
+			!channel->IsOperator(socket._usr_ptr) &&
+			!channel->IsHasVoiceRights(socket._usr_ptr))
+			||
+			(!channel->IsOperator(socket._usr_ptr) &&
+			channel->IsBanned(socket._usr_ptr->GetUserNick()))) {
+				errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN), *socket._usr_ptr,
+						   (channel->GetChannelName() + " :Cannot send to channel").data());
+				return;
+			}
+			vector<User*> usr_vector = channel->GetChannelUsers();
+			for(size_t i = 0; i < usr_vector.size(); ++i)
+			{
+				if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
+					continue;
+				answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[param_count - 1] + "\r\n";
+				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
+				if (usr_vector[i]->IsAway())
+					rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
+							   (usr_vector[i]->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
+				cout << answer << endl; // DEBUG out
+				answer.clear();
+			}
+		}
+		else
+		{
+			User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
+
+			if (receiver == NULL) {
+				errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+						   (sender + " :No such sender/channel").data());
+				return;
+			}
+
+			answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[param_count - 1] + "\r\n";
+			send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
+			if (receiver->IsAway())
 				rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
-						   (usr_vector[i]->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
-			cout << answer << endl; // DEBUG out
-			answer.clear();
+						   (receiver->GetUserNick() + " :" +
+						   receiver->GetAwayMessege()).data());
 		}
 	}
-	else
-	{
-		User        *receiver = socket._usr_ptr->ToStore().FindUserByNick(sender);
 
-		if (receiver == NULL) {
-			errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-					   (sender + " :No such sender/channel").data());
-			return;
-		}
-
-		answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[2] + "\r\n";
-		send(receiver->GetUserFd(), answer.data(), answer.size(), 0);
-		if (receiver->IsAway())
-			rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
-					   (receiver->GetUserNick() + " :" +
-							   receiver->GetAwayMessege()).data());
-	}
 
 //	ERR_NORECIPIENT(Ok) - не указан получатель
 //	ERR_CANNOTSENDTOCHAN(в процессе)

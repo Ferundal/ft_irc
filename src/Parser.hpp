@@ -25,7 +25,7 @@ using std::cout;
 using std::vector;
 using std::string;
 
-class ClientSocket;
+struct ClientSocket;
 class User;
 
 class Parser {

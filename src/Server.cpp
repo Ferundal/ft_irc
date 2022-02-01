@@ -4,7 +4,7 @@
 
 #include "Server.hpp"
 
-Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_socket(), _pass(pass)
+Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_socket()
 {
 	GLOBAL_PASS = pass;
 	long int i = strtol(port, (char **)NULL, 10);
