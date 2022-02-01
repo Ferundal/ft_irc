@@ -554,20 +554,15 @@ void 						Parser::commandISON (ClientSocket& socket) {
     std::string                 answer;
 
     command = returnCommand(socket._msg_buff);
-    if (socket._msg_buff.size() - command.size() <= 512) {
-        answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
-        for (size_t i = 1; i < nicknameList.size(); ++i) {
-            if (socket._usr_ptr->ToStore().FindUserByNick(nicknameList[i]) != NULL)
-                answer += " " + nicknameList[i];
-        }
-        answer += "\r\n";
-        std::cout << answer << std::endl; // DEBUG outr
-        send(socket._fd, answer.data(), answer.size(), 0);
-    } else {
-		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
-	   		(nicknameList[0] + " :Not enough parameters").data());
-        return;
-    }
+	answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_ISON) + " " + socket._usr_ptr->GetUserNick();
+	for (size_t i = 1; i < nicknameList.size(); ++i) {
+		if (socket._usr_ptr->ToStore().FindUserByNick(nicknameList[i]) != NULL)
+			answer += " " + nicknameList[i];
+	}
+	answer += "\r\n";
+	std::cout << answer << std::endl; // DEBUG outr
+	send(socket._fd, answer.data(), answer.size(), 0);
+
 }
 
         //   ERR_NOSUCHSERVER [OK]                RPL_LISTSTART [OK]
@@ -1238,6 +1233,14 @@ void	Parser::commandKICK(ClientSocket& socket){
 }
 
 void    Parser::stringParser(ClientSocket &socket) {
+
+	if (mySplit(socket._msg_buff).size() > 15 || (socket._msg_buff.size() - mySplit(socket._msg_buff)[0].size()) > 512) {
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
+	   	(mySplit(socket._msg_buff)[0] + " :Not enough parameters").data());
+        return;
+	}
+
+
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
 
