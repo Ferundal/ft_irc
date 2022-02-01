@@ -20,7 +20,7 @@ OBJ_DIR=			obj
 
 #Independent .hpp file here
 
-IND_HEADERS=		error_answers.hpp
+IND_HEADERS=		error_answers.hpp reply_answers.hpp
 
 IND_HEADERS_BONUS=
 
@@ -90,7 +90,7 @@ all:				obj_dir_make libs_make ${NAME}
 
 
 obj_dir_make:
-					mkdir -p obj
+					@mkdir -p obj
 
 
 ${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
