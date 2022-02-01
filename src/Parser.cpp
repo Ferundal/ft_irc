@@ -1113,9 +1113,9 @@ void	Parser::commandKICK(ClientSocket& socket){
 }
 
 void    Parser::stringParser(ClientSocket &socket) {
-	if (mySplit(socket._msg_buff).size() > 15 || (socket._msg_buff.size() - mySplit(socket._msg_buff)[0].size()) > 512) {
+	if (countParam(socket._msg_buff) > 15 || socket._msg_buff.size() > 512) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
-	   	(mySplit(socket._msg_buff)[0] + " :Not enough parameters").data());
+	   		(mySplit(socket._msg_buff)[0] + " :Not enough parameters").data());
         return;
 	}
 
