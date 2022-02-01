@@ -1228,7 +1228,7 @@ void	Parser::commandKICK(ClientSocket& socket){
 	string messege;
 	messege += "KICK "  + paramList[1] + " " + paramList[2] +  " :TY PIDIR";
 	if (paramList.size() == 4)
-		messege += " " + paramList[3] + " :TY PIDIR";
+		messege += " " + paramList[3];
 	channel->SendToMembersFromUser(*socket._usr_ptr, messege);
 	socket._usr_ptr->ToStore().LeaveChannel(receiver, paramList[1]);
 }
