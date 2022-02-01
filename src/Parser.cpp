@@ -213,7 +213,9 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 	    	(paramList[0] + " :You may not reregister").data());
         return;
     }
-
+	if (paramList[2] == "*") {
+		paramList[2] = inet_ntoa(socket._addr.sin_addr);
+	}
 	socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
     if (socket._usr_ptr->SetActivated() == 0) {
 		rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
@@ -376,7 +378,7 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 	int param_count = countParam(socket._msg_buff);
 	if (param_count != 2) {
 		errSendMsg(CODE_TO_STRING(ERR_NONICKNAMEGIVEN), *socket._usr_ptr,
-	   		":No nickname given");
+	   		" :No nickname given");
 		return;
 	}
 
@@ -577,7 +579,7 @@ void 						Parser::commandWHO(ClientSocket& socket)
 		rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
 				   (paramList[1] + " " + usr_vector[i]->GetUserName() + " "
 				   + usr_vector[i]->GetUserHost() + " "
-				   + SERVER_NAME + " "
+				   + usr_vector[i]->GetServerName() + " "
 				   + usr_vector[i]->GetUserNick() + " * "
 				   + usr_vector[i]->GetUserRealName()).data());
 	}

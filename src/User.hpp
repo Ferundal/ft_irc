@@ -64,6 +64,8 @@ public:
 	 */
 	const string &GetUserRealName() const;
 
+	const string &GetServerName() const;
+
 	const string &GetAwayMessege() const;
 
 	const vector<Channel *> &GetChannels() const;

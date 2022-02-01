@@ -27,6 +27,10 @@ const string &User::GetUserHost() const {
 	return (this->_host_name);
 }
 
+const string &User::GetServerName() const {
+	return (this->_server_name);
+}
+
 const string &User::GetUserRealName() const {
 	return (this->_real_name);
 }
