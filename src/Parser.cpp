@@ -711,25 +711,25 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
-	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
-    // Checking ERR_NOSUCHNICK
-    if (reciever == NULL) {
-    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-        (paramList[1] + " :No such nick/channel").data());
-        return;
-    }
-
-	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[2]);
-	if (reciever == NULL) {
+	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+	if (channel_invite_to_ptr == NULL) {
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 				   (paramList[1] + " :No such nick/channel").data());
 		return;
 	}
 
+	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[2]);
+    // Checking ERR_NOSUCHNICK
+    if (reciever == NULL) {
+    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+        (paramList[2] + " :No such nick/channel").data());
+        return;
+    }
+
     // Checking ERR_NOTONCHANNEL
     if (!socket._usr_ptr->IsMemberOfChannel(channel_invite_to_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
-        (paramList[2] + " :You're not on that channel").data());
+        (socket._usr_ptr->GetUserNick() + " :You're not on that channel").data());
         return;
     }
 
