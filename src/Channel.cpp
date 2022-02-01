@@ -202,7 +202,7 @@ int Channel::GetLimit() {
 }
 
 bool Channel::IsLimitFull() {
-	if (_user_store.size() >= _limited_users_on_channel)
+	if ((int)_user_store.size() >= _limited_users_on_channel)
 		return (true);
 	return (false);
 }
