@@ -49,6 +49,8 @@ int Channel::DeleteUser(User *_user_to_delete) {
 		if(*_curr_user_ptr == _user_to_delete) {
 			this->_user_store.erase(_curr_user_ptr);
 			this->DeleteFromOperators(_user_to_delete);
+			this->TakeAwayVoiceRights(_user_to_delete);
+			this->DeleteInvite(_user_to_delete);
 			return (0);
 		}
 	}
@@ -111,6 +113,16 @@ void Channel::AddInvite(User *_new_invite_user_ptr) {
 int Channel::AddOperator(User *_new_operator) {
 	_operators.push_back(_new_operator);
 	return (0);
+}
+
+bool	Channel::IsInviteOnly() {
+	return (_invite_only_channel_flag);
+}
+
+void Channel::SetInviteOnly(bool flag_condition) {
+	if (_invite_only_channel_flag)
+		_invites.clear();
+	_invite_only_channel_flag = flag_condition;
 }
 
 bool Channel::IsInvited(User *_checked_user_ptr) {
@@ -179,12 +191,16 @@ void Channel::SetIsModerated(bool statement) {
 
 bool Channel::IsLimited() {
 	if (_limited_users_on_channel < 0)
-		return (true);
-	return (false);
+		return (false);
+	return (true);
 }
 
 void Channel::SetIsLimited(int _limit) {
 	_limited_users_on_channel = _limit;
+}
+
+int Channel::GetLimit() {
+	return (_limited_users_on_channel);
 }
 
 bool Channel::IsBanned(const string &_user_to_check) {
@@ -231,4 +247,68 @@ void Channel::SendToMembersFromUser(User &sender, const string message) {
 		send((*curr_user_ptr)->GetUserFd(), sending_message.data(), sending_message.size(), 0);
 		++curr_user_ptr;
 	}
+}
+
+void Channel::SendBanListToUser(User &banlist_receiver) {
+	vector<string>::iterator curr_banned_user = _banned_users.begin();
+	vector<string>::iterator banned_users_end = _banned_users.end();
+	string sending_message;
+	while (curr_banned_user != banned_users_end) {
+		sending_message += ":"SERVER_NAME" "CODE_TO_STRING(RPL_BANLIST)" " + this->_channel_name + " " + *curr_banned_user + "\r\n";
+		std::cout << "FD " << banlist_receiver.GetUserFd() << " << " << sending_message <<std::endl;
+		send(banlist_receiver.GetUserFd(), sending_message.data(), sending_message.size(), 0);
+		sending_message.clear();
+		++curr_banned_user;
+	}
+	sending_message += ":"SERVER_NAME" "CODE_TO_STRING(RPL_ENDOFBANLIST)" " + this->_channel_name + " :End of channel ban list" + "\r\n";
+	std::cout << "FD " << banlist_receiver.GetUserFd() << " << " << sending_message <<std::endl;
+}
+
+void Channel::GiveVoiceRights(User *user_to_give_rights) {
+	vector<User *>::iterator curr_user_can_talk_ptr = _can_talk_if_moderated.begin();
+	vector<User *>::iterator user_can_talk_ptrs_end = _can_talk_if_moderated.end();
+	while (curr_user_can_talk_ptr != user_can_talk_ptrs_end) {
+		if (*curr_user_can_talk_ptr == user_to_give_rights)
+			return;
+		++curr_user_can_talk_ptr;
+	}
+	_can_talk_if_moderated.push_back(user_to_give_rights);
+}
+
+void Channel::TakeAwayVoiceRights(User *user_to_take_away_rights) {
+	vector<User *>::iterator curr_user_can_talk_ptr = _can_talk_if_moderated.begin();
+	vector<User *>::iterator user_can_talk_ptrs_end = _can_talk_if_moderated.end();
+	while (curr_user_can_talk_ptr != user_can_talk_ptrs_end) {
+		if (*curr_user_can_talk_ptr == user_to_take_away_rights) {
+			_can_talk_if_moderated.erase(curr_user_can_talk_ptr);
+			return;
+		}
+		++curr_user_can_talk_ptr;
+	}
+}
+
+bool Channel::IsHasVoiceRights(User *user_to_check) {
+	vector<User *>::iterator curr_user_can_talk_ptr = _can_talk_if_moderated.begin();
+	vector<User *>::iterator user_can_talk_ptrs_end = _can_talk_if_moderated.end();
+	while (curr_user_can_talk_ptr != user_can_talk_ptrs_end) {
+		if (*curr_user_can_talk_ptr == user_to_check) {
+			return (true);
+		}
+		++curr_user_can_talk_ptr;
+	}
+	return (false);
+}
+
+bool Channel::CheckPassword(const string &checked_password) {
+	if (checked_password == this->_password)
+		return (true);
+	return (false);
+}
+
+void Channel::SetPassword(const string &new_password) {
+	this->_password = new_password;
+}
+
+void Channel::RemovePassword() {
+	this->_password.clear();
 }

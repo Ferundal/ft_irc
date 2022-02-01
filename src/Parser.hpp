@@ -10,6 +10,9 @@
 #include "User.hpp"
 #include "error_answers.hpp"
 #include "reply_answers.hpp"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define COMMAND_COUNT 48
 #define SERVER_NAME "127.0.0.1"
@@ -19,6 +22,9 @@
 using std::cout;
 using std::vector;
 using std::string;
+
+class ClientSocket;
+class User;
 
 class Parser {
     private:

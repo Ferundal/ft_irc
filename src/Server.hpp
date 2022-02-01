@@ -5,13 +5,14 @@
 #ifndef FT_IRC_SERVER_HPP
 #define FT_IRC_SERVER_HPP
 
+#include "Parser.hpp"
 #include "ConnectSocket.hpp"
 #include "ClientSocket.hpp"
+#include "Channel.hpp"
 #include "exception"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "vector"
-#include "Parser.hpp"
 #include <sys/poll.h>
 #include "errno.h"
 #include <unistd.h>

@@ -28,11 +28,13 @@ private:
 	string				_server_name;
 	string				_real_name;
 	string				_nick;
-	bool				_is_;
 	bool				_is_away;
 	string				_away_message;
 	UserInfoStore		*_to_user_store;
 	vector<Channel *>	_membership;
+public:
+	bool				_is_hidden;
+	bool				_is_receipt_server_notices;
 private:
 	User(int _new_fd);
 	int CancelChannelMembership(Channel *_cannel_to_leave);
@@ -62,7 +64,9 @@ public:
 	 */
 	const string &GetUserRealName() const;
 
-	const string &GetAwayMessage() const;
+	const string &GetServerName() const;
+
+	const string &GetAwayMessege() const;
 
 	const vector<Channel *> &GetChannels() const;
 
