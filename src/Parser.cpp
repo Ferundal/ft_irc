@@ -814,7 +814,7 @@ void Parser::commandMODE(ClientSocket &socket) {
 		find_start = 1;
 	}
 	string correct_flags = "opsitnmlbvkw";
-	if (IsChannelName(paramList.at(1))) {
+	if (IsChannel(paramList.at(1))) {
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(
 				paramList.at(1));
 		if (channel_ptr == NULL) {
