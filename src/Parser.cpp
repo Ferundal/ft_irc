@@ -1150,6 +1150,49 @@ void Parser::commandNOTICE(ClientSocket& socket){
 	}
 }
 
+void	Parser::commandKICK(ClientSocket& socket){
+	vector<string> paramList = mySplit(socket._msg_buff);
+
+	if(paramList.size() < 3){
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
+				   (paramList[0] + " :Not enough parameters").data());
+		return;
+	}
+
+	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+
+	if (channel == NULL){
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
+   			(paramList[1] + " :No such channel").data());
+		return;
+	}
+	if (socket._usr_ptr->IsMemberOfChannel(channel) == false){
+		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
+	   		(paramList[1] + " :You're not on that channel").data());
+		return;
+	}
+	if (channel->IsOperator(socket._usr_ptr) == false){
+		errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr,
+				   (paramList[1] + " :You're not channel operator").data());
+		return;
+	}
+
+	User* receiver = socket._usr_ptr->ToStore().FindUserByNick(paramList[2]);
+
+	if (receiver == NULL){
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+				   (paramList[2] + " :No such sender/channel").data());
+		return;
+	}
+
+	string messege;
+	messege += "KICK "  + paramList[1] + " " + paramList[2];
+	if (paramList.size() == 4)
+		messege += " " + paramList[3];
+	channel->SendToMembersFromUser(*socket._usr_ptr, messege);
+	socket._usr_ptr->ToStore().LeaveChannel(receiver, paramList[1]);
+}
+
 void    Parser::stringParser(ClientSocket &socket) {
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -1171,7 +1214,7 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "PASS") {
     	commandPASS(socket);
     } else if(!socket._usr_ptr->IsActivated()) {
-		return;
+    	return;
     } else if (command == "PRIVMSG") {//    ERR: 7, RPL: 1 [OK][KO][KO][KO][KO][KO][KO][OK]  <--- need more info
 		commandPRIVMSG(socket);
     } else if (command == "QUIT") {//       There are no ERR / RPL
@@ -1200,6 +1243,8 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandMODE(socket);
 	} else if (command == "NOTICE"){
 		commandNOTICE(socket);
+    } else if (command == "KICK"){
+		commandKICK(socket);
     }
 
     socket._msg_buff.clear();

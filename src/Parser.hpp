@@ -64,6 +64,7 @@ class Parser {
 		void						rplSendMsgFrom(const string &sender, const char* rpl_code, User& user, const char* msg);
 		void						sendMsgToGroup(const string &sender, const char* rpl_code, const char *group, const vector<User *>& users, const char* msg);
 
+		void						commandKICK (ClientSocket &socket);
         void                        commandUSER (ClientSocket &socket);
         void                        commandNICK (ClientSocket &socket);
         void                        commandPRIVMSG (ClientSocket &socket);

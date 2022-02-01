@@ -7,8 +7,8 @@
 Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_socket(), _pass(pass)
 {
 	GLOBAL_PASS = pass;
-	int i = strtol(port, (char **)NULL, 10);
-	if (errno == ERANGE || i == 0)
+	long int i = strtol(port, (char **)NULL, 10);
+	if (errno == ERANGE || i <= 0 )
 	{
 		errno = 0;
 		cout << "Port value error\n" << endl;
