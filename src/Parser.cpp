@@ -1228,7 +1228,7 @@ void	Parser::commandKICK(ClientSocket& socket){
 	string messege;
 	messege += "KICK "  + paramList[1] + " " + paramList[2];
 	if (paramList.size() == 3) {
-		messege +=  + " :";
+		messege +=  + " :no reason given";
 	} else if (paramList.size() > 3)
 		messege += " " + paramList[3];
 	channel->SendToMembersFromUser(*socket._usr_ptr, messege);
