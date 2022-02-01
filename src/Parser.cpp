@@ -126,7 +126,7 @@ bool         Parser::checkCommand ( std::string &command ) {
     return false;
 }
 
-bool	IsChannelName(const string &string_to_check) {
+bool	IsChannel(const string &string_to_check) {
 	if (string_to_check.data()[0] == '#')
 		return (true);
 	return (false);
@@ -558,6 +558,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *currChanel + "\r\n";
             send(socket._fd, answer.data(), answer.size(), 0);
             std::cout << answer << std::endl; // DEBUG out
+            answer.clear();
             ++currChanel;
 			answer.clear();
         }
@@ -567,6 +568,7 @@ void 						Parser::commandLIST (ClientSocket& socket) {
             if (!listOfChanels.empty()) {
                 answer = answer + ":" + SERVER_NAME + " " + CODE_TO_STRING(RPL_LIST) + " " + socket._usr_ptr->GetUserNick() + " " + *listOfChanels.begin() + "\r\n";
                 send(socket._fd, answer.data(), answer.size(), 0);
+                answer.clear();
                 std::cout << answer << std::endl; // DEBUG out
 				answer.clear();
             }
@@ -836,7 +838,7 @@ void Parser::commandMODE(ClientSocket &socket) {
 		find_start = 1;
 	}
 	string correct_flags = "opsitnmlbvkw";
-	if (IsChannelName(paramList.at(1))) {
+	if (IsChannel(paramList.at(1))) {
 		Channel *channel_ptr = socket._usr_ptr->ToStore().FindChannelByName(
 				paramList.at(1));
 		if (channel_ptr == NULL) {

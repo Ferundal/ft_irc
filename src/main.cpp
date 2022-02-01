@@ -17,10 +17,10 @@ int main(int argc, char **argv) {
 
 	(void)argc;
 	(void)argv;
-//	if (check_arg(argc, argv) != 0)
-//		return (1);
+	if (check_arg(argc, argv) != 0)
+		return (1);
 	try {
-		Server sv;
+		Server sv(argv[1],argv[2]);
 		while (true)
 		{
 			sv.grabConnection();

@@ -4,9 +4,16 @@
 
 #include "Server.hpp"
 
-Server::Server(int n_connect) try : _cnct_socket()
+Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_socket(), _pass(pass)
 {
-	this->_cnct_socket.binding();
+	int i = strtol(port, (char **)NULL, 10);
+	if (errno == ERANGE || i == 0)
+	{
+		errno = 0;
+		cout << "Port value error\n" << endl;
+		throw exception();
+	}
+	this->_cnct_socket.binding(i);
 	if (listen(_cnct_socket.getfd(), n_connect) == -1) throw exception();
 	{
 		_pfd.push_back(pollfd());
