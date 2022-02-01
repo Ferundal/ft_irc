@@ -35,18 +35,11 @@ public:
 	void	DeleteUser(User *_user_to_delete);
 	User	*FindUserByNick(string _searching_nick);
 
-	/**
-	 * Serach Users by there nickname in UserInfoStore.
-	 * @Return 0 if every nickname is found in UserInfoStore.
-	 * Pointers to Users cam be found in _result vector.
-	 * @Return ERR_NOSUCHNICK if any nickname has no matches in UserInfoStore.
-	 * All other nicknames/removed from _searching_nick.
-	 */
-	int		FindReceivers(vector<string> &_searching_receivers, vector<User *> &_result);
 	Channel	*FindChannelByName(string _searching_channel_name);
 	int		CreateNewChannel(User *_owner_ptr, const string &_new_channel_name, const string &_new_channel_password);
 	int		LeaveChannel(User *_member_user_ptr, const string  &_channel_to_leave);
 	void	PrintUserInfoStore();
+	const list<User *>	&GetAllActiveUsers() const;
 };
 
 

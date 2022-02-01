@@ -85,26 +85,6 @@ User *UserInfoStore::FindUserByNick(string _searching_nick) {
 	return (NULL);
 }
 
-int UserInfoStore::FindReceivers(vector<string> &_searching_receivers, vector<User *> &_result) {
-	vector<string>::iterator _curr_receiver = _searching_receivers.begin();
-	vector<string>::iterator _receivers_end = _searching_receivers.end();
-	while (_curr_receiver != _receivers_end) {
-		if (*(_curr_receiver->begin()) == '#') {
-			Channel *receiver_channel_ptr = FindChannelByName(*_curr_receiver);
-			if (receiver_channel_ptr == NULL) {
-				_searching_receivers.clear();
-				_searching_receivers.push_back(*_curr_receiver);
-				return (ERR_NOSUCHCHANNEL);
-			}
-			else {
-				(void)_result;
-			}
-		}
-
-	}
-	return (0);
-}
-
 Channel *UserInfoStore::FindChannelByName(string _searching_channel_name) {
 	list<Channel>::iterator _curr_channel = _active_channels.begin();
 	list<Channel>::iterator _end = _active_channels.end();
@@ -135,10 +115,15 @@ int UserInfoStore::LeaveChannel(User *_member_user_ptr,
 				this->DeleteChannel(_channel_to_leave);
 			}
 			_member_user_ptr->_membership.erase(_curr_membership);
+			(*_curr_membership)->TakeAwayVoiceRights(_member_user_ptr);
 			return (0);
 		}
 	}
 	return (ERR_NOTONCHANNEL);
+}
+
+const list<User *> &UserInfoStore::GetAllActiveUsers() const {
+	return (_connected_users);
 }
 
 void UserInfoStore::PrintUserInfoStore() {

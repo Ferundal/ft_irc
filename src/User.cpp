@@ -109,6 +109,22 @@ bool User::IsUserInfoSet() const {
 	return true;
 }
 
+bool User::IsOnSaneChannels(User *checked_user) {
+	vector<Channel *>::iterator curr_this_membership = this->_membership.begin();
+	vector<Channel *>::iterator this_memberships_end = this->_membership.end();
+	while(curr_this_membership != this_memberships_end) {
+		vector<Channel *>::iterator curr_checked_user_membership = checked_user->_membership.begin();
+		vector<Channel *>::iterator checked_user_memberships_end = checked_user->_membership.end();
+		while (curr_checked_user_membership != checked_user_memberships_end) {
+			if (*curr_this_membership == *curr_checked_user_membership)
+				return (true);
+			++curr_checked_user_membership;
+		}
+		++curr_this_membership;
+	}
+	return (false);
+}
+
 int User::LeaveChannel(const string &_channel_name) {
 	if (this->ToStore().FindChannelByName(_channel_name) == NULL) {
 		return (ERR_NOSUCHCHANNEL);

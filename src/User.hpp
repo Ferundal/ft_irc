@@ -117,6 +117,7 @@ public:
 	 */
 	bool IsUserInfoSet() const;
 
+	bool IsOnSaneChannels(User *checked_user);
 	/**
 	 *  Leave channel with _channel_name.
 	 *  @Return 0 if success.

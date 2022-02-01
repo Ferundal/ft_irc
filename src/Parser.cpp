@@ -327,7 +327,8 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 		!channel->IsOperator(socket._usr_ptr) &&
 		!channel->IsHasVoiceRights(socket._usr_ptr))
 		||
-		(channel->IsBanned(socket._usr_ptr->GetUserNick()))) {
+		(!channel->IsOperator(socket._usr_ptr) &&
+		channel->IsBanned(socket._usr_ptr->GetUserNick()))) {
 			errSendMsg(CODE_TO_STRING(ERR_CANNOTSENDTOCHAN), *socket._usr_ptr,
 						(channel->GetChannelName() + " :Cannot send to channel").data());
 			return;
@@ -628,27 +629,66 @@ void 						Parser::commandWHO(ClientSocket& socket)
 //	352     RPL_WHOREPLY
 //	"<channel> <user> <host> <server> <nick> \
 //  <H|G>[*][@|+] :<hopcount> <real name>"
-	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
-	vector<User*> usr_vector = channel->GetChannelUsers();
-	for (size_t i = 0; i < usr_vector.size(); ++i)
-	{
-		rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
-				   (paramList[1] + " " + usr_vector[i]->GetUserName() + " "
-				   + usr_vector[i]->GetUserHost() + " "
-				   + usr_vector[i]->GetServerName() + " "
-				   + usr_vector[i]->GetUserNick() + " * "
-				   + usr_vector[i]->GetUserRealName()).data());
+	if (paramList.size() < 2 || !IsChannel(paramList[1])) {
+		list<User *>::const_iterator curr_user = socket._usr_ptr->ToStore().GetAllActiveUsers().begin();
+		list<User *>::const_iterator users_end = socket._usr_ptr->ToStore().GetAllActiveUsers().end();
+		if (paramList.size() > 1) {
+			while (curr_user != users_end) {
+				if (!(*curr_user)->_is_hidden && *curr_user != socket._usr_ptr &&
+						!socket._usr_ptr->IsOnSaneChannels(*curr_user)) {
+						rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+								   ((*curr_user)->GetUserNick() + " "
+								   + (*curr_user)->GetUserName() + " "
+									+ (*curr_user)->GetUserHost() + " "
+									+ (*curr_user)->GetServerName() + " "
+									+ (*curr_user)->GetUserNick() + " * "
+									+ (*curr_user)->GetUserRealName()).data());
+					}
+				}
+				++curr_user;
+			} else {
+			while (curr_user != users_end) {
+				if (!(*curr_user)->_is_hidden && *curr_user != socket._usr_ptr &&
+					 !socket._usr_ptr->IsOnSaneChannels(*curr_user) &&
+					 (paramList[1] == (*curr_user)->GetUserNick() ||
+					 paramList[1] == (*curr_user)->GetUserName() ||
+					 paramList[1] == (*curr_user)->GetUserHost() ||
+					 paramList[1] == (*curr_user)->GetServerName() ||
+					 paramList[1] == (*curr_user)->GetUserNick() ||
+					 paramList[1] == (*curr_user)->GetUserRealName())) {
+					rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+							   ((*curr_user)->GetUserNick() + " "
+							   + (*curr_user)->GetUserName() + " "
+							   + (*curr_user)->GetUserHost() + " "
+							   + (*curr_user)->GetServerName() + " "
+							   + (*curr_user)->GetUserNick() + " * "
+							   + (*curr_user)->GetUserRealName()).data());
+					}
+				}
+				++curr_user;
+			}
+
+	} else {
+		Channel *channel = socket._usr_ptr->ToStore().FindChannelByName(
+				paramList[1]);
+		if (channel != NULL) {
+			vector<User *> usr_vector = channel->GetChannelUsers();
+			for (size_t i = 0; i < usr_vector.size(); ++i) {
+				if (!usr_vector[i]->_is_hidden) {
+					rplSendMsg(CODE_TO_STRING(RPL_WHOREPLY), *socket._usr_ptr,
+							   (paramList[1] + " " +
+								usr_vector[i]->GetUserName() +
+								" "
+								+ usr_vector[i]->GetUserHost() + " "
+								+ usr_vector[i]->GetServerName() + " "
+								+ usr_vector[i]->GetUserNick() + " * "
+								+ usr_vector[i]->GetUserRealName()).data());
+				}
+			}
+		}
 	}
-
-//		(paramList[1] + " has 2 users. Operator: archie0").data());
-//"352 * " + channel + " has " + usercount + " users. Operator: " + operator + "\r\n"
-
-
-//  315     RPL_ENDOFWHO
-//  "<name> :End of /WHO list"
 	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
-		(paramList[1] + " :End of /WHO list").data());
-
+			   (paramList[1] + " :End of /WHO list").data());
 // INFO kreker - nickname  NePess - username * - hostname 127.0.0.1 - servername :Shuchu Pes - realname
 
 //  ERR_NOSUCHSERVER
