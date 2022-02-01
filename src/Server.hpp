@@ -21,6 +21,8 @@
 
 #define MAX_CONNECT_CROWD 128
 
+extern const char* GLOBAL_PASS;
+
 using namespace std;
 
 class Server {
@@ -38,7 +40,7 @@ private:
 
 	ConnectSocket			_cnct_socket;
 	vector<ClientSocket>	_clnt_sockets;
-	const char*				_pass;;
+	const char*				_pass;
 	vector<pollfd>			_pfd;
 	UserInfoStore			_user_bd;
 	Parser					_parser;

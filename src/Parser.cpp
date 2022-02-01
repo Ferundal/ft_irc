@@ -216,6 +216,7 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 	if (paramList[2] == "*") {
 		paramList[2] = inet_ntoa(socket._addr.sin_addr);
 	}
+
 	socket._usr_ptr->SetUserInfo(paramList[1], paramList[2], paramList[3], paramList[4]);
     if (socket._usr_ptr->SetActivated() == 0) {
 		rplSendMsg(CODE_TO_STRING(RPL_MOTDSTART), *socket._usr_ptr,
@@ -225,7 +226,27 @@ void         Parser::commandUSER (ClientSocket &socket ) {
 		rplSendMsg(CODE_TO_STRING(RPL_ENDOFMOTD), *socket._usr_ptr,
 			(answer + ": " + SERVER_NAME + " End of /MOTD command").data());
 	}
+}
 
+void		Parser::commandPASS (ClientSocket& socket){
+	if (socket._usr_ptr->IsActivated())
+		return;
+	vector<string> paramList = mySplit(socket._msg_buff);
+	if (paramList.size() < 2)
+	{
+		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
+	   		(paramList[0] + " :Not enough parameters").data());
+		return;
+	}
+	string pass = paramList.at(1).erase(0,1);
+	if(pass == GLOBAL_PASS)
+		socket._usr_ptr->_is_password_checked = true;
+	else{
+		errSendMsg(CODE_TO_STRING(ERR_PASSWDMISMATCH), *socket._usr_ptr,
+				   ":Password incorrect");
+		return;
+	}
+	socket._usr_ptr->SetActivated();
 }
 
 void        Parser::commandNICK (ClientSocket &socket ) {
@@ -1147,6 +1168,10 @@ void    Parser::stringParser(ClientSocket &socket) {
 		commandUSER(socket);
     } else if (command == "NICK") {//       ERR: 4, RPL: 0  [OK][OK][OK][OK]
 		commandNICK(socket);
+    } else if (command == "PASS") {
+    	commandPASS(socket);
+    } else if(!socket._usr_ptr->IsActivated()) {
+		return;
     } else if (command == "PRIVMSG") {//    ERR: 7, RPL: 1 [OK][KO][KO][KO][KO][KO][KO][OK]  <--- need more info
 		commandPRIVMSG(socket);
     } else if (command == "QUIT") {//       There are no ERR / RPL

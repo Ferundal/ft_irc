@@ -19,6 +19,8 @@
 #define TO_STRING_100(X) #X
 #define CODE_TO_STRING(X) TO_STRING_100(X)
 
+extern const char* GLOBAL_PASS;
+
 using std::cout;
 using std::vector;
 using std::string;
@@ -76,6 +78,7 @@ class Parser {
         void 						commandINVITE (ClientSocket& socket);
         void 						commandPART (ClientSocket& socket);
 		void 						commandTOPIC (ClientSocket& socket);
+		void						commandPASS (ClientSocket& socket);
       
         int                         countParam (std::string &str);
 		void						commandMODE (ClientSocket& socket);
