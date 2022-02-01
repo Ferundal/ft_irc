@@ -1167,6 +1167,8 @@ void Parser::commandNOTICE(ClientSocket& socket){
 	std::string answer;
 	if ((channel = socket._usr_ptr->ToStore().FindChannelByName(sender)) != NULL)
 	{
+		if (channel->_no_messages_from_outside_channel_flag)
+			return;
 		vector<User*> usr_vector = channel->GetChannelUsers();
 		for(size_t i = 0; i < usr_vector.size(); ++i)
 		{
