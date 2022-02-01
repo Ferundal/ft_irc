@@ -38,7 +38,7 @@ public:
 	 */
 	explicit	ConnectSocket(int domain=AF_INET, int type=SOCK_STREAM, int protocol=0) throw (SocketConfigException);
 	int			getfd() const;
-	void		binding(int family=AF_INET, int port=PORT, in_addr_t ip=INADDR_ANY);
+	void		binding(int port=PORT, int family=AF_INET, in_addr_t ip=INADDR_ANY);
 
 	~ConnectSocket();
 private:

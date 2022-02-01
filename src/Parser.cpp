@@ -581,43 +581,58 @@ void 						Parser::commandWHO(ClientSocket& socket)
         //   ERR_CHANOPRIVSNEEDED
         //   RPL_INVITING [OK]                    RPL_AWAY
 
-void 						Parser::commandINVITE (ClientSocket& socket) {
+        void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
-    std::string                 answer;
-
-    // Checking NEEDMOREPARAM
-    if (paramList.size() != 3) {
+	std::string                 answer;
+	//INVITE ferundal #mychannel
+	// Checking NEEDMOREPARAM
+	if (paramList.size() != 3) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
-        (paramList[0] + " :Not enough parameters").data());
-        return;
-    }
+				   (paramList[0] + " :Not enough parameters").data());
+		return;
+	}
+
 	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
 
-    // Checking ERR_NOSUCHNICK
-    if (reciever == NULL) {
-    	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-        (paramList[1] + " :No such nick/channel").data());
-        return;
-    }
+	// Checking ERR_NOSUCHNICK
+	if (reciever == NULL) {
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+				   (paramList[1] + " :No such nick/channel").data());
+		return;
+	}
 
-    // Checking ERR_NOTONCHANNEL
-    if (socket._usr_ptr->LeaveChannel(paramList[2]) == ERR_NOTONCHANNEL) {
-        errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
-        (paramList[2] + " :You're not on that channel").data());
-        return;
-    }
+	Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(paramList[2]);
 
-    // Checking ERR_USERONCHANNEL 443   <--- Not work
-    if (socket._usr_ptr) {
-        errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
-        return;
-    }
+	if (channel == NULL) {
+		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
+				   (paramList[1] + " :No such nick/channel").data());
+		return;
+	}
 
-    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
-	if (socket._usr_ptr) {
-        errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
-        return;
-    }
+	// Checking ERR_NOTONCHANNEL
+	if (socket._usr_ptr->IsMemberOfChannel(channel) == false) {
+		errSendMsg(CODE_TO_STRING(ERR_NOTONCHANNEL), *socket._usr_ptr,
+				   (paramList[2] + " :You're not on that channel").data());
+		return;
+	}
+
+	// Checking ERR_USERONCHANNEL 443
+	if (reciever->IsMemberOfChannel(channel) == true) {
+		errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr,
+				   (paramList[1] + " " + paramList[2] + " :is already on channel").data());
+		return;
+	}
+
+	// Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
+	vector<User*> operators_vector = channel->GetChannelOperators();
+	for(size_t i = 0; i < operators_vector.size(); ++i)
+	{
+		if (operators_vector.at(i) == socket._usr_ptr ) {
+			errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr,
+				(paramList[2] + " :You're not channel operator").data());
+			return;
+		}
+	}
 
     rplSendMsg(CODE_TO_STRING(RPL_INVITING), *socket._usr_ptr,
     	(paramList[2] + " " + paramList[1]).data());

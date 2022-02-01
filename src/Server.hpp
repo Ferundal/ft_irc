@@ -24,7 +24,7 @@ using namespace std;
 
 class Server {
 public:
-	explicit Server(int n_connect=MAX_CONNECT_CROWD);
+	explicit Server(const char* port,const char* pass, int n_connect=MAX_CONNECT_CROWD);
 	void 	grabConnection();
 
 	~Server();
@@ -37,6 +37,7 @@ private:
 
 	ConnectSocket			_cnct_socket;
 	vector<ClientSocket>	_clnt_sockets;
+	const char*				_pass;;
 	vector<pollfd>			_pfd;
 	UserInfoStore			_user_bd;
 	Parser					_parser;
