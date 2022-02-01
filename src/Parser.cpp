@@ -711,18 +711,18 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
-	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[2]);
 	if (channel_invite_to_ptr == NULL) {
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-				   (paramList[1] + " :No such nick/channel").data());
+				   (paramList[2] + " :No such nick/channel").data());
 		return;
 	}
 
-	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[2]);
+	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
     // Checking ERR_NOSUCHNICK
     if (reciever == NULL) {
     	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-        (paramList[2] + " :No such nick/channel").data());
+        (paramList[1] + " :No such nick/channel").data());
         return;
     }
 
