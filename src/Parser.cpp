@@ -1226,9 +1226,11 @@ void	Parser::commandKICK(ClientSocket& socket){
 	}
 
 	string messege;
-	messege += "KICK "  + paramList[1] + " " + paramList[2] +  " :";
-	if (paramList.size() == 4)
-		messege += paramList[3];
+	messege += "KICK "  + paramList[1] + " " + paramList[2];
+	if (paramList.size() == 3) {
+		messege +=  + " :no reason given";
+	} else if (paramList.size() > 3)
+		messege += " " + paramList[3];
 	channel->SendToMembersFromUser(*socket._usr_ptr, messege);
 	socket._usr_ptr->ToStore().LeaveChannel(receiver, paramList[1]);
 }
