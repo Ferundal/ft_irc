@@ -11,7 +11,7 @@ Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_soc
 	if (errno == ERANGE || i <= 0 )
 	{
 		errno = 0;
-		cout << "Port value error\n" << endl;
+		cout << "Port value error" << endl;
 		throw exception();
 	}
 	this->_cnct_socket.binding(i);
@@ -25,7 +25,6 @@ Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_soc
 }
 catch(exception& e)
 {
-	throw e;
 }
 
 void Server::grabConnection()
