@@ -84,14 +84,6 @@ void Parser::rplSendMsg(const char* rpl_code, User& user, const char* msg)
 	send(user.GetUserFd(), answer.data(), answer.size(), 0);
 }
 
-void Parser::rplSendMsgFrom(const string &sender, const char* rpl_code, User& user, const char* msg)
-{
-	std::string answer;
-	answer = answer + ":" + sender + " " + rpl_code + " " + user.GetUserNick() + " " + msg + "\r\n";
-	cout << answer << endl; // DEBUG out
-	send(user.GetUserFd(), answer.data(), answer.size(), 0);
-}
-
 void Parser::sendMsgToGroup(const string &sender, const char* rpl_code, const char *group, const vector<User *>& users, const char* msg) {
 	vector<User *>::const_iterator _curr_user_ptr = users.begin();
 	vector<User *>::const_iterator _user_ptrs_end = users.end();
@@ -115,8 +107,6 @@ std::string Parser::returnCommand ( std::string &str ) {
     else
         return (str.substr(0, pos));
 }
-
-
 
 bool         Parser::checkCommand ( std::string &command ) {
     for (int i = 0; i < COMMAND_COUNT; ++i)
@@ -273,7 +263,7 @@ void        Parser::commandNICK (ClientSocket &socket ) {
                 return;
             }
     }
-// Check ERR_NICKCOLLISION
+	// Check ERR_NICKCOLLISION
 	if (paramList.size() <= 2) {
 		if (socket._usr_ptr->SetNick(paramList[1]) != false) {
 			errSendMsg(CODE_TO_STRING(ERR_NICKNAMEINUSE), *socket._usr_ptr,
@@ -366,16 +356,6 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 						   receiver->GetAwayMessege()).data());
 		}
 	}
-
-
-//	ERR_NORECIPIENT(Ok) - не указан получатель
-//	ERR_CANNOTSENDTOCHAN(в процессе)
-//	ERR_WILDTOPLEVEL(IRC OPERATORS only)
-//	ERR_NOSUCHNICK(Ok) - нет такого ника или канала
-//	RPL_AWAY(в процессе) - нет
-//	ERR_NOTEXTTOSEND() - нет текста
-//	ERR_NOTOPLEVEL(IRC OPERATORS)
-//	ERR_TOOMANYTARGETS(ok)
 }
 
 void	Parser::commandQUIT(ClientSocket& socket)
@@ -384,16 +364,6 @@ void	Parser::commandQUIT(ClientSocket& socket)
 	cout << "QUIT command done" << endl; // DEBUG out
 	throw Parser::UserDeleteException();
 }
-
-
-        //   ERR_NOSUCHSERVER [OK]           ERR_NONICKNAMEGIVEN [OK]
-        //   RPL_WHOISUSER [OK]              RPL_WHOISCHANNELS [In process]
-        //   RPL_WHOISCHANNELS [In process]  RPL_WHOISSERVER [OK]
-        //   RPL_AWAY [OK]                   RPL_WHOISOPERATOR [OK]
-        //   RPL_WHOISIDLE [OK]              ERR_NOSUCHNICK [OK]
-        //   RPL_ENDOFWHOIS [OK]
-
-
 
 void	Parser::commandWHOIS(ClientSocket& socket){
 	string                      answer;
@@ -439,23 +409,14 @@ void	Parser::commandWHOIS(ClientSocket& socket){
 	rplSendMsg(CODE_TO_STRING(RPL_WHOISCHANNELS), *socket._usr_ptr,
 			   answer.data());
 	answer.clear();
-	// Sending RPL_ENDOFWHOIS
     rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHOIS), *socket._usr_ptr,
     	(answer + user->GetUserNick() + " :End of /WHOIS list\r\n").data());
 
 }
 
-        //   ERR_NEEDMOREPARAMS [OK]              ERR_BANNEDFROMCHAN
-        //   ERR_INVITEONLYCHAN [OK]              ERR_BADCHANNELKEY [OK]
-        //   ERR_CHANNELISFULL               ERR_BADCHANMASK
-        //   ERR_NOSUCHCHANNEL [OK]               ERR_TOOMANYCHANNELS
-        //   RPL_TOPIC [OK]
-
-
 void	Parser::commandJOIN(ClientSocket& socket){
 	std::vector<std::string>	paramList = mySplit(socket._msg_buff);
 	std::string					command	= paramList[0];
-	//int							param_count = countParam(socket._msg_buff);
 
 	if(paramList.size() < 2)
 	{
@@ -496,12 +457,9 @@ void	Parser::commandJOIN(ClientSocket& socket){
 					   (paramList[1] + " :No topic is set").data());
 		}
 //	353     RPL_NAMREPLY
-//	"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"  RPL_ENDOFNAMES
-//	socket._usr_ptr->ToStore().FindChannelByName();
 		rplSendMsg(CODE_TO_STRING(RPL_NAMREPLY), *socket._usr_ptr,
 			(answer + paramList[1] + " :" + channel_ptr->NameReply()).data()); // TODO добавить список ников
 //	366     RPL_ENDOFNAMES
-//	"<channel> :End of /NAMES list"
 		rplSendMsg(CODE_TO_STRING(RPL_ENDOFNAMES), *socket._usr_ptr,
 				   (answer + paramList[1] + " :End of /NAMES list").data());
 	} else if (status == ERR_USERONCHANNEL) {
@@ -523,13 +481,6 @@ void	Parser::commandJOIN(ClientSocket& socket){
 		errSendMsg(CODE_TO_STRING(ERR_BADCHANNELKEY), *socket._usr_ptr,
 				   (paramList[1] + " :Cannot join channel (+k)").data());
 	}
-//	ERR_NEEDMOREPARAMS(Ok)          ERR_BANNEDFROMCHAN
-//	ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
-//	ERR_CHANNELISFULL               ERR_BADCHANMASK
-//	ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
-//	RPL_TOPIC
-//	RPL_NAMREPLY
-// <nick> <user> <host> * :<real name>
 }
 
 
@@ -550,9 +501,6 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
     }
 }
 
-//  RPL_ISON                ERR_NEEDMOREPARAMS
-
-
 void 						Parser::commandISON (ClientSocket& socket) {
 	std::vector<std::string>    nicknameList = mySplit(socket._msg_buff);
     std::string                 command;
@@ -569,10 +517,6 @@ void 						Parser::commandISON (ClientSocket& socket) {
 	send(socket._fd, answer.data(), answer.size(), 0);
 
 }
-
-        //   ERR_NOSUCHSERVER [OK]                RPL_LISTSTART [OK]
-        //   RPL_LIST [OK]                        RPL_LISTEND [OK]
-
 
 void 						Parser::commandLIST (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -611,14 +555,10 @@ void 						Parser::commandLIST (ClientSocket& socket) {
    		":End of /LIST");
 }
 
-
 void 						Parser::commandPING (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
     std::cout << "PONG " << paramList[1] << std::endl; // DEBUG out
 }
-
-            // ERR_NOSUCHSERVER
-            // RPL_WHOREPLY [OK]                    RPL_ENDOFWHO [OK]
 
 void 						Parser::commandWHO(ClientSocket& socket)
 {
@@ -627,8 +567,6 @@ void 						Parser::commandWHO(ClientSocket& socket)
 	std::string                 answer;
 
 //	352     RPL_WHOREPLY
-//	"<channel> <user> <host> <server> <nick> \
-//  <H|G>[*][@|+] :<hopcount> <real name>"
 	if (paramList.size() < 2 || !IsChannel(paramList[1])) {
 		list<User *>::const_iterator curr_user = socket._usr_ptr->ToStore().GetAllActiveUsers().begin();
 		list<User *>::const_iterator users_end = socket._usr_ptr->ToStore().GetAllActiveUsers().end();
@@ -689,16 +627,7 @@ void 						Parser::commandWHO(ClientSocket& socket)
 	}
 	rplSendMsg(CODE_TO_STRING(RPL_ENDOFWHO), *socket._usr_ptr,
 			   (paramList[1] + " :End of /WHO list").data());
-// INFO kreker - nickname  NePess - username * - hostname 127.0.0.1 - servername :Shuchu Pes - realname
-
-//  ERR_NOSUCHSERVER
 }
-
-
-        //   ERR_NEEDMOREPARAMS [OK]              ERR_NOSUCHNICK [OK]
-        //   ERR_NOTONCHANNEL [OK]                ERR_USERONCHANNEL
-        //   ERR_CHANOPRIVSNEEDED
-        //   RPL_INVITING [OK]                    RPL_AWAY
 
 void 						Parser::commandINVITE (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -733,13 +662,13 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
         return;
     }
 
-    // Checking ERR_USERONCHANNEL 443   <--- Not work
+    // Checking ERR_USERONCHANNEL 443
     if (reciever->IsMemberOfChannel(channel_invite_to_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_USERONCHANNEL), *socket._usr_ptr, (paramList[1] + " " + paramList[2] + " :is already on channel").data());
         return;
     }
 
-    // Checking ERR_CHANOPRIVSNEEDED 482  <---  Not work
+    // Checking ERR_CHANOPRIVSNEEDED 482
 	if (channel_invite_to_ptr->IsInviteOnly() && !channel_invite_to_ptr->IsOperator(socket._usr_ptr)) {
         errSendMsg(CODE_TO_STRING(ERR_CHANOPRIVSNEEDED), *socket._usr_ptr, (paramList[2] + " :You're not channel operator").data());
         return;
@@ -753,13 +682,9 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
     send(reciever->GetUserFd(), answer.data(), answer.size(), 0);
 }
 
-    //          ERR_NEEDMOREPARAMS [OK]             ERR_NOSUCHCHANNEL [OK]
-    //          ERR_NOTONCHANNEL [OK]
-
 void 						Parser::commandPART (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
-    // [CHECK] There are more than 1 parameters in ListOfParameters
     if (paramList.size() >= 2) {
         for (size_t i = 1; i < paramList.size(); ++i) {
 			string channel_name = paramList[i];
@@ -786,11 +711,6 @@ void 						Parser::commandPART (ClientSocket& socket) {
         return;
     }
 }
-
-
-        //   ERR_NEEDMOREPARAMS [OK]              ERR_NOTONCHANNEL [ok]
-        //   RPL_NOTOPIC [OK]                     RPL_TOPIC [OK]
-        //   ERR_CHANOPRIVSNEEDED [OK]
 
 void 						Parser::commandTOPIC (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
@@ -1193,13 +1113,11 @@ void	Parser::commandKICK(ClientSocket& socket){
 }
 
 void    Parser::stringParser(ClientSocket &socket) {
-
 	if (mySplit(socket._msg_buff).size() > 15 || (socket._msg_buff.size() - mySplit(socket._msg_buff)[0].size()) > 512) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
 	   	(mySplit(socket._msg_buff)[0] + " :Not enough parameters").data());
         return;
 	}
-
 
     std::cout << socket._msg_buff << std::endl; //DEBUG out
     socket._msg_buff.erase(socket._msg_buff.size() - 1, 1);
@@ -1214,37 +1132,37 @@ void    Parser::stringParser(ClientSocket &socket) {
     	return;
     }
 
-    if (command == "USER") { //             ERR: 2, RPL: 0  [OK][OK]
+    if (command == "USER") {
 		commandUSER(socket);
-    } else if (command == "NICK") {//       ERR: 4, RPL: 0  [OK][OK][OK][OK]
+    } else if (command == "NICK") {
 		commandNICK(socket);
     } else if (command == "PASS") {
     	commandPASS(socket);
     } else if(!socket._usr_ptr->IsActivated()) {
     	return;
-    } else if (command == "PRIVMSG") {//    ERR: 7, RPL: 1 [OK][KO][KO][KO][KO][KO][KO][OK]  <--- need more info
+    } else if (command == "PRIVMSG") {
 		commandPRIVMSG(socket);
-    } else if (command == "QUIT") {//       There are no ERR / RPL
+    } else if (command == "QUIT") {
     	commandQUIT(socket);
-    } else if (command == "WHOIS") {//      OK RPL_WHOISCHANNELS [In process]
+    } else if (command == "WHOIS") {
     	commandWHOIS(socket);
-    } else if (command == "JOIN") {//       Not all err
+    } else if (command == "JOIN") {
 		commandJOIN(socket);
-    } else if (command == "AWAY") {//       ERR: 1 [OK], RPL: 1 [OK]
+    } else if (command == "AWAY") {
     	commandAWAY(socket);
-    } else if (command == "ISON") {//       ERR: 1 [OK], RPL: 1 [OK]
+    } else if (command == "ISON") {
         commandISON(socket);
-    } else if (command == "LIST") {//       ERR: 1 [OK], RPL: 3 [OK][OK][OK]
+    } else if (command == "LIST") {
         commandLIST(socket);
-    } else if (command == "PING") {//       Nothing to do
+    } else if (command == "PING") {
         commandPING(socket);
-    } else if (command == "WHO") {//        ERR: 1 [OK], RPL 2 [OK][OK]
+    } else if (command == "WHO") {
     	commandWHO(socket);
-    } else if (command == "INVITE") {//     ERR: 5 [OK][OK][OK][KO][KO], RPL 2 [OK][OK]
+    } else if (command == "INVITE") {
         commandINVITE(socket);
-    } else if (command == "PART") {//       ERR: 3 [OK][OK][OK], RPL: 0
+    } else if (command == "PART") {
         commandPART(socket); 
-    } else if (command == "TOPIC") {//      ERR: 3 [OK][OK][OK], RPL: 2 [OK][OK]
+    } else if (command == "TOPIC") {
 		commandTOPIC(socket);
 	} else if (command == "MODE") {
 		commandMODE(socket);
@@ -1253,6 +1171,5 @@ void    Parser::stringParser(ClientSocket &socket) {
     } else if (command == "KICK"){
 		commandKICK(socket);
     }
-
     socket._msg_buff.clear();
 }
