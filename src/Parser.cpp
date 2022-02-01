@@ -544,8 +544,8 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
     } else {
 		rplSendMsg(CODE_TO_STRING(RPL_NOWAWAY), *socket._usr_ptr,
 	    	":You have been marked as being away");
-		if (paramList[1].size() > 0)
-			paramList[1].erase(0);
+		if (!paramList[1].empty())
+			paramList[1].erase(0, 1);
         socket._usr_ptr->SetAway(paramList[1]);
     }
 }
@@ -710,24 +710,24 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
     std::string                 answer;
 
     // Checking NEEDMOREPARAM
-    if (paramList.size() != 3) {
+    if (paramList.size() < 3) {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
         (paramList[0] + " :Not enough parameters").data());
         return;
     }
 
-	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[1]);
+	Channel* channel_invite_to_ptr = socket._usr_ptr->ToStore().FindChannelByName(paramList[2]);
 	if (channel_invite_to_ptr == NULL) {
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-				   (paramList[1] + " :No such nick/channel").data());
+				   (paramList[2] + " :No such nick/channel").data());
 		return;
 	}
 
-	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[2]);
+	User*	reciever = socket._usr_ptr->ToStore().FindUserByNick(paramList[1]);
     // Checking ERR_NOSUCHNICK
     if (reciever == NULL) {
     	errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
-        (paramList[2] + " :No such nick/channel").data());
+        (paramList[1] + " :No such nick/channel").data());
         return;
     }
 
