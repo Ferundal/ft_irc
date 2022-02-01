@@ -20,7 +20,7 @@ OBJ_DIR=			obj
 
 #Independent .hpp file here
 
-IND_HEADERS=		error_answers.hpp
+IND_HEADERS=		error_answers.hpp reply_answers.hpp
 
 IND_HEADERS_BONUS=
 
