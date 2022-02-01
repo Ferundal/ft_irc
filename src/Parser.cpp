@@ -314,7 +314,7 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 				return;
 			}
 
-	for (size_t j = 0; j < paramList.size(); ++j)
+	for (size_t j = 1; j < paramList.size() - 1; ++j)
 	{
 		std::string sender = paramList[j];
 		Channel* channel;
