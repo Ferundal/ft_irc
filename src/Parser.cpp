@@ -466,7 +466,7 @@ void	Parser::commandJOIN(ClientSocket& socket){
 		return;
 	}
 	int status;
-	if (paramList.size() == 2)
+	if (paramList.size() < 3)
 		status = socket._usr_ptr->JoinChannel(paramList[1], "");
 	else
 		status = socket._usr_ptr->JoinChannel(paramList[1], paramList[2]);
@@ -1226,8 +1226,10 @@ void	Parser::commandKICK(ClientSocket& socket){
 	}
 
 	string messege;
-	messege += "KICK "  + paramList[1] + " " + paramList[2] +  " :TY PIDIR";
-	if (paramList.size() == 4)
+	messege += "KICK "  + paramList[1] + " " + paramList[2];
+	if (paramList.size() == 3) {
+		messege +=  + " :";
+	} else if (paramList.size() > 3)
 		messege += " " + paramList[3];
 	channel->SendToMembersFromUser(*socket._usr_ptr, messege);
 	socket._usr_ptr->ToStore().LeaveChannel(receiver, paramList[1]);
