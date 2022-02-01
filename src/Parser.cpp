@@ -302,7 +302,6 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 	int param_count = countParam(socket._msg_buff);
 
 	if (param_count < 3) {
-
 		errSendMsg(CODE_TO_STRING(ERR_NORECIPIENT),*socket._usr_ptr,
 				   (":No recipient given ("+ command+ ")").data());
 		return;
@@ -344,7 +343,7 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
 				if (usr_vector[i]->IsAway())
 					rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
-							   (usr_vector[i]->GetUserNick() + " :").data() /*+ usr_vector[i]->GetAwayMassege()*/); // TODO сделать, когда Миша сделать MODE
+							   (usr_vector[i]->GetUserNick() + " :" + usr_vector[i]->GetAwayMessege()).data());
 				cout << answer << endl; // DEBUG out
 				answer.clear();
 			}
@@ -545,6 +544,8 @@ void 						Parser::commandAWAY( ClientSocket& socket ) {
     } else {
 		rplSendMsg(CODE_TO_STRING(RPL_NOWAWAY), *socket._usr_ptr,
 	    	":You have been marked as being away");
+		if (paramList[1].size() > 0)
+			paramList[1].erase(0);
         socket._usr_ptr->SetAway(paramList[1]);
     }
 }
@@ -763,24 +764,15 @@ void 						Parser::commandINVITE (ClientSocket& socket) {
 void 						Parser::commandPART (ClientSocket& socket) {
 	std::vector<std::string>    paramList = mySplit(socket._msg_buff);
 
-    // [CHECK] There are no same Chanels in ListOfChanels
-    for (size_t i = 1; i < paramList.size(); ++i) {
-        if ((socket._usr_ptr->ToStore().FindChannelByName(paramList[i]) == NULL)) {
-		    errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
-		   		(paramList[i] + " :No such channel").data());
-            return;
-        }
-    }
-
     // [CHECK] There are more than 1 parameters in ListOfParameters
     if (paramList.size() >= 2) {
         for (size_t i = 1; i < paramList.size(); ++i) {
-			string channel_name = paramList[1];
+			string channel_name = paramList[i];
 			string answer;
 			Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
 			if (channel == NULL) {
 				errSendMsg(CODE_TO_STRING(ERR_NOSUCHCHANNEL), *socket._usr_ptr,
-						   (paramList[i] + " : :No such channel").data());
+						   (paramList[i] + " :No such channel").data());
 				continue;
 			}
 			if (!socket._usr_ptr->IsMemberOfChannel(channel)) {
@@ -788,55 +780,16 @@ void 						Parser::commandPART (ClientSocket& socket) {
 						   (paramList[i] + " :You're not on that channel").data());
 				continue;
 			}
-			vector<User*> usr_vector = channel->GetChannelUsers();
-			bool _need_new_operatir = false;
-			if (channel->IsOperator(socket._usr_ptr) &&
-				channel->GetChannelOperators().size() == 1 &&
-				channel->GetChannelUsers().size() > 1) {
-				_need_new_operatir = true;
-			}
-			for(size_t i = 0; i < usr_vector.size(); ++i) {
-				if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
-					continue;
-				answer	= ":" + socket._usr_ptr->GetUserNick() + " PART " + channel_name + "\r\n";
-				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
-				cout << answer << endl; // DEBUG out
-				answer.clear();
-				if (_need_new_operatir == true) {
-					answer = ":" + socket._usr_ptr->GetUserNick() + " MODE " +
-							 channel_name + " +o " +
-							 (*(channel->GetChannelUsers().begin() +
-								1))->GetUserNick() + "\r\n";
-					send(usr_vector[i]->GetUserFd(), answer.data(),
-						 answer.size(), 0);
-					cout << answer << endl; // DEBUG out
-					answer.clear();
-				}
-			}
             socket._usr_ptr->LeaveChannel(paramList[i]);
+			channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
+			if (channel != NULL)
+				channel->SendToMembersFromUser(*socket._usr_ptr, "PART " + channel_name);
         }
     } else {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,
 	    	(paramList[0] + " :Not enough parameters").data());
         return;
     }
-
-	string channel_name = paramList[1];
-    string answer;
-    Channel* channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
-	if (channel == NULL)
-		return;
-    vector<User*> usr_vector = channel->GetChannelUsers();
-
-	for(size_t i = 0; i < usr_vector.size(); ++i)
-	{
-		if (socket._usr_ptr->GetUserNick() == usr_vector[i]->GetUserNick())
-			continue;
-		answer	= ":" + socket._usr_ptr->GetUserNick() + " PART " + channel_name + "\r\n";
-		send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
-		cout << answer << endl; // DEBUG out
-		answer.clear();
-	}
 }
 
 
@@ -1228,6 +1181,9 @@ void	Parser::commandKICK(ClientSocket& socket){
 	if (receiver == NULL){
 		errSendMsg(CODE_TO_STRING(ERR_NOSUCHNICK), *socket._usr_ptr,
 				   (paramList[2] + " :No such sender/channel").data());
+		return;
+	}
+	if (!receiver->IsMemberOfChannel(channel)) {
 		return;
 	}
 
