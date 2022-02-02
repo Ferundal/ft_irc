@@ -141,7 +141,7 @@ int User::JoinChannel(const string &_channel_name, const string &_channel_passwo
 		return (ERR_USERONCHANNEL);
 	if (_channel_ptr->IsLimited() && _channel_ptr->IsLimitFull())
 		return (ERR_CHANNELISFULL);
-	if (_channel_ptr->IsBanned(this->_user_name))
+	if (_channel_ptr->IsBanned(this->_nick))
 		return (ERR_BANNEDFROMCHAN);
 	if (_channel_ptr->_invite_only_channel_flag == true &&
 		_channel_ptr->IsInvited(this) == false)
