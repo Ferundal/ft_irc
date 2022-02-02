@@ -331,9 +331,6 @@ void			Parser::commandPRIVMSG (ClientSocket &socket ){
 					continue;
 				answer	= ":" + socket._usr_ptr->GetUserNick() + " PRIVMSG " + sender + " " + paramList[param_count - 1] + "\r\n";
 				send(usr_vector[i]->GetUserFd(), answer.data(), answer.size(), 0);
-				if (usr_vector[i]->IsAway())
-					rplSendMsg(CODE_TO_STRING(RPL_AWAY), *socket._usr_ptr,
-							   (usr_vector[i]->GetUserNick() + " :" + usr_vector[i]->GetAwayMessege()).data());
 				cout << answer << endl; // DEBUG out
 				answer.clear();
 			}
