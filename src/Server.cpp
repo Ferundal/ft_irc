@@ -113,7 +113,7 @@ void 	Server::deleteClientSocket(vector<pollfd>::iterator& it)
 			{
 				exit_message.clear();
 				exit_message += ":" + socket_it->_usr_ptr->GetUserNick() + " PART " + (*_curr_channel_ptr)->GetChannelName() +"\r\n";
-				send((*_curr_channel_user_ptr)->GetUserFd(),  socket_it->_msg_buff.data(), socket_it->_msg_buff.size(),0);
+				send((*_curr_channel_user_ptr)->GetUserFd(),  exit_message.data(), exit_message.size(),0);
 			}
 			++_curr_channel_user_ptr;
 		}
