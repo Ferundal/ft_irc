@@ -702,8 +702,14 @@ void 						Parser::commandPART (ClientSocket& socket) {
 			}
             socket._usr_ptr->LeaveChannel(paramList[i]);
 			channel = socket._usr_ptr->ToStore().FindChannelByName(channel_name);
-			if (channel != NULL)
-				channel->SendToMembersFromUser(*socket._usr_ptr, "PART " + channel_name);
+			if (channel != NULL) {
+				User *new_operator = *channel->GetChannelUsers().begin();
+				channel->AddOperator(new_operator);
+				channel->SendToMembersFromUser(*socket._usr_ptr,
+											   "MODE " + channel_name + " -v " + new_operator->GetUserNick());
+				channel->SendToMembersFromUser(*socket._usr_ptr,
+											   "PART " + channel_name);
+			}
         }
     } else {
 		errSendMsg(CODE_TO_STRING(ERR_NEEDMOREPARAMS), *socket._usr_ptr,

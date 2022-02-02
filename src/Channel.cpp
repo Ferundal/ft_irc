@@ -46,7 +46,6 @@ int Channel::DeleteUser(User *_user_to_delete) {
 			this->_user_store.erase(_curr_user_ptr);
 			this->DeleteFromOperators(_user_to_delete);
 			this->TakeAwayVoiceRights(_user_to_delete);
-			this->DeleteInvite(_user_to_delete);
 			return (0);
 		}
 	}
