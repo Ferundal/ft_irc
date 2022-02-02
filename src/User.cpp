@@ -214,7 +214,7 @@ list<string> User::ChannelList(const string &_searching_channel_name) {
 									ft_to_string(_curr_channel->_user_store.size()) + " :" +
 			_curr_channel->_channel_topic);
 		} else {
-			if (_curr_channel->_private_channel_flag) {
+			if (!_curr_channel->_secret_channel_flag && _curr_channel->_private_channel_flag) {
 				_result.push_back("#Prv " + ft_to_string(_curr_channel->_user_store.size()) + " :");
 			}
 		}
