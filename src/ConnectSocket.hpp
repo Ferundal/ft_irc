@@ -1,7 +1,3 @@
-//
-// Created by Radicchio Sarah on 08.01.2022.
-//
-
 #ifndef IRCSERC_CONNECTSOCKET_HPP
 #define IRCSERC_CONNECTSOCKET_HPP
 

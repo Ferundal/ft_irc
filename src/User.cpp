@@ -1,7 +1,3 @@
-//
-// Created by ferun on 14.01.2022.
-//
-
 #include "User.hpp"
 #include <stdlib.h>
 

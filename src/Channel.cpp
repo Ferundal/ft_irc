@@ -1,7 +1,3 @@
-//
-// Created by ferun on 14.01.2022.
-//
-
 #include "Channel.hpp"
 
 Channel::Channel(User *_owner_ptr, const string &_new_channel_name, const string&_new_channel_password) :

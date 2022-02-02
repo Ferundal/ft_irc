@@ -1,6 +1,3 @@
-//
-// Created by Cetheres Jettie on 12/19/21.
-//qw
 const char* GLOBAL_PASS;
 
 #include "Server.hpp"

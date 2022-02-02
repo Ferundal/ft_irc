@@ -1,7 +1,3 @@
-//
-// Created by ferun on 14.01.2022.
-//
-
 #ifndef FT_IRC_CHANNEL_HPP
 #define FT_IRC_CHANNEL_HPP
 #include <list>

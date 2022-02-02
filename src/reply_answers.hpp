@@ -1,7 +1,3 @@
-//
-// Created by ferun on 26.01.2022.
-//
-
 #ifndef IRCSERC_REPLY_ANSWERS_HPP
 #define IRCSERC_REPLY_ANSWERS_HPP
 

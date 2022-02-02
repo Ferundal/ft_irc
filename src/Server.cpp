@@ -1,7 +1,3 @@
-//
-// Created by ferun on 05.01.2022.
-//
-
 #include "Server.hpp"
 
 Server::Server(const char* port,const char* pass, int n_connect) try : _cnct_socket()

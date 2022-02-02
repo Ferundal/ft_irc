@@ -1,7 +1,3 @@
-//
-// Created by ferun on 14.01.2022.
-//
-
 #ifndef FT_IRC_USER_HPP
 #define FT_IRC_USER_HPP
 #include <string>
@@ -147,8 +143,6 @@ public:
 	 * @Return list with send ready string information.
 	 */
 	list<string> ChannelList(const string &_channel_name);
-
-	int SendInvite(const string &_invited_user_nick, const string &_channel_invite_to);
 
 	int GetTopic(const string &_channel_to_get_topic, string &_topic_store);
 	int ChangeTopic(const string &_channel_to_change_topic, const string &_new_topic);
