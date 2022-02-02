@@ -111,7 +111,6 @@ int UserInfoStore::LeaveChannel(User *_member_user_ptr,
 				this->DeleteChannel(_channel_to_leave);
 			}
 			_member_user_ptr->_membership.erase(_curr_membership);
-			(*_curr_membership)->TakeAwayVoiceRights(_member_user_ptr);
 			return (0);
 		}
 	}

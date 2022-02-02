@@ -78,6 +78,8 @@ void Channel::DeleteFromOperators(User *_user_to_delete) {
 			if (_operators.empty()) {
 				if (!_user_store.empty()) {
 					_operators.push_back(*_user_store.begin());
+					this->SendToMembersFromUser(*_user_to_delete,
+												   "MODE " + this->GetChannelName() + " +o " + (*_user_store.begin())->GetUserNick());
 					if (_user_to_delete == _owner) {
 						_owner = *_operators.begin();
 					}
