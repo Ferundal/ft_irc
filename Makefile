@@ -105,10 +105,12 @@ bonus:
 
 clean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} clean}
+					${MAKE} -C bot clean
 					${RM} ${OBJS_CPP} ${OBJS_CPP_BONUS}
 
 fclean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} fclean}
+					${MAKE} -C bot fclean
 					${RM} ${OBJS_CPP} ${OBJS_CPP_BONUS}
 					${RM} ${NAME}
 
