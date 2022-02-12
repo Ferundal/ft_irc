@@ -20,7 +20,7 @@ OBJ_DIR=			obj
 
 #Independent .hpp file here
 
-IND_HEADERS=		error_answers.hpp reply_answers.hpp
+IND_HEADERS=		reply_answers.hpp
 
 IND_HEADERS_BONUS=
 
@@ -32,7 +32,7 @@ CPP_FILES_BONUS=
 
 #Classes's names should be placed here
 
-CLASSES=			ConnectSocket ClientSocket Server Parser User UserInfoStore Channel
+CLASSES=			Bot IRC_Connection IRC_Message User UserStore
 
 CLASSES_BONUS=
 
@@ -50,7 +50,7 @@ CLASSES_SRC_BONUS=	${addprefix ${SRC_DIR}/, ${addsuffix .cpp, ${CLASSES_BONUS}}}
 
 #All .hpp and .cpp
 
-HEADERS=			${LIBS_HEADERS} ${CLASS_HEADERS} ${addprefix ${SRC_DIR}/, ${IND_HEADERS}}
+HEADERS=			${CLASS_HEADERS} ${addprefix ${SRC_DIR}/, ${IND_HEADERS}}
 
 ifdef COMPILE_BONUS
 HEADERS:=			${HEADERS} ${CLASS_HEADERS_BONUS}
@@ -73,20 +73,22 @@ INC_HEADERS_DIR=	${foreach HEADER_DIR, ${INC_HEADERS_DIRS}, ${INC_HEADERS_FORMAT
 
 
 
-NAME=				ircserv
+NAME=				irc_bot
+
+TEST_IRC_MESSAGE=	test_irc_message
 
 CC=					clang++
 RM=					rm -f
 LD=					ld
 
-ALL_CFLAGS=			-Wall -Wextra -Werror -std=c++98 ${CFLAGS}
+ALL_CFLAGS=			-Wall -Wextra -Werror -std=c++98 -g ${CFLAGS}
 ALL_LDFLAGS=		${LDFLAGS}
 
 NORM=				norminette ${NORMO}
 
-.PHONY:				all clean fclean re bonus libs_make libs_clean obj_dir_make
+.PHONY:				all clean fclean re bonus obj_dir_make
 
-all:				obj_dir_make libs_make ${NAME}
+all:				obj_dir_make ${NAME}
 
 
 obj_dir_make:
@@ -99,9 +101,11 @@ ${OBJ_DIR}/%.o:		${SRC_DIR}/%.cpp ${HEADERS}
 ${NAME}:			${OBJS_CPP}
 					${CC} ${ALL_LDFLAGS} ${OBJS_CPP} -o ${NAME}
 
+${TEST_IRC_MESSAGE}:src/test_IRC_Message.cpp src/IRC_Message.cpp src/IRC_Message.hpp
+					clang++ src/test_IRC_Message.cpp src/IRC_Message.cpp -o test_irc_message
+
 bonus:
 					${MAKE} COMPILE_BONUS=1 all
-					${MAKE} -C bot
 
 clean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} clean}
