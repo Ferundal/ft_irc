@@ -100,8 +100,8 @@ ${NAME}:			${OBJS_CPP}
 					${CC} ${ALL_LDFLAGS} ${OBJS_CPP} -o ${NAME}
 
 bonus:
-					${MAKE} COMPILE_BONUS=1 all
 					${MAKE} -C bot
+					${MAKE} COMPILE_BONUS=1 all
 
 clean:
 					${foreach LIBS_DIR, ${LIBS_DIR}, ${MAKE} -C ${LIBS_DIR} clean}
